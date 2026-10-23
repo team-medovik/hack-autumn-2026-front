@@ -30,6 +30,16 @@ export default defineConfig(async ({ mode }) => {
       port: 3000,
       strictPort: false,
       open: true,
+      proxy: env.DEV_PROXY_TARGET
+        ? {
+            '/api': {
+              target: env.DEV_PROXY_TARGET,
+              changeOrigin: true,
+              secure: true,
+              cookieDomainRewrite: 'localhost', // чтобы куки с прод-домена сохранялись на localhost
+            },
+          }
+        : undefined,
     },
 
     // ─── Сборка ───────────────────────────────────────────────────────────

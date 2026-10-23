@@ -1,0 +1,337 @@
+name: Deploy Hack2026 Frontend
+
+on:
+  push: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Set to 'false' to deploy only from main.
+  DEBUG_DEPLOY_FROM_DEVELOP: 'false'
+
+  # ===== Service =====
+  SERVICE_NAME: 'hack-autumn-2026'
+  SERVICE_DIR_NAME: 'front'
+
+  TARGET_BASE_DIR: '/home/kinoko/'
+  TARGET_DIR: '/home/kinoko/teamup/front'
+
+  ARTIFACT_BASE_DIR: '/tmp/hack-autumn-2026'
+  ARTIFACT_DIR: '/tmp/hack-autumn-2026/front'
+
+  # ===== Build =====
+  BUILD_IMAGE: 'node:22-alpine'
+  BUILD_USER: 'kinoko'
+
+  # ВАЖНО: это кэш npm на хосте, который будет примонтирован внутрь Docker.
+  NPM_CACHE_DIR: '/home/kinoko/.npm'
+  FRONT_DIST_DIR: 'dist'
+
+  # package-lock намеренно не создаём.
+  NPM_INSTALL_COMMAND: 'npm install --no-package-lock --no-audit --no-fund'
+  NPM_BUILD_COMMAND: 'npm run build'
+
+  # ===== MinIO =====
+  MINIO_ENDPOINT: 'http://127.0.0.1:9003'
+  MINIO_BUCKET: 'hack-artifacts'
+  MINIO_ARTIFACT_PREFIX: 'front-2026'
+
+  ARTIFACT_ARCHIVE_NAME: 'front-dist.tar.gz'
+
+jobs:
+  build:
+    runs-on: [self-hosted, build]
+
+    outputs:
+      artifact_key: ${{ steps.artifact_vars.outputs.artifact_key }}
+      should_deploy: ${{ steps.deploy_mode.outputs.should_deploy }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Resolve deploy mode
+        id: deploy_mode
+        run: |
+          set -euo pipefail
+
+          SHOULD_DEPLOY=false
+
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            SHOULD_DEPLOY=true
+          elif [ "$DEBUG_DEPLOY_FROM_DEVELOP" = "true" ] && [ "$GITHUB_REF" = "refs/heads/develop" ]; then
+            SHOULD_DEPLOY=true
+          fi
+
+          echo "should_deploy=$SHOULD_DEPLOY" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare artifact name
+        id: artifact_vars
+        run: |
+          echo "artifact_key=${MINIO_ARTIFACT_PREFIX}/${GITHUB_SHA}-${GITHUB_RUN_ID}/${ARTIFACT_ARCHIVE_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build frontend inside Docker with host npm cache
+        env:
+          # Содержимое .env.production целиком (многострочный секрет).
+          ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+        run: |
+          set -euo pipefail
+
+          BUILD_UID="$(id -u "$BUILD_USER")"
+          BUILD_GID="$(id -g "$BUILD_USER")"
+
+          BUILD_ROOT="${RUNNER_TEMP}/${SERVICE_NAME}-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          SRC_DIR="$BUILD_ROOT/src"
+          OUT_DIR="$BUILD_ROOT/out"
+
+          echo "BUILD_ROOT=$BUILD_ROOT" >> "$GITHUB_ENV"
+
+          sudo rm -rf "$BUILD_ROOT"
+          mkdir -p "$SRC_DIR" "$OUT_DIR"
+
+          sudo install -d -o "$BUILD_USER" -g "$BUILD_USER" -m 700 "$NPM_CACHE_DIR"
+
+          echo "Копирую исходники во временную директорию..."
+          tar \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='dists' \
+            --exclude='build' \
+            --exclude='coverage' \
+            --exclude='.vite' \
+            -cf - . | tar -xf - -C "$SRC_DIR"
+
+          if [ -f "$SRC_DIR/package-lock.json" ]; then
+            echo "package-lock.json найден. Для этого проекта он запрещён — удали файл из репозитория."
+            exit 1
+          fi
+
+          # VITE_* переменные вшиваются в бандл при сборке, поэтому .env нужен здесь, а не на сервере.
+          if [ -z "${ENV_PRODUCTION:-}" ]; then
+            echo "Секрет ENV_PRODUCTION не задан в GitHub Secrets."
+            exit 1
+          fi
+
+          printf '%s\n' "$ENV_PRODUCTION" > "$SRC_DIR/.env.production"
+          echo "Создан .env.production, ключи:"
+          grep -oE '^[A-Za-z_][A-Za-z0-9_]*=' "$SRC_DIR/.env.production" | sed 's/=$//' || true
+
+          sudo chown -R "$BUILD_UID:$BUILD_GID" "$BUILD_ROOT"
+
+          echo "Запускаю сборку в Docker image: $BUILD_IMAGE"
+          echo "npm cache on host: $NPM_CACHE_DIR"
+
+          docker run --rm \
+            --name "${SERVICE_NAME}-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" \
+            -u "${BUILD_UID}:${BUILD_GID}" \
+            -e HOME=/home/node \
+            -e npm_config_cache=/home/node/.npm \
+            -e npm_config_package_lock=false \
+            -e NPM_INSTALL_COMMAND="$NPM_INSTALL_COMMAND" \
+            -e NPM_BUILD_COMMAND="$NPM_BUILD_COMMAND" \
+            -e FRONT_DIST_DIR="$FRONT_DIST_DIR" \
+            -v "$SRC_DIR:/workspace" \
+            -v "$OUT_DIR:/out" \
+            -v "$NPM_CACHE_DIR:/home/node/.npm" \
+            -w /workspace \
+            "$BUILD_IMAGE" \
+            sh -lc '
+              set -eu
+
+              echo "Node version: $(node -v)"
+              echo "npm version: $(npm -v)"
+              echo "npm cache: ${npm_config_cache}"
+
+              if [ ! -f package.json ]; then
+                echo "package.json не найден"
+                exit 1
+              fi
+
+              echo "Устанавливаю зависимости без package-lock..."
+              sh -lc "$NPM_INSTALL_COMMAND"
+
+              echo "Собираю фронт..."
+              sh -lc "$NPM_BUILD_COMMAND"
+
+              DIST_DIR="$FRONT_DIST_DIR"
+
+              if [ ! -d "$DIST_DIR" ]; then
+                if [ -d dist ]; then
+                  DIST_DIR="dist"
+                elif [ -d dists ]; then
+                  DIST_DIR="dists"
+                else
+                  echo "Папка сборки не найдена. Проверял: $FRONT_DIST_DIR, dist, dists"
+                  exit 1
+                fi
+              fi
+
+              echo "Папка сборки: $DIST_DIR"
+              mkdir -p /out/dist
+              cp -a "$DIST_DIR/." /out/dist/
+
+              if [ ! -f /out/dist/index.html ]; then
+                echo "index.html не найден в результате сборки"
+                exit 1
+              fi
+            '
+
+          echo "Пакую dist..."
+          sudo chown -R "$(id -u):$(id -g)" "$BUILD_ROOT"
+          tar -czf "$BUILD_ROOT/$ARTIFACT_ARCHIVE_NAME" -C "$OUT_DIR/dist" .
+          cd "$BUILD_ROOT"
+          sha256sum "$ARTIFACT_ARCHIVE_NAME" > "$ARTIFACT_ARCHIVE_NAME.sha256"
+
+          echo "Содержимое артефакта:"
+          tar -tzf "$BUILD_ROOT/$ARTIFACT_ARCHIVE_NAME" | head -200
+
+      - name: Upload artifact to local MinIO
+        if: steps.deploy_mode.outputs.should_deploy == 'true'
+        run: |
+          set -euo pipefail
+
+          ARTIFACT_KEY="${{ steps.artifact_vars.outputs.artifact_key }}"
+
+          docker run --rm \
+            --network host \
+            -v "$BUILD_ROOT:/artifacts:ro" \
+            -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
+            -e MINIO_ACCESS_KEY="$MINIO_ACCESS_KEY" \
+            -e MINIO_SECRET_KEY="$MINIO_SECRET_KEY" \
+            -e MINIO_BUCKET="$MINIO_BUCKET" \
+            -e ARTIFACT_KEY="$ARTIFACT_KEY" \
+            -e ARTIFACT_ARCHIVE_NAME="$ARTIFACT_ARCHIVE_NAME" \
+            --entrypoint /bin/sh \
+            minio/mc \
+            -c '
+              set -eu
+
+              mc alias set minio \
+                "$MINIO_ENDPOINT" \
+                "$MINIO_ACCESS_KEY" \
+                "$MINIO_SECRET_KEY" \
+                --api S3v4 \
+                --path on
+
+              mc ls "minio/$MINIO_BUCKET" >/dev/null
+
+              mc cp "/artifacts/$ARTIFACT_ARCHIVE_NAME" \
+                "minio/$MINIO_BUCKET/$ARTIFACT_KEY"
+
+              mc cp "/artifacts/$ARTIFACT_ARCHIVE_NAME.sha256" \
+                "minio/$MINIO_BUCKET/$ARTIFACT_KEY.sha256"
+
+              echo "Artifact uploaded:"
+              echo "$MINIO_BUCKET/$ARTIFACT_KEY"
+            '
+
+      - name: Cleanup old MinIO artifacts
+        if: steps.deploy_mode.outputs.should_deploy == 'true'
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            --network host \
+            -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
+            -e MINIO_ACCESS_KEY="$MINIO_ACCESS_KEY" \
+            -e MINIO_SECRET_KEY="$MINIO_SECRET_KEY" \
+            -e MINIO_BUCKET="$MINIO_BUCKET" \
+            -e MINIO_ARTIFACT_PREFIX="$MINIO_ARTIFACT_PREFIX" \
+            --entrypoint /bin/sh \
+            minio/mc \
+            -c '
+              set -eu
+
+              mc alias set minio \
+                "$MINIO_ENDPOINT" \
+                "$MINIO_ACCESS_KEY" \
+                "$MINIO_SECRET_KEY" \
+                --api S3v4 \
+                --path on
+
+              mc rm --recursive --force --older-than 7d \
+                "minio/$MINIO_BUCKET/$MINIO_ARTIFACT_PREFIX/" || true
+            '
+
+      - name: Cleanup local build files
+        if: always()
+        run: |
+          if [ -n "${BUILD_ROOT:-}" ]; then
+            sudo rm -rf "$BUILD_ROOT"
+          fi
+
+          docker rm -f "${SERVICE_NAME}-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" 2>/dev/null || true
+
+  deploy:
+    if: needs.build.outputs.should_deploy == 'true'
+    runs-on: [self-hosted, deploy]
+    needs: build
+
+    steps:
+      - name: Download built frontend from local MinIO
+        run: |
+          set -euo pipefail
+
+          ARTIFACT_KEY="${{ needs.build.outputs.artifact_key }}"
+
+          sudo rm -rf "$ARTIFACT_DIR"
+          sudo mkdir -p "$ARTIFACT_DIR"
+          sudo chown -R "$(id -u):$(id -g)" "$ARTIFACT_DIR"
+
+          docker run --rm \
+            --network host \
+            -v "$ARTIFACT_DIR:/download" \
+            -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
+            -e MINIO_ACCESS_KEY="$MINIO_ACCESS_KEY" \
+            -e MINIO_SECRET_KEY="$MINIO_SECRET_KEY" \
+            -e MINIO_BUCKET="$MINIO_BUCKET" \
+            -e ARTIFACT_KEY="$ARTIFACT_KEY" \
+            -e ARTIFACT_ARCHIVE_NAME="$ARTIFACT_ARCHIVE_NAME" \
+            --entrypoint /bin/sh \
+            minio/mc \
+            -c '
+              set -eu
+
+              mc alias set minio \
+                "$MINIO_ENDPOINT" \
+                "$MINIO_ACCESS_KEY" \
+                "$MINIO_SECRET_KEY" \
+                --api S3v4 \
+                --path on
+
+              mc cp "minio/$MINIO_BUCKET/$ARTIFACT_KEY" \
+                "/download/$ARTIFACT_ARCHIVE_NAME"
+
+              mc cp "minio/$MINIO_BUCKET/$ARTIFACT_KEY.sha256" \
+                "/download/$ARTIFACT_ARCHIVE_NAME.sha256"
+            '
+
+          cd "$ARTIFACT_DIR"
+          sha256sum -c "$ARTIFACT_ARCHIVE_NAME.sha256"
+
+      - name: Clean target directory
+        run: |
+          sudo rm -rf "$TARGET_DIR"
+          sudo mkdir -p "$TARGET_DIR"
+
+      - name: Deploy dist contents to server directory
+        run: |
+          set -euo pipefail
+
+          sudo tar -xzf "$ARTIFACT_DIR/$ARTIFACT_ARCHIVE_NAME" -C "$TARGET_DIR"
+          sudo chown -R kinoko:kinoko "$TARGET_DIR"
+          sudo rm -rf "$ARTIFACT_DIR"
+
+          if [ ! -f "$TARGET_DIR/index.html" ]; then
+            echo "index.html не найден в $TARGET_DIR. Деплой битый."
+            exit 1
+          fi
+
+          echo "Frontend files in target directory:"
+          ls -lah "$TARGET_DIR" | head -100
+
+      - name: Confirm deployment
+        run: |
+          echo "Деплой фронта окончен: $TARGET_DIR"
