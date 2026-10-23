@@ -118,6 +118,71 @@ export default [
       'import/no-unresolved': 'error',
       'import/no-duplicates': 'error',
       'import/newline-after-import': 'warn',
+
+      // ─── FSD ─────────────────────────────────────────────────────────────
+      // Слой может импортировать только из слоёв ниже: app → pages → widgets → features → entities → shared
+      'import/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            {
+              target: './src/shared',
+              from: [
+                './src/entities',
+                './src/features',
+                './src/widgets',
+                './src/pages',
+                './src/app',
+              ],
+              message: 'FSD: shared не может импортировать из верхних слоёв.',
+            },
+            {
+              target: './src/entities',
+              from: ['./src/features', './src/widgets', './src/pages', './src/app'],
+              message: 'FSD: entities импортирует только из shared.',
+            },
+            {
+              target: './src/features',
+              from: ['./src/widgets', './src/pages', './src/app'],
+              message: 'FSD: features импортирует только из entities и shared.',
+            },
+            {
+              target: './src/widgets',
+              from: ['./src/pages', './src/app'],
+              message: 'FSD: widgets не может импортировать из pages и app.',
+            },
+            {
+              target: './src/pages',
+              from: ['./src/app'],
+              message: 'FSD: pages не может импортировать из app.',
+            },
+          ],
+        },
+      ],
+      // Импорт слайса — только через его public API (index.ts), без глубоких путей
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/entities/*/*',
+                '@/features/*/*',
+                '@/widgets/*/*',
+                '@/pages/*/*',
+                '@/shared/*/*',
+                '!@/shared/lib/*',
+              ],
+              message:
+                'FSD: импортируйте слайс через его public API (index.ts), без глубоких путей.',
+            },
+            {
+              group: ['@/shared/lib/*/*'],
+              message: 'FSD: импортируйте модуль shared/lib через его index.ts.',
+            },
+          ],
+        },
+      ],
     },
   },
 

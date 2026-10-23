@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-import './HomePage.scss';
+import './home-page.scss';
 
 export const HomePage = () => (
   <div className="home-page">

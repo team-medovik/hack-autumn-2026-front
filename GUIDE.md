@@ -43,9 +43,9 @@
 ```tsx
 // src/app/router.tsx — декларативное определение роутов
 import { createBrowserRouter } from 'react-router-dom';
-import { Layout } from '@/widgets/Layout';
-import { HomePage } from '@/pages/HomePage';
-import { DemoPage } from '@/pages/DemoPage';
+import { Layout } from '@/widgets/layout';
+import { HomePage } from '@/pages/home';
+import { DemoPage } from '@/pages/demo';
 
 export const router = createBrowserRouter([
   {
@@ -155,7 +155,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-// src/app/providers/QueryProvider.tsx
+// src/app/providers/query-provider.tsx
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
@@ -481,7 +481,7 @@ if (result.success) {
 ### Схемы для форм
 
 ```ts
-// src/widgets/DemoWidget — реальный пример из проекта
+// src/widgets/demo-widget — реальный пример из проекта
 const postSchema = z.object({
   title: z.string().min(5, 'Минимум 5 символов').max(100, 'Максимум 100 символов'),
   body: z.string().min(10, 'Минимум 10 символов'),
@@ -854,17 +854,9 @@ $font-size-base: 1rem;
   }
 }
 
-// Брейкпоинты — одно место для всех медиа-запросов
-$breakpoints: (
-  'sm': 640px,
-  'md': 768px,
-  'lg': 1024px,
-  'xl': 1280px,
-);
-
 // @content — вставляет переданный блок стилей
-@mixin breakpoint($name) {
-  @media (max-width: map.get($breakpoints, $name)) {
+@mixin hover-only {
+  @media (hover: hover) {
     @content;
   }
 }
@@ -893,11 +885,49 @@ $breakpoints: (
     @include visually-hidden;
   }
 
-  @include breakpoint('md') {
-    flex-direction: column;
+  @include hover-only {
+    &:hover {
+      opacity: 0.8;
+    }
   }
 }
 ```
+
+### Брейкпоинты: `up` / `down` / `between`
+
+Готовый механизм шаблона, **реализован в коде**. Значения хранятся в одном месте, в [`src/shared/config/breakpoints.ts`](src/shared/config/breakpoints.ts). Оттуда их берут и SCSS-миксины, и `useMediaQuery` ([раздел 24](#24-usemediaquery--адаптив)), поэтому CSS и JS переключаются на одних и тех же границах.
+
+Миксины из [`src/shared/styles/_breakpoints.scss`](src/shared/styles/_breakpoints.scss) Vite подключает в каждый `.scss` сам (`css.preprocessorOptions.scss.additionalData` в `vite.config.ts`), импортировать их не нужно.
+
+| Имя | xs  | sm  | md  | lg   | xl   | 2xl  |
+| --- | --- | --- | --- | ---- | ---- | ---- |
+| px  | 480 | 640 | 768 | 1024 | 1280 | 1536 |
+
+```scss
+.card {
+  // База без медиа-запроса — телефоны (mobile-first)
+  padding: var(--space-3);
+
+  @include up(md) {
+    // >= 768px
+    padding: var(--space-6);
+  }
+
+  @include down(sm) {
+    // < 640px (ровно противоположно up(sm), без пересечения на границе)
+    border-radius: 0;
+  }
+
+  @include between(md, xl) {
+    // 768px … 1279.98px
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+```
+
+Пишите mobile-first: базовые стили для телефона, расширяйте через `up(...)`. `down` и `between` нужны для точечных исключений. Опечатка в имени (`up(tablet)`) упадёт на сборке с понятной ошибкой.
+
+Чтобы поменять или добавить брейкпоинт, правьте только `BREAKPOINTS` в `breakpoints.ts`.
 
 ---
 
@@ -1245,7 +1275,8 @@ src/
 └── shared/
     └── styles/
         ├── _variables.scss    # SCSS-переменные (константы)
-        ├── _mixins.scss       # Миксины (breakpoint, flex-center, truncate...)
+        ├── _breakpoints.scss  # up / down / between — подключается автоматически (есть в шаблоне)
+        ├── _mixins.scss       # Миксины (flex-center, truncate...)
         ├── _functions.scss    # Функции (rem, z-index...)
         └── index.scss         # @forward всего — один @use в компонентах
 ```
@@ -1253,7 +1284,7 @@ src/
 Каждый компонент хранит свой SCSS рядом с собой:
 
 ```
-src/widgets/DemoWidget/ui/
+src/widgets/demo-widget/ui/
 ├── index.tsx
 └── demo-widget.scss   ← стили только для этого компонента
 ```
@@ -2783,7 +2814,7 @@ import { DragOverlay } from '@dnd-kit/core';
 ### Настройка хэндлеров
 
 ```ts
-// src/shared/api/mocks/handlers.ts
+// src/app/mocks/handlers.ts
 import { http, HttpResponse } from 'msw';
 
 export const handlers = [
@@ -2810,12 +2841,12 @@ export const handlers = [
 ```
 
 ```ts
-// src/shared/api/mocks/server.ts — для Node (тесты Vitest)
+// src/app/mocks/server.ts — для Node (тесты Vitest)
 import { setupServer } from 'msw/node';
 import { handlers } from './handlers';
 export const server = setupServer(...handlers);
 
-// src/shared/api/mocks/browser.ts — для браузера (dev-режим)
+// src/app/mocks/browser.ts — для браузера (dev-режим)
 import { setupWorker } from 'msw/browser';
 import { handlers } from './handlers';
 export const worker = setupWorker(...handlers);
@@ -2823,7 +2854,7 @@ export const worker = setupWorker(...handlers);
 
 ```ts
 // src/tests/setup.ts — подключение MSW к Vitest
-import { server } from '@/shared/api/mocks/server';
+import { server } from '@/app/mocks/server';
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => server.resetHandlers()); // сбрасываем переопределения
 afterAll(() => server.close());
@@ -2832,7 +2863,7 @@ afterAll(() => server.close());
 ### Переопределение в конкретном тесте
 
 ```tsx
-import { server } from '@/shared/api/mocks/server';
+import { server } from '@/app/mocks/server';
 import { http, HttpResponse } from 'msw';
 
 test('показывает ошибку при сбое API', async () => {
@@ -2872,7 +2903,7 @@ export default defineConfig({
 ```tsx
 // src/tests/setup.ts
 import '@testing-library/jest-dom'; // доп. матчеры: toBeInTheDocument, etc.
-import { server } from '@/shared/api/mocks/server';
+import { server } from '@/app/mocks/server';
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
@@ -2882,7 +2913,7 @@ afterAll(() => server.close());
 ### Базовый тест компонента
 
 ```tsx
-// src/widgets/DemoWidget/__tests__/DemoWidget.test.tsx
+// src/widgets/demo-widget/__tests__/demo-widget.test.tsx
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -3308,7 +3339,7 @@ const chartColors =
 
 **Что это:** Встроенный хук шаблона для отслеживания CSS media queries в JS. Реагирует на изменения размера окна в реальном времени.
 
-**Файл:** `src/shared/lib/use-media-query.ts`
+**Файл:** `src/shared/lib/media-query/use-media-query.ts`
 
 ### Когда использовать хук, а когда CSS
 
@@ -3324,10 +3355,12 @@ const chartColors =
 
 ### Брейкпоинты
 
-```ts
-import { breakpoints } from '@/shared/lib/use-media-query';
+Значения общие с SCSS-миксинами `up` / `down` / `between` и задаются в `src/shared/config/breakpoints.ts`.
 
-// Mobile-first, min-width:
+```ts
+import { breakpoints, breakpointsDown } from '@/shared/lib/media-query';
+
+// Mobile-first, min-width (как @include up(...)):
 breakpoints.xs; // >= 480px   — большие телефоны
 breakpoints.sm; // >= 640px   — маленькие планшеты
 breakpoints.md; // >= 768px   — планшеты
@@ -3335,12 +3368,15 @@ breakpoints.lg; // >= 1024px  — ноутбуки
 breakpoints.xl; // >= 1280px  — десктоп
 breakpoints['2xl']; // >= 1536px — широкий десктоп
 // base (нет query) — всё от 0px, включая телефоны 300-479px
+
+// max-width (как @include down(...)):
+breakpointsDown.md; // < 768px
 ```
 
 ### Базовое использование
 
 ```tsx
-import { useMediaQuery, breakpoints } from '@/shared/lib/use-media-query';
+import { useMediaQuery, breakpoints } from '@/shared/lib/media-query';
 
 const Navbar = () => {
   const isDesktop = useMediaQuery(breakpoints.lg);

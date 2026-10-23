@@ -1,0 +1,46 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Брейкпоинты (mobile-first).
+//
+// Значения НЕ задаются здесь: vite.config.ts передаёт их из
+// src/shared/config/breakpoints.ts через `@use ... with (...)` и подключает
+// этот модуль во все .scss автоматически. Импортировать вручную не нужно.
+//
+//   .card {
+//     padding: var(--space-3);          // база — телефоны
+//     @include up(md) { padding: var(--space-6); }       // >= 768px
+//     @include down(sm) { border-radius: 0; }            // <  640px
+//     @include between(md, lg) { columns: 2; }           // 768px … 1023.98px
+//   }
+// ─────────────────────────────────────────────────────────────────────────────
+
+@use 'sass:map';
+
+$breakpoints: () !default;
+
+@function breakpoint($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error 'Неизвестный брейкпоинт `#{$name}`. Доступны: #{map.keys($breakpoints)}';
+  }
+  @return map.get($breakpoints, $name);
+}
+
+// >= брейкпоинта. Основной миксин: пишем стили для мобилки, потом расширяем вверх.
+@mixin up($name) {
+  @media (min-width: breakpoint($name)) {
+    @content;
+  }
+}
+
+// < брейкпоинта. Ровно противоположно `up($name)`, без пересечения на границе.
+@mixin down($name) {
+  @media (max-width: breakpoint($name) - 0.02px) {
+    @content;
+  }
+}
+
+// От $from включительно до $to не включительно.
+@mixin between($from, $to) {
+  @media (min-width: breakpoint($from)) and (max-width: breakpoint($to) - 0.02px) {
+    @content;
+  }
+}

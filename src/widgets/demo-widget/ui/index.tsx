@@ -6,10 +6,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { useShallow } from 'zustand/shallow';
 
 import { useCreatePost, usePost, usePosts } from '@/entities/post';
-import { useCounterStore } from '@/features/counter';
+import { useCount, useCounterActions, useCounterStep } from '@/features/counter';
 
 import './demo-widget.scss';
 
@@ -26,7 +25,7 @@ type PostFormValues = z.infer<typeof postSchema>;
  * DemoWidget — демонстрационный компонент шаблона.
  *
  * Показывает совместную работу:
- * - Zustand: стор, immer-мутации, хуки-селекторы, useShallow
+ * - Zustand: стор, immer-мутации, хуки-селекторы фичи (useShallow — внутри useCounterActions)
  * - TanStack Query: useQuery, зависимый запрос, useMutation с оптимистичным обновлением
  * - react-hook-form + zod: управляемая форма с валидацией схемы
  * - date-fns: форматирование даты и времени
@@ -38,17 +37,10 @@ export const DemoWidget = () => {
   const [lastSubmitted, setLastSubmitted] = useState<Date | null>(null);
 
   // ─── Zustand (клиентское состояние) ──────────────────────────────────────
-  // useShallow — предотвращает лишние ре-рендеры при выборке объекта из стора
-  const { count, step, increment, decrement, reset, setStep } = useCounterStore(
-    useShallow((s) => ({
-      count: s.count,
-      step: s.step,
-      increment: s.increment,
-      decrement: s.decrement,
-      reset: s.reset,
-      setStep: s.setStep,
-    })),
-  );
+  // Хуки-селекторы фичи: ре-рендер только при изменении нужного среза
+  const count = useCount();
+  const step = useCounterStep();
+  const { increment, decrement, reset, setStep } = useCounterActions();
 
   // ─── TanStack Query (серверное состояние) ─────────────────────────────────
   // Запрос списка постов

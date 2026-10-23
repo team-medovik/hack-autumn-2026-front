@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { useCounterStore } from '@/features/counter';
+
 import { DemoWidget } from '../ui';
 
 // ─── Вспомогательные функции ──────────────────────────────────────────────────
@@ -30,6 +32,8 @@ describe('DemoWidget', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    // Zustand-стор — глобальный синглтон, без сброса состояние течёт между тестами
+    useCounterStore.setState(useCounterStore.getInitialState(), true);
     queryClient = makeQueryClient();
     user = userEvent.setup();
   });
