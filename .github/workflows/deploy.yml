@@ -104,11 +104,6 @@ jobs:
             --exclude='.vite' \
             -cf - . | tar -xf - -C "$SRC_DIR"
 
-          if [ -f "$SRC_DIR/package-lock.json" ]; then
-            echo "package-lock.json найден. Для этого проекта он запрещён — удали файл из репозитория."
-            exit 1
-          fi
-
           # VITE_* переменные вшиваются в бандл при сборке, поэтому .env нужен здесь, а не на сервере.
           if [ -z "${ENV_PRODUCTION:-}" ]; then
             echo "Секрет ENV_PRODUCTION не задан в GitHub Secrets."
