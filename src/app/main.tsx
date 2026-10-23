@@ -5,8 +5,6 @@ import { RouterProvider } from 'react-router-dom';
 import { AppProviders } from './providers';
 import { router } from './router';
 
-// i18n должен быть инициализирован до рендера — иначе первый рендер будет без переводов
-import '@/shared/lib/i18n';
 import './index.css';
 
 const root = document.getElementById('root');

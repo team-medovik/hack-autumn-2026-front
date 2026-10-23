@@ -29,7 +29,6 @@ export default defineConfig(async ({ mode }) => {
     server: {
       port: 3000,
       strictPort: false,
-      open: true,
       proxy: env.DEV_PROXY_TARGET
         ? {
             '/api': {
