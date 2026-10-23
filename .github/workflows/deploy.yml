@@ -22,7 +22,7 @@ env:
   ARTIFACT_DIR: '/tmp/hack-autumn-2026/front'
 
   # ===== Build =====
-  BUILD_IMAGE: 'node:22-alpine'
+  BUILD_IMAGE: 'node:24-alpine'
   BUILD_USER: 'kinoko'
 
   # ВАЖНО: это кэш npm на хосте, который будет примонтирован внутрь Docker.
