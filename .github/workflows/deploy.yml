@@ -3,6 +3,9 @@ name: Deploy Hack2026 Frontend
 on:
   push: {}
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -34,8 +37,6 @@ env:
   NPM_BUILD_COMMAND: 'npm run build'
 
   # ===== MinIO =====
-  MINIO_ENDPOINT: 'http://127.0.0.1:9003'
-  MINIO_BUCKET: 'hack-artifacts'
   MINIO_ARTIFACT_PREFIX: 'front-2026'
 
   ARTIFACT_ARCHIVE_NAME: 'front-dist.tar.gz'
@@ -185,8 +186,18 @@ jobs:
 
       - name: Upload artifact to local MinIO
         if: steps.deploy_mode.outputs.should_deploy == 'true'
+        env:
+          MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+          MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
           set -euo pipefail
+
+          : "${MINIO_ENDPOINT:?Repository secret MINIO_ENDPOINT is not configured}"
+          : "${MINIO_BUCKET:?Repository secret MINIO_BUCKET is not configured}"
+          : "${MINIO_ACCESS_KEY:?Repository secret MINIO_ACCESS_KEY is not configured}"
+          : "${MINIO_SECRET_KEY:?Repository secret MINIO_SECRET_KEY is not configured}"
 
           ARTIFACT_KEY="${{ steps.artifact_vars.outputs.artifact_key }}"
 
@@ -226,6 +237,11 @@ jobs:
       - name: Cleanup old MinIO artifacts
         if: steps.deploy_mode.outputs.should_deploy == 'true'
         continue-on-error: true
+        env:
+          MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+          MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
           docker run --rm \
             --network host \
@@ -266,8 +282,18 @@ jobs:
 
     steps:
       - name: Download built frontend from local MinIO
+        env:
+          MINIO_ENDPOINT: ${{ secrets.MINIO_ENDPOINT }}
+          MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
           set -euo pipefail
+
+          : "${MINIO_ENDPOINT:?Repository secret MINIO_ENDPOINT is not configured}"
+          : "${MINIO_BUCKET:?Repository secret MINIO_BUCKET is not configured}"
+          : "${MINIO_ACCESS_KEY:?Repository secret MINIO_ACCESS_KEY is not configured}"
+          : "${MINIO_SECRET_KEY:?Repository secret MINIO_SECRET_KEY is not configured}"
 
           ARTIFACT_KEY="${{ needs.build.outputs.artifact_key }}"
 
