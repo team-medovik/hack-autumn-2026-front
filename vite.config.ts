@@ -2,6 +2,8 @@ import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 
+import { toScssMap } from './src/shared/config/breakpoints';
+
 export default defineConfig(async ({ mode }) => {
   // Загружаем .env.{mode} чтобы переменные были доступны на этапе конфигурации
   const env = loadEnv(mode, process.cwd(), '');
@@ -22,6 +24,17 @@ export default defineConfig(async ({ mode }) => {
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
+      },
+    },
+
+    // ─── SCSS ─────────────────────────────────────────────────────────────
+    // Миксины брейкпоинтов (up / down / between) доступны в каждом .scss без импорта.
+    // Значения берутся из src/shared/config/breakpoints.ts — те же, что у useMediaQuery.
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use '@/shared/styles/breakpoints' as * with ($breakpoints: ${toScssMap()});\n`,
+        },
       },
     },
 

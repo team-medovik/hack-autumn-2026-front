@@ -72,12 +72,12 @@ src/
 │   └── index.css
 │
 ├── pages/            # Компоненты страниц (цели роутов)
-│   ├── HomePage/
-│   └── DemoPage/
+│   ├── home/
+│   └── demo/
 │
 ├── widgets/          # Крупные независимые UI-секции (из features + entities)
-│   ├── Layout/       # Корневой лейаут с <Outlet />
-│   └── DemoWidget/   # Демонстрационный компонент: TanStack Query + Zustand + форма
+│   ├── layout/       # Корневой лейаут с <Outlet />
+│   └── demo-widget/  # Демонстрационный компонент: TanStack Query + Zustand + форма
 │
 ├── features/         # Пользовательские взаимодействия и бизнес-логика
 │   └── counter/      # Пример Zustand-стора
@@ -151,7 +151,7 @@ export const usePost = (id: number | null) =>
   });
 ```
 
-Полный рабочий пример: [src/widgets/DemoWidget](src/widgets/DemoWidget/) — useQuery, зависимый запрос, useMutation с оптимистичным обновлением, инвалидация кэша, состояния загрузки и ошибки.
+Полный рабочий пример: [src/widgets/demo-widget](src/widgets/demo-widget/) — useQuery, зависимый запрос, useMutation с оптимистичным обновлением, инвалидация кэша, состояния загрузки и ошибки.
 
 ## Переменные окружения
 
@@ -177,7 +177,7 @@ npx playwright install
 npm run test:e2e
 ```
 
-MSW-моки находятся в [src/shared/api/mocks/handlers.ts](src/shared/api/mocks/handlers.ts). Добавляйте хэндлеры туда, чтобы замокать новые эндпоинты во всех тестах.
+MSW-моки находятся в [src/app/mocks/handlers.ts](src/app/mocks/handlers.ts). Добавляйте хэндлеры туда, чтобы замокать новые эндпоинты во всех тестах.
 
 ## Анализ бандла
 

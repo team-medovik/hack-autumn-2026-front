@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 
-import { server } from '@/shared/api/mocks/server';
+import { server } from '@/app/mocks/server';
 
 // Запускаем MSW-сервер перед всеми тестами
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
