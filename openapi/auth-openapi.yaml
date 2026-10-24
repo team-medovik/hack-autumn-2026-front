@@ -1,1 +1,224 @@
-{ "openapi": "3.1.0","info": { "title": "API Hack Autumn 2026","description": "API аутентификации сотрудников. Учётные записи создаются из конфигурации приложения; публичная регистрация и подтверждение email намеренно не предусмотрены.","version": "v1" },"servers": [ { "url": "http://localhost:33000","description": "Generated server url" } ],"tags": [ { "name": "Аутентификация","description": "Вход сотрудников и жизненный цикл JWT-сессии. Учётные записи заводит оператор; публичной регистрации и подтверждения email нет." } ],"paths": { "/api/v1/auth/refresh": { "post": { "tags": [ "Аутентификация" ],"summary": "Обновить сессию","description": "Ротирует cookie refresh-токена и возвращает новый access-токен. Refresh-токен не принимается в заголовке Authorization.","operationId": "refresh","parameters": [ { "name": "refresh_token","in": "cookie","description": "HttpOnly cookie, устанавливаемая при входе.","required": true,"schema": { "type": "string" } } ],"responses": { "200": { "description": "Сессия обновлена","content": { "*/*": { "schema": { "$ref": "#/components/schemas/AuthenticationResponse" } } } },"400": { "description": "Refresh-токен отсутствует или некорректен","content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiErrorResponse" } } } } } } },"/api/v1/auth/logout": { "post": { "tags": [ "Аутентификация" ],"summary": "Выйти из учётной записи","description": "Удаляет cookie refresh_token в браузере. Текущий access-токен остаётся действительным до окончания своего короткого срока жизни.","operationId": "logout","responses": { "204": { "description": "Cookie refresh-токена удалена" } } } },"/api/v1/auth/login": { "post": { "tags": [ "Аутентификация" ],"summary": "Войти в учётную запись сотрудника","description": "Проверяет учётные данные заранее заведённого сотрудника. Возвращает access-токен и устанавливает HttpOnly cookie refresh_token.","operationId": "login","requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } },"required": true },"responses": { "200": { "description": "Сессия создана","content": { "*/*": { "schema": { "$ref": "#/components/schemas/AuthenticationResponse" } } } },"400": { "description": "Некорректные учётные данные или запрос","content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiErrorResponse" } } } } } } },"/api/v1/admin/users": { "post": { "tags": [ "admin-users-controller" ],"operationId": "create","requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUserRequest" } } },"required": true },"responses": { "201": { "description": "Created","content": { "*/*": { "schema": { "$ref": "#/components/schemas/CurrentUserResponse" } } } } } } },"/api/v1/auth/me": { "get": { "tags": [ "Аутентификация" ],"summary": "Получить текущего сотрудника","description": "Возвращает учётную запись, представленную корректным JWT access-токеном.","operationId": "me","responses": { "200": { "description": "Сотрудник получен","content": { "*/*": { "schema": { "$ref": "#/components/schemas/CurrentUserResponse" } } } },"401": { "description": "Access-токен отсутствует, истёк или некорректен","content": { "*/*": { "schema": { "$ref": "#/components/schemas/ApiErrorResponse" } } } } },"security": [ { "bearerAuth": [ ] } ] } } },"components": { "schemas": { "AuthenticationResponse": { "type": "object","description": "Аутентифицированный сотрудник и короткоживущий access-токен.","properties": { "accessToken": { "type": "string","description": "JWT access-токен для заголовка Authorization: Bearer." },"expiresIn": { "type": "integer","format": "int64","description": "Время жизни access-токена в секундах.","example": 900 },"user": { "$ref": "#/components/schemas/CurrentUserResponse" } } },"CurrentUserResponse": { "type": "object","description": "Публичные данные текущего аутентифицированного сотрудника.","properties": { "id": { "type": "string","format": "uuid","example": "550e8400-e29b-41d4-a716-446655440000" },"email": { "type": "string","example": "admin@example.com" },"role": { "type": "string","description": "Роль в приложении, заданная при заведении сотрудника.","example": "ADMIN" },"createdAt": { "type": "string","format": "date-time" } } },"ApiErrorResponse": { "type": "object","description": "Стандартный формат ошибки API.","properties": { "status": { "type": "integer","format": "int32" },"error": { "type": "string","example": "INVALID_CREDENTIALS" },"message": { "type": "string","example": "Неверный email или пароль" },"path": { "type": "string","example": "/api/v1/auth/login" },"timestamp": { "type": "string","format": "date-time" } } },"LoginRequest": { "type": "object","description": "Учётные данные заранее заведённого сотрудника.","properties": { "email": { "type": "string","description": "Email сотрудника.","example": "admin@example.com" },"password": { "type": "string","description": "Пароль сотрудника. Никогда не возвращается API.","example": "correct-horse-battery-staple" } } },"CreateUserRequest": { "type": "object","properties": { "email": { "type": "string" },"password": { "type": "string" },"role": { "type": "string","enum": [ "ADMIN","EMPLOYEE" ] },"status": { "type": "string","enum": [ "ACTIVE","DISABLED" ] } } } },"securitySchemes": { "bearerAuth": { "type": "http","scheme": "bearer","bearerFormat": "JWT" } } } }
+openapi: 3.1.0
+info:
+  title: API Hack Autumn 2026
+  description: Вход сотрудников и жизненный цикл JWT-сессии.
+  version: v1
+servers:
+  - url: http://hack.kinoko.su
+    description: Generated server url
+tags:
+  - name: Аутентификация
+    description: >-
+      Вход сотрудников и жизненный цикл JWT-сессии. Учётные записи заводит оператор; публичной
+      регистрации и подтверждения email нет.
+
+paths:
+  /api/v1/auth/refresh:
+    post:
+      tags: [Аутентификация]
+      summary: Обновить сессию
+      description: >-
+        Ротирует cookie refresh-токена и возвращает новый access-токен. Refresh-токен не
+        принимается в заголовке Authorization.
+      operationId: refreshSession
+      parameters:
+        - name: refresh_token
+          in: cookie
+          description: HttpOnly cookie, устанавливаемая при входе.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Сессия обновлена
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '401':
+          description: Refresh-токен отсутствует или некорректен
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/auth/logout:
+    post:
+      tags: [Аутентификация]
+      summary: Выйти из учётной записи
+      description: >-
+        Удаляет cookie refresh_token в браузере. Текущий access-токен остаётся действительным до
+        окончания своего короткого срока жизни.
+      operationId: logout
+      responses:
+        '204':
+          description: Cookie refresh-токена удалена
+
+  /api/v1/auth/login:
+    post:
+      tags: [Аутентификация]
+      summary: Войти в учётную запись сотрудника
+      description: >-
+        Проверяет учётные данные заранее заведённого сотрудника. Возвращает access-токен и
+        устанавливает HttpOnly cookie refresh_token.
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Сессия создана
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthenticationResponse'
+        '400':
+          description: Некорректное тело запроса
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '401':
+          description: Неверный логин или пароль либо учётная запись отключена
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  # Это навигация браузера (window.location), а не XHR. У бэка ответ ссылается на Spring-схему
+  # RedirectView — здесь она опущена, чтобы orval не тащил в модель внутренности Spring.
+  /api/v1/auth/oidc/{provider}/login:
+    get:
+      tags: [Аутентификация]
+      summary: Начать вход через OIDC
+      description: >-
+        Перенаправляет браузер к настроенному провайдеру. Дальнейший callback обрабатывает Spring
+        Security.
+      operationId: startOidcLogin
+      parameters:
+        - name: provider
+          in: path
+          description: Идентификатор настроенного OIDC-провайдера
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Перенаправление к OIDC-провайдеру
+        '400':
+          description: Провайдер не настроен
+
+  /api/v1/auth/me:
+    get:
+      tags: [Аутентификация]
+      summary: Получить текущего сотрудника
+      description: Возвращает учётную запись, представленную корректным JWT access-токеном.
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Сотрудник получен
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CurrentUserResponse'
+        '401':
+          description: Access-токен отсутствует, истёк или некорректен
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    AuthenticationResponse:
+      type: object
+      description: Аутентифицированный сотрудник и короткоживущий access-токен.
+      properties:
+        accessToken:
+          type: string
+          description: 'JWT access-токен для заголовка Authorization: Bearer.'
+        expiresIn:
+          type: integer
+          format: int64
+          description: Время жизни access-токена в секундах.
+          example: 900
+        user:
+          $ref: '#/components/schemas/CurrentUserResponse'
+          description: Данные вошедшего сотрудника
+
+    CurrentUserResponse:
+      type: object
+      description: Публичные данные текущего аутентифицированного сотрудника.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: UUID сотрудника
+          example: 550e8400-e29b-41d4-a716-446655440000
+        login:
+          type: string
+          description: Логин сотрудника
+          example: admin
+        role:
+          type: string
+          description: Роль в приложении, заданная при заведении сотрудника.
+          example: ADMIN
+        createdAt:
+          type: string
+          format: date-time
+          description: Время создания учётной записи с часовым поясом
+
+    LoginRequest:
+      type: object
+      description: Учётные данные заранее заведённого сотрудника.
+      properties:
+        login:
+          type: string
+          minLength: 3
+          maxLength: 255
+          description: >-
+            Логин сотрудника, от 3 до 255 символов. В спеке бэка написано «от 4» — это опечатка,
+            сервер принимает от 3.
+          example: admin
+        password:
+          type: string
+          description: Пароль сотрудника. Никогда не возвращается API.
+          writeOnly: true
+
+    ApiErrorResponse:
+      type: object
+      description: Стандартный формат ошибки API.
+      properties:
+        status:
+          type: integer
+          format: int32
+          description: HTTP-статус ответа.
+          example: 401
+        error:
+          type: string
+          description: Стабильный машинный код ошибки.
+          example: INVALID_CREDENTIALS
+        message:
+          type: string
+          description: Человекочитаемое описание ошибки.
+          example: Неверный email или пароль
+        path:
+          type: string
+          description: Путь запроса, на котором произошла ошибка.
+          example: /api/v1/auth/login
+        timestamp:
+          type: string
+          format: date-time
+          description: Время формирования ошибки в ISO 8601 с часовым поясом.
+          example: '2026-10-24T18:30:00+03:00'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
