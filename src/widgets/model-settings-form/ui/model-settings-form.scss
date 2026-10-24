@@ -1,39 +1,7 @@
-// Колонки из макета «Настройки — модель»: параметры тянутся, действия — 320px, через 24px.
-.model-settings-form {
+// Блок-заглушка на месте секции формы: те же отступы, что у FormSection.
+.model-settings-form-skeleton {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-grouped);
-
-  &__params {
-    display: flex;
-    flex: 1 0 0;
-    flex-direction: column;
-    gap: var(--space-grouped);
-    min-width: 0;
-  }
-
-  // Кнопка «Сохранить» не уезжает за край, пока листаешь длинную форму
-  &__aside {
-    position: sticky;
-    top: 20px;
-    flex-shrink: 0;
-    width: 320px;
-  }
-
-  &__skeleton-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-close);
-    padding: var(--space-grouped);
-  }
-
-  @include down(desktop-s) {
-    flex-direction: column;
-    align-items: stretch;
-
-    &__aside {
-      position: static;
-      width: auto;
-    }
-  }
+  flex-direction: column;
+  gap: var(--space-close);
+  padding: var(--space-grouped);
 }

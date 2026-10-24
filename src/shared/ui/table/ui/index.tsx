@@ -12,6 +12,21 @@ export type SortDirection = 'none' | 'asc' | 'desc';
 type Align = 'left' | 'right';
 
 /**
+ * plain — строки-плашки 56px с подсветкой (таблица клиентов);
+ * divided — строки по содержимому через линию-разделитель, без отступов по краям
+ * (пользователи, история загрузок).
+ */
+export type TableVariant = 'plain' | 'divided';
+
+/** Для divided: none — строки вплотную, шапка через 12px; close — шапка и строки через 16px. */
+export type TableRowGap = 'none' | 'close';
+
+interface TableProps extends ComponentProps<'div'> {
+  variant?: TableVariant;
+  rowGap?: TableRowGap;
+}
+
+/**
  * Таблица на div + ARIA-ролях: строки — скруглённые плашки с hover, что неудобно делать на <tr>.
  * Подсветка строк — control/default, поэтому таблицу кладут в карточку (слой `card`).
  * Ширины колонок задаются одинаково в TableHeader и TableRow через `width` / `grow` у ячеек.
@@ -34,8 +49,12 @@ type Align = 'left' | 'right';
  *   ))}
  * </Table>
  */
-export const Table = ({ className, ...props }: ComponentProps<'div'>) => (
-  <div role="table" className={clsx('table', className)} {...props} />
+export const Table = ({ variant = 'plain', rowGap = 'none', className, ...props }: TableProps) => (
+  <div
+    role="table"
+    className={clsx('table', `table--${variant}`, `table--gap-${rowGap}`, className)}
+    {...props}
+  />
 );
 
 /** Таблица / шапка: строка 40px с заголовками колонок и разделителем снизу. */

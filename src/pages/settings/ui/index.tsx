@@ -4,11 +4,12 @@ import { useModelSettings, type ModelSettings } from '@/entities/model-settings'
 import { formatDateTime } from '@/shared/lib/format';
 import { useTimedFlag } from '@/shared/lib/timed-flag';
 import { Button } from '@/shared/ui/button';
-import { StateMessage } from '@/shared/ui/state-message';
 import { StatusScreen } from '@/shared/ui/status-screen';
 import { Tab, TabList, TabPanel, Tabs } from '@/shared/ui/tabs';
 import { UpdateBadge } from '@/shared/ui/update-badge';
 import { ModelSettingsForm, ModelSettingsFormSkeleton } from '@/widgets/model-settings-form';
+import { OtherSettings } from '@/widgets/other-settings';
+import { UsersSettings } from '@/widgets/users-settings';
 
 import './settings-page.scss';
 
@@ -21,17 +22,11 @@ const SAVED_BADGE_MS = 4000;
 const formatUpdate = ({ updatedAt, updatedBy }: ModelSettings) =>
   `${formatDateTime(updatedAt)}, ${updatedBy}`;
 
-const SoonMessage = ({ title }: { title: string }) => (
-  <StateMessage
-    className="settings-page__soon"
-    title={title}
-    description="Раздел в разработке. Пока настраивается только модель риска."
-  />
-);
-
 /**
- * Настройки по макетам «Настройки — модель (…)»: вкладки, плашка последнего обновления,
- * на вкладке «Модель» — параметры модели риска. Черновик модели живёт и при переключении вкладок.
+ * Настройки по макетам «Настройки — модель / пользователи / другое (…)»: вкладки,
+ * на «Модели» — плашка последнего обновления и параметры модели риска (черновик живёт и при
+ * переключении вкладок), на «Пользователях» — учётки панели, на «Другом» — тема, дата расчёта
+ * и аккаунт.
  */
 export const SettingsPage = () => {
   const { data, isError, isFetching, refetch } = useModelSettings();
@@ -63,7 +58,7 @@ export const SettingsPage = () => {
           <Tab value="users">Пользователи</Tab>
           <Tab value="other">Другое</Tab>
         </TabList>
-        {data && (
+        {tab === 'model' && data && (
           <UpdateBadge status={isJustSaved ? 'saved' : 'updated'} updatedAt={formatUpdate(data)} />
         )}
       </div>
@@ -75,11 +70,11 @@ export const SettingsPage = () => {
           <ModelSettingsFormSkeleton />
         )}
       </TabPanel>
-      <TabPanel value="users">
-        <SoonMessage title="Пользователи" />
+      <TabPanel value="users" keepMounted>
+        <UsersSettings />
       </TabPanel>
       <TabPanel value="other">
-        <SoonMessage title="Другие настройки" />
+        <OtherSettings />
       </TabPanel>
     </Tabs>
   );

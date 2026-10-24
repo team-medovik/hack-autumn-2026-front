@@ -48,3 +48,10 @@
     gap: 8px;
   }
 }
+
+// Диалог с формой: текст, поля и кнопки — через 16px (макет «Сменить пароль»)
+.dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
+}

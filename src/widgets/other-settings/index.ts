@@ -1,0 +1,1 @@
+export { OtherSettings } from './ui';

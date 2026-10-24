@@ -1,0 +1,260 @@
+openapi: 3.1.0
+info:
+  title: API Hack Autumn 2026 — снимки
+  version: v1
+  description: |
+    Снимки — JSON-выгрузки биллинга, по которым считаются риски и потери. Страница
+    «Импорт/экспорт снимка»: текущий снимок со скачиванием, загрузка нового и история загрузок.
+
+    Соглашения — как в dashboard-openapi.yaml:
+    - даты — ISO 8601 с часовым поясом;
+    - числа — без единиц: клиенты и услуги штуками.
+
+    Текущий снимок — последний загруженный. Новый снимок заменяет данные целиком: сервер
+    проверяет структуру, сохраняет файл и синхронно пересчитывает score, уровни риска и потери —
+    ответ на загрузку приходит после пересчёта. После этого фронт перезапрашивает все данные.
+
+    Формат файла — выгрузка биллинга. Фронт до загрузки проверяет только каркас
+    `{ clients: [{ services: [...] }] }` и считает клиентов и услуги для подтверждения
+    («Файл data-v2.json: 44 клиента, 121 услуга»). Полная проверка — на сервере (422).
+servers:
+  - url: http://localhost:33000
+tags:
+  - name: Снимки
+    description: Загрузка и выгрузка данных биллинга.
+
+paths:
+  /api/v1/snapshots:
+    get:
+      tags: [Снимки]
+      operationId: listSnapshots
+      summary: История загрузок
+      description: |
+        Все загруженные снимки, новые сверху. Первый — текущий. Пустой массив — снимков ещё не
+        загружали (это не ошибка).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: История получена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SnapshotRecord'
+              examples:
+                history:
+                  $ref: '#/components/examples/SnapshotHistory'
+                empty:
+                  summary: Снимков ещё не загружали
+                  value: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Снимки]
+      operationId: uploadSnapshot
+      summary: Загрузить новый снимок
+      description: |
+        Принимает JSON-файл, проверяет структуру, заменяет текущие данные и пересчитывает риски.
+        Ответ — после пересчёта; фронт показывает прогресс отправки файла.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: fileName
+          in: query
+          required: true
+          description: Имя загружаемого файла — сохраняется в истории.
+          schema:
+            type: string
+          example: data-v2.json
+      requestBody:
+        required: true
+        description: Содержимое JSON-файла как есть, без multipart.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SnapshotFile'
+      responses:
+        '201':
+          description: Снимок загружен, данные заменены и пересчитаны
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotRecord'
+              example:
+                id: snapshot-2026-10-24-0840
+                fileName: data-v2.json
+                uploadedAt: '2026-10-24T08:40:00+03:00'
+                uploadedBy: admin
+                clients: 44
+                services: 121
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: Файл больше допустимого размера.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '422':
+          description: |
+            Файл не JSON или не соответствует формату выгрузки. Данные не изменены.
+            `message` фронт показывает под заголовком «Файл не загружен».
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                status: 422
+                error: UNPROCESSABLE_ENTITY
+                message: >-
+                  Не удалось извлечь данные из JSON: данные не соответствуют ожидаемому формату
+                path: /api/v1/snapshots
+
+  /api/v1/snapshots/{id}/file:
+    get:
+      tags: [Снимки]
+      operationId: downloadSnapshot
+      summary: Скачать файл снимка
+      description: |
+        Файл в том виде, в каком его загрузили, — «Скачать JSON». Имя — в Content-Disposition.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: snapshot-2026-10-23-2210
+      responses:
+        '200':
+          description: Файл снимка
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename="data.json"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SnapshotFile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Снимка нет.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Access-токен отсутствует, истёк или некорректен
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+  schemas:
+    SnapshotRecord:
+      type: object
+      description: Загруженный снимок — строка «Истории загрузок».
+      required: [id, fileName, uploadedAt, uploadedBy, clients, services]
+      properties:
+        id:
+          type: string
+          example: snapshot-2026-10-23-2210
+        fileName:
+          type: string
+          description: Имя файла, как его загрузили.
+          example: data.json
+        uploadedAt:
+          type: string
+          format: date-time
+          example: '2026-10-23T22:10:00+03:00'
+        uploadedBy:
+          type: string
+          description: Логин того, кто загрузил.
+          example: analyst
+        clients:
+          type: integer
+          minimum: 1
+          example: 42
+        services:
+          type: integer
+          minimum: 0
+          example: 118
+
+    SnapshotFile:
+      type: object
+      description: |
+        Выгрузка биллинга. Здесь — только каркас, который проверяет фронт; остальные поля —
+        по формату биллинга.
+      required: [clients]
+      additionalProperties: true
+      properties:
+        clients:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [services]
+            additionalProperties: true
+            properties:
+              services:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+
+    ApiErrorResponse:
+      type: object
+      description: Стандартный формат ошибки API (как в auth).
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+          example: UNPROCESSABLE_ENTITY
+        message:
+          type: string
+        path:
+          type: string
+          example: /api/v1/snapshots
+        timestamp:
+          type: string
+          format: date-time
+
+  examples:
+    SnapshotHistory:
+      summary: Три загрузки (макет «Импорт/экспорт снимка»)
+      value:
+        - id: snapshot-2026-10-23-2210
+          fileName: data.json
+          uploadedAt: '2026-10-23T22:10:00+03:00'
+          uploadedBy: analyst
+          clients: 42
+          services: 118
+        - id: snapshot-2026-10-23-1800
+          fileName: data.json
+          uploadedAt: '2026-10-23T18:00:00+03:00'
+          uploadedBy: analyst
+          clients: 40
+          services: 112
+        - id: snapshot-2026-10-22-2205
+          fileName: data-old.json
+          uploadedAt: '2026-10-22T22:05:00+03:00'
+          uploadedBy: analyst2
+          clients: 40
+          services: 109

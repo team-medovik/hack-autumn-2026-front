@@ -27,6 +27,21 @@ const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2
 
 const dayMonthFormat = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: '2-digit' });
 
+const utcDateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'UTC',
+});
+
+const dateFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
 const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
   day: '2-digit',
   month: '2-digit',
@@ -76,6 +91,9 @@ const parseDate = (iso: string) => {
 /** ISO-дата или дата-время → «31.08». */
 export const formatDayMonth = (iso: string) => dayMonthFormat.format(parseDate(iso));
 
+/** ISO-дата или дата-время → «20.10.2026». */
+export const formatDate = (iso: string) => dateFormat.format(parseDate(iso));
+
 /** Формы слова для 1, 2–4 и 5+: `['клиент', 'клиента', 'клиентов']`. */
 export type PluralForms = readonly [one: string, few: string, many: string];
 
@@ -93,3 +111,28 @@ export const pluralize = (count: number, [one, few, many]: PluralForms) => {
 /** Число со словом: formatCount(16, CLIENT_FORMS) → «16 клиентов». */
 export const formatCount = (count: number, forms: PluralForms) =>
   `${formatNumber(count)} ${pluralize(count, forms)}`;
+
+/** ISO-дата → «19.10.2026, 15:00» по UTC — для полей, где время задают в UTC. */
+export const formatDateTimeUtc = (iso: string) => utcDateTimeFormat.format(new Date(iso));
+
+const DATE_TIME = /^(\d{1,2})\.(\d{1,2})\.(\d{4}),?\s+(\d{1,2}):(\d{2})$/;
+
+/**
+ * «19.10.2026, 15:00» (UTC) из ввода → ISO. Запятая необязательна, пробелы по краям не важны.
+ * Несуществующая дата (31.02) или время (25:00) — `null`.
+ */
+export const parseDateTimeUtc = (text: string): string | null => {
+  const match = DATE_TIME.exec(text.trim());
+  if (!match) {
+    return null;
+  }
+  const [day, month, year, hours, minutes] = match.slice(1).map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+  const isExact =
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day &&
+    date.getUTCHours() === hours &&
+    date.getUTCMinutes() === minutes;
+  return isExact ? date.toISOString() : null;
+};

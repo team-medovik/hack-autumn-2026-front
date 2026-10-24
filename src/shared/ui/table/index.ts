@@ -6,4 +6,6 @@ export {
   TableMessageRow,
   TableRow,
   type SortDirection,
+  type TableRowGap,
+  type TableVariant,
 } from './ui';

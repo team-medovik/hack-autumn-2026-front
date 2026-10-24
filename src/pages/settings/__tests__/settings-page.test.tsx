@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { server } from '@/app/mocks/server';
 import { resetSettingsMock } from '@/app/mocks/settings';
+import { resetUsersMock } from '@/app/mocks/users';
 
 import { SettingsPage } from '../ui';
 
@@ -50,6 +51,7 @@ const waitForSettings = () => screen.findByText('23.10.2026, 18:00, analyst');
 describe('SettingsPage', () => {
   beforeEach(() => {
     resetSettingsMock();
+    resetUsersMock();
   });
 
   afterEach(() => {
@@ -225,6 +227,19 @@ describe('SettingsPage', () => {
     await router.navigate('/');
     await user.click(await screen.findByRole('button', { name: 'Уйти' }));
     expect(await screen.findByText('Главная')).toBeInTheDocument();
+  });
+
+  it('на вкладке «Пользователи» показывает учётки без плашки обновления модели', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await waitForSettings();
+
+    await user.click(screen.getByRole('tab', { name: 'Пользователи' }));
+
+    expect(await screen.findByRole('table', { name: 'Пользователи' })).toBeInTheDocument();
+    expect(screen.getByText('analyst')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Новый пользователь' })).toBeInTheDocument();
+    expect(screen.queryByText('23.10.2026, 18:00, analyst')).not.toBeInTheDocument();
   });
 
   it('при ошибке загрузки показывает сообщение и повторяет запрос', async () => {

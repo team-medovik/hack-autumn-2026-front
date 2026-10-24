@@ -8,6 +8,7 @@ import { DemoPage } from '@/pages/demo';
 import { HomePage } from '@/pages/home';
 import { PlaceholderPage } from '@/pages/placeholder';
 import { SettingsPage } from '@/pages/settings';
+import { SnapshotPage } from '@/pages/snapshot';
 import { CLIENT_ROUTE_PATTERN, ROUTES } from '@/shared/config';
 import { Layout } from '@/widgets/layout';
 
@@ -33,7 +34,7 @@ export const router = createBrowserRouter([
             children: [{ path: CLIENT_ROUTE_PATTERN, element: <ClientCardPage /> }],
           },
           { path: ROUTES.settings, element: <SettingsPage /> },
-          { path: ROUTES.snapshot, element: <PlaceholderPage title="Импорт и экспорт снимка" /> },
+          { path: ROUTES.snapshot, element: <SnapshotPage /> },
           { path: 'demo', element: <DemoPage /> },
           {
             path: '*',

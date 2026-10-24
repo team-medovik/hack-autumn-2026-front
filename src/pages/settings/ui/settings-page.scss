@@ -12,10 +12,6 @@
     gap: var(--space-related);
   }
 
-  &__soon {
-    padding-block: var(--space-unrelated);
-  }
-
   @include down(desktop-s) {
     gap: var(--space-grouped);
   }

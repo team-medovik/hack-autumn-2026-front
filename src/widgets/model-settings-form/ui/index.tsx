@@ -9,8 +9,7 @@ import {
   UnsavedChangesGuard,
   useModelSettingsEditor,
 } from '@/features/edit-model-settings';
-
-import './model-settings-form.scss';
+import { AsideLayout } from '@/shared/ui/aside-layout';
 
 interface ModelSettingsFormProps {
   /** Передавайте с `key={settings.version}`: новая версия — чистый черновик. */
@@ -29,8 +28,22 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
   const { values: saved, defaults } = settings;
 
   return (
-    <div className="model-settings-form">
-      <div className="model-settings-form__params">
+    <>
+      <AsideLayout
+        stickyAside
+        asideLabel="Сохранение настроек"
+        aside={
+          <SettingsActions
+            canSave={editor.canSave}
+            canDiscard={editor.canDiscard}
+            canReset={editor.canReset}
+            isSaving={editor.isSaving}
+            onSave={editor.save}
+            onDiscard={editor.discard}
+            onReset={editor.resetToDefaults}
+          />
+        }
+      >
         <FactorWeightsSection
           weights={draft.factorWeights}
           saved={saved.factorWeights}
@@ -54,19 +67,7 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
           saved={saved.forecast}
           onChange={(patch) => update('forecast', patch)}
         />
-      </div>
-
-      <aside className="model-settings-form__aside" aria-label="Сохранение настроек">
-        <SettingsActions
-          canSave={editor.canSave}
-          canDiscard={editor.canDiscard}
-          canReset={editor.canReset}
-          isSaving={editor.isSaving}
-          onSave={editor.save}
-          onDiscard={editor.discard}
-          onReset={editor.resetToDefaults}
-        />
-      </aside>
+      </AsideLayout>
 
       <ConflictDialog
         conflict={editor.conflict}
@@ -75,6 +76,6 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
         onDismiss={editor.dismissConflict}
       />
       <UnsavedChangesGuard when={editor.isDirty} />
-    </div>
+    </>
   );
 };

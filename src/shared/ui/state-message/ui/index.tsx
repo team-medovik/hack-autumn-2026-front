@@ -7,9 +7,11 @@ import './state-message.scss';
 
 /**
  * compact — сообщение внутри блока (Label + Caption, через 12px): «ничего не нашлось», ошибка;
+ * roomy — сообщение на крупном блоке (Label + Caption, всё через 16px, пояснение до 440px):
+ * зона загрузки файла;
  * hero — крупное пустое состояние (Heading 1 Italic + Body, через 24px): «Клиентов пока нет».
  */
-export type StateMessageVariant = 'compact' | 'hero';
+export type StateMessageVariant = 'compact' | 'roomy' | 'hero';
 
 interface StateMessageProps {
   title: ReactNode;
@@ -26,8 +28,8 @@ interface StateMessageProps {
   className?: string;
 }
 
-const TITLE_VARIANT = { compact: 'label', hero: 'heading-1-italic' } as const;
-const DESCRIPTION_VARIANT = { compact: 'caption', hero: 'body' } as const;
+const TITLE_VARIANT = { compact: 'label', roomy: 'label', hero: 'heading-1-italic' } as const;
+const DESCRIPTION_VARIANT = { compact: 'caption', roomy: 'caption', hero: 'body' } as const;
 
 /**
  * Сообщение о состоянии по центру: иконка, заголовок, пояснение, действие.

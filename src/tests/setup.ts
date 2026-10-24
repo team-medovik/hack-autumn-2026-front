@@ -10,6 +10,19 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 };
 
+// В jsdom нет matchMedia, а тема «как в системе» спрашивает его — считаем систему светлой
+window.matchMedia ??= (query: string) =>
+  ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }) satisfies MediaQueryList;
+
 // Запускаем MSW-сервер перед всеми тестами
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 

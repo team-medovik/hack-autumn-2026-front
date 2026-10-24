@@ -1,0 +1,21 @@
+// Слой «Загрузка»: пунктир 1.5px, отступ 56px сверху и снизу, содержимое по центру.
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px var(--space-grouped);
+  border: 1.5px dashed var(--text-secondary);
+  border-radius: var(--radius-xl);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+
+  &--over {
+    border-color: var(--accent-default);
+    background: var(--accent-default);
+  }
+
+  &--invalid {
+    border-color: var(--status-danger);
+  }
+}

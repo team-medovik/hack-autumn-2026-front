@@ -93,4 +93,32 @@
   &__cell--right &__sort {
     flex-direction: row-reverse;
   }
+
+  // Список через разделители: шапка 16px + 12px снизу, строки с линией сверху и полями 12px.
+  // Высота строки — по содержимому (кнопка 56px, дата в две строки, одна строка текста).
+  &--divided &__row {
+    padding-inline: 0;
+    border-radius: 0;
+
+    &--header {
+      box-sizing: border-box;
+      height: auto;
+      padding-bottom: var(--space-related);
+      border-bottom: 0;
+    }
+
+    &--body {
+      height: auto;
+      padding-block: var(--space-related);
+      border-top: 1px solid var(--border-divider);
+    }
+  }
+
+  &--divided.table--gap-close {
+    gap: var(--space-close);
+
+    .table__row--header {
+      padding-bottom: 0;
+    }
+  }
 }

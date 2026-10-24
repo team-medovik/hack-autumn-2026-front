@@ -1,0 +1,248 @@
+openapi: 3.1.0
+info:
+  title: API Hack Autumn 2026 — пользователи
+  version: v1
+  description: |
+    Учётки админ-панели для страницы «Настройки → Пользователи»: список, создание и удаление.
+
+    Соглашения — как в dashboard-openapi.yaml:
+    - даты — ISO 8601 с часовым поясом;
+    - логин уникален без учёта регистра и служит идентификатором в URL.
+
+    Учётка администратора задаётся в конфигурации сервера (`source: config`): у неё нет даты
+    создания, из панели её не удалить. Остальных создаёт администратор в панели
+    (`source: panel`, роль `user`).
+
+    Пароль задаёт администратор при создании — вручную или сгенерированным на фронте. Сервер
+    хранит только хэш и пароль больше не отдаёт: фронт показывает его один раз, сразу после
+    создания («Пароль больше не покажем»).
+
+    Все эндпоинты — только для роли `admin`.
+servers:
+  - url: http://localhost:33000
+tags:
+  - name: Пользователи
+    description: Учётки админ-панели.
+
+paths:
+  /api/v1/users:
+    get:
+      tags: [Пользователи]
+      operationId: listUsers
+      summary: Получить список пользователей
+      description: |
+        Все учётки в порядке создания: сначала из конфигурации, затем созданные в панели.
+        Без пагинации — учёток единицы.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                default:
+                  $ref: '#/components/examples/Users'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Пользователи]
+      operationId: createUser
+      summary: Создать пользователя
+      description: |
+        Создаёт учётку с ролью `user`. `createdBy` — логин вошедшего администратора.
+        В ответе пароля нет: фронт показывает тот, что отправил.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              login: manager2
+              password: Kq7-vT2m-9xLp
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                login: manager2
+                role: user
+                source: panel
+                createdAt: '2026-10-24T18:30:00+03:00'
+                createdBy: admin
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Логин уже занят (без учёта регистра) — «Логин analyst уже занят».
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+              example:
+                status: 409
+                error: CONFLICT
+                message: Логин analyst уже занят
+                path: /api/v1/users
+        '422':
+          description: Пустой логин или пароль, недопустимые символы.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/users/{login}:
+    delete:
+      tags: [Пользователи]
+      operationId: deleteUser
+      summary: Удалить пользователя
+      description: |
+        Удаляет учётку и сразу завершает её сессии — доступ к панели пропадает. Отменить нельзя.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: login
+          in: path
+          required: true
+          description: Логин без учёта регистра.
+          schema:
+            type: string
+          example: analyst
+      responses:
+        '204':
+          description: Удалён
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: |
+            Нет прав, или учётку нельзя удалить: она из конфигурации (`source: config`) или это
+            сам вошедший администратор.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: |
+            Такого пользователя нет — например, уже удалили в другой вкладке. Фронт просто убирает
+            его из списка.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Access-токен отсутствует, истёк или некорректен
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    Forbidden:
+      description: Вошедший — не администратор
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+
+  schemas:
+    User:
+      type: object
+      required: [login, role, source, createdAt, createdBy]
+      properties:
+        login:
+          type: string
+          example: analyst
+        role:
+          type: string
+          enum: [admin, user]
+          description: admin — «Администратор», user — «Пользователь».
+        source:
+          type: string
+          enum: [config, panel]
+          description: config — задан в конфигурации сервера, panel — создан в панели.
+        createdAt:
+          type: [string, 'null']
+          format: date-time
+          description: 'Когда создан в панели. `null` для `source: config` — «из конфигурации».'
+          example: '2026-10-20T11:30:00+03:00'
+        createdBy:
+          type: [string, 'null']
+          description: 'Логин создавшего администратора. `null` для `source: config`.'
+          example: admin
+
+    CreateUserRequest:
+      type: object
+      required: [login, password]
+      properties:
+        login:
+          type: string
+          minLength: 1
+          description: Пробелы по краям фронт обрезает.
+          example: manager2
+        password:
+          type: string
+          minLength: 1
+          description: |
+            Сгенерированный фронтом пароль — 11 символов в трёх группах через дефис, со строчной,
+            заглавной и цифрой: «Kq7-vT2m-9xLp».
+          example: Kq7-vT2m-9xLp
+
+    ApiErrorResponse:
+      type: object
+      description: Стандартный формат ошибки API (как в auth).
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+          example: CONFLICT
+        message:
+          type: string
+        path:
+          type: string
+          example: /api/v1/users
+        timestamp:
+          type: string
+          format: date-time
+
+  examples:
+    Users:
+      summary: Администратор и двое созданных в панели (макет «Настройки — пользователи»)
+      value:
+        - login: admin
+          role: admin
+          source: config
+          createdAt: null
+          createdBy: null
+        - login: analyst
+          role: user
+          source: panel
+          createdAt: '2026-10-20T11:30:00+03:00'
+          createdBy: admin
+        - login: manager
+          role: user
+          source: panel
+          createdAt: '2026-10-22T16:05:00+03:00'
+          createdBy: admin
