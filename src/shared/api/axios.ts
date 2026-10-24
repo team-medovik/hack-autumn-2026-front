@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
 
 import { env } from '@/shared/config';
 
@@ -46,3 +46,11 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export const customInstance = <T>(
+  config: AxiosRequestConfig,
+  options?: AxiosRequestConfig,
+): Promise<T> => api({ ...config, ...options }).then(({ data }) => data);
+
+export type ErrorType<E> = AxiosError<E>;
+export type BodyType<B> = B;

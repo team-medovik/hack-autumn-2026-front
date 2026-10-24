@@ -189,7 +189,7 @@ export default [
   // ─── Конфигурационные файлы (Node.js-контекст) ──────────────────────────────
   // Отдельный блок с tsconfig.node.json — у них нет DOM, зато есть Node-глобалы.
   {
-    files: ['vite.config.ts', 'vitest.config.ts', 'playwright.config.ts'],
+    files: ['vite.config.ts', 'vitest.config.ts', 'playwright.config.ts', 'orval.config.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -224,6 +224,7 @@ export default [
       'test-results',
       'node_modules',
       'public/mockServiceWorker.js',
+      'src/shared/api/auth'
     ],
   },
 ];

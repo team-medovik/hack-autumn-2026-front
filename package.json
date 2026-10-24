@@ -94,6 +94,7 @@
     "jsdom": "^29.0.1",
     "lint-staged": "^16.1.5",
     "msw": "^2.12.14",
+    "orval": "^8.44.0",
     "prettier": "^3.6.2",
     "rollup-plugin-visualizer": "^7.0.1",
     "sass": "^1.91.0",
