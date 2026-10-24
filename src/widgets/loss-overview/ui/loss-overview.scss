@@ -1,0 +1,65 @@
+.loss-overview {
+  flex-direction: row;
+  gap: var(--space-distant);
+
+  &__total {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-close);
+    width: 258px;
+  }
+
+  &__levels {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: var(--space-close);
+    min-width: 0;
+  }
+
+  &__distribution-skeleton {
+    border-radius: var(--radius-max);
+  }
+
+  &__buckets {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-related);
+    margin: 0;
+  }
+
+  &__bucket {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-compressed);
+    min-width: 0;
+  }
+
+  &__bucket-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-related);
+    min-height: 24px;
+  }
+
+  &__bucket-loss {
+    min-height: 24px;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  @include down(desktop-s) {
+    flex-direction: column;
+    gap: var(--space-grouped);
+
+    &__total {
+      width: auto;
+    }
+  }
+
+  @include down(tablet) {
+    &__buckets {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

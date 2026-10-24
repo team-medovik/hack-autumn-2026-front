@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 
-import { ProgressBar } from '../../progress-bar';
+import { ProgressBar, type ProgressBarTone } from '../../progress-bar';
 import { Text } from '../../text';
 
 import './reason-loss.scss';
@@ -15,23 +15,23 @@ interface ReasonLossProps {
   caption?: ReactNode;
   /** Длина шкалы, 0–100 %. */
   percent: number;
-  /** Главная причина — красная шкала, остальные — серые. */
-  primary?: boolean;
+  /** Цвет шкалы. В Figma: «Главная=Да» — danger, «Главная=Нет» — muted. */
+  tone?: ProgressBarTone;
   className?: string;
 }
 
 /**
- * Потеря по причине (Причина / потеря). Свойство Figma «Главная» → `primary`.
+ * Потеря по причине (Причина / потеря).
  *
  * @example
- * <ReasonLoss label="Ожидает оплаты" amount="612,40 €" caption="16 клиентов" percent={48} primary />
+ * <ReasonLoss label="Ожидает оплаты" amount="612,40 €" caption="16 клиентов" percent={48} />
  */
 export const ReasonLoss = ({
   label,
   amount,
   caption,
   percent,
-  primary = false,
+  tone = 'danger',
   className,
 }: ReasonLossProps) => (
   <div className={clsx('reason-loss', className)}>
@@ -43,7 +43,7 @@ export const ReasonLoss = ({
         {amount}
       </Text>
     </div>
-    <ProgressBar value={percent} tone={primary ? 'danger' : 'muted'} />
+    <ProgressBar value={percent} tone={tone} />
     {caption && (
       <Text variant="caption-2" color="tertiary">
         {caption}

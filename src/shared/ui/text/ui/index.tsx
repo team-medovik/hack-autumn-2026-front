@@ -3,9 +3,13 @@ import type { ComponentPropsWithoutRef, ElementType } from 'react';
 
 import './text.scss';
 
-/** Текстовые стили из Figma (коллекция Fonts). `body-accent` — стиль «Body Bold». */
+/**
+ * Текстовые стили из Figma (коллекция Fonts). `body-accent` — стиль «Body Bold»,
+ * `heading-1-italic` — «Heading 1 Italic» (крупные суммы, экраны статуса).
+ */
 export type TextVariant =
   | 'heading-1'
+  | 'heading-1-italic'
   | 'heading-2'
   | 'heading-3'
   | 'label'
@@ -31,6 +35,7 @@ export type TextColor =
 /** Тег по умолчанию: заголовки — h1–h3, остальное — p. */
 const DEFAULT_TAG: Record<TextVariant, ElementType> = {
   'heading-1': 'h1',
+  'heading-1-italic': 'p',
   'heading-2': 'h2',
   'heading-3': 'h3',
   label: 'p',

@@ -10,6 +10,7 @@ export default defineConfig({
       client: 'react-query',
       httpClient: 'axios',
       clean: true,
+      formatter: 'prettier',
       override: {
         mutator: { path: './src/shared/api/axios.ts', name: 'customInstance' },
       },
@@ -24,6 +25,7 @@ export default defineConfig({
       target: 'src/shared/api/auth/endpoints.ts',
       fileExtension: '.zod.ts',
       clean: false,
+      formatter: 'prettier',
     },
   },
 });

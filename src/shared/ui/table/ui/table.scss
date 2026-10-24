@@ -10,8 +10,12 @@
     padding-inline: var(--space-related);
     border-radius: var(--radius-m);
 
+    // Разделитель под шапкой — 1px border/divider на всю ширину, поверх высоты 40px
     &--header {
+      box-sizing: content-box;
       height: 40px;
+      border-bottom: 1px solid var(--border-divider);
+      border-radius: 0;
     }
 
     &--body {
@@ -19,7 +23,6 @@
       padding-block: var(--space-close);
       transition: background-color 0.15s;
 
-      &:hover,
       &.table__row--selected {
         background: var(--control-default);
       }
@@ -28,10 +31,27 @@
     &--interactive {
       cursor: pointer;
 
+      &:hover {
+        background: var(--control-default);
+      }
+
       &:focus-visible {
         border-radius: var(--radius-m);
       }
     }
+  }
+
+  &__message {
+    display: flex;
+    padding-block: var(--space-unrelated);
+  }
+
+  &__message-cell {
+    display: flex;
+    flex: 1 0 0;
+    justify-content: center;
+    min-width: 0;
+    padding-inline: var(--space-related);
   }
 
   &__cell {

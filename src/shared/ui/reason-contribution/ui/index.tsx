@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
 
-import { ProgressBar } from '../../progress-bar';
+import { ProgressBar, type ProgressBarTone } from '../../progress-bar';
 import { Text } from '../../text';
 
 import './reason-contribution.scss';
@@ -13,6 +13,8 @@ interface ReasonContributionProps {
   value: ReactNode;
   /** Длина шкалы, 0–100 %. */
   percent: number;
+  /** Цвет шкалы — обычно по уровню риска клиента. */
+  tone?: ProgressBarTone;
   className?: string;
 }
 
@@ -26,6 +28,7 @@ export const ReasonContribution = ({
   label,
   value,
   percent,
+  tone = 'danger-soft',
   className,
 }: ReasonContributionProps) => (
   <div className={clsx('reason-contribution', className)}>
@@ -37,6 +40,6 @@ export const ReasonContribution = ({
         {value}
       </Text>
     </div>
-    <ProgressBar value={percent} tone="status-danger" />
+    <ProgressBar value={percent} tone={tone} />
   </div>
 );

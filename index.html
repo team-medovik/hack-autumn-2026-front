@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,700;1,700&display=swap"
       rel="stylesheet"
     />
 
@@ -67,34 +67,12 @@
         pointer-events: none;
       }
 
-      /* Logo pulse */
-      .pre-logo {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
-        background: var(--pre-accent);
-        animation: pre-pulse 1.6s ease-in-out infinite;
-        flex-shrink: 0;
-      }
-
-      @keyframes pre-pulse {
-        0%,
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.6;
-          transform: scale(0.92);
-        }
-      }
-
       /* Skeleton cards */
       .pre-skeleton {
         display: flex;
         flex-direction: column;
         gap: 12px;
-        width: min(480px, 88vw);
+        width: min(380px, 88vw);
       }
 
       .pre-bar {

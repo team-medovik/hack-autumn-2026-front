@@ -3,6 +3,7 @@ export {
   TableCell,
   TableColumnHeader,
   TableHeader,
+  TableMessageRow,
   TableRow,
   type SortDirection,
 } from './ui';

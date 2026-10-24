@@ -1,0 +1,28 @@
+// Слой «Пагинация» в Figma: отступ 12 сверху и по бокам, страницы через 4px
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-related);
+  padding: var(--space-related) var(--space-related) 0;
+
+  &__range {
+    white-space: nowrap;
+  }
+
+  &__pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-compressed);
+  }
+
+  &__gap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-xl);
+    font-weight: var(--body-weight-accent);
+  }
+}

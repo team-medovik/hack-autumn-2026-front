@@ -1,0 +1,22 @@
+.info-tooltip {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-main);
+
+  &:focus-visible {
+    border-radius: var(--radius-max);
+  }
+
+  &__content {
+    z-index: 1100;
+    max-width: 280px;
+    padding: var(--space-related);
+    border-radius: var(--radius-m);
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow-dialog);
+  }
+
+  &__arrow {
+    fill: var(--bg-elevated);
+  }
+}

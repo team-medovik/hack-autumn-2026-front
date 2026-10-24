@@ -5,7 +5,7 @@ import { ICONS, type IconName } from './icons';
 
 import './icon.scss';
 
-export type IconSize = 16 | 20 | 24;
+export type IconSize = 16 | 20 | 24 | 32;
 
 interface IconProps {
   name: IconName;

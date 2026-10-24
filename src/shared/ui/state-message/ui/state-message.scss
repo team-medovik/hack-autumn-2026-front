@@ -1,0 +1,23 @@
+.state-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+
+  &--compact {
+    gap: var(--space-related);
+  }
+
+  &--hero {
+    gap: var(--space-grouped);
+
+    .state-message__description {
+      max-width: 420px;
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    color: var(--text-main);
+  }
+}

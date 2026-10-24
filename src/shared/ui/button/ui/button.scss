@@ -1,7 +1,7 @@
 // Недоступность: у <button> — :disabled, у asChild-ссылки — aria-disabled
 $disabled: ':is(:disabled, [aria-disabled="true"])';
 
-// Состояния из Figma: Обычное → базовые стили, Активное → :hover / :active,
+// Состояния из Figma: Обычное → базовые стили, Активное → :hover / :active / .button--active,
 // Загрузка → .button--loading, Недоступное → :disabled / aria-disabled.
 .button {
   --button-bg: transparent;
@@ -75,6 +75,7 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
     --button-bg: var(--accent-default);
     --button-color: var(--text-on-accent);
 
+    &.button--active,
     &:hover:not(#{$disabled}),
     &:active:not(#{$disabled}) {
       --button-bg: var(--accent-active);
@@ -90,6 +91,7 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
     --button-bg: var(--inverse-default);
     --button-color: var(--text-on-inverse);
 
+    &.button--active,
     &:hover:not(#{$disabled}),
     &:active:not(#{$disabled}) {
       --button-bg: var(--inverse-active);
@@ -108,6 +110,7 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
   &--secondary {
     --button-color: var(--text-secondary);
 
+    &.button--active,
     &:hover:not(#{$disabled}),
     &:active:not(#{$disabled}) {
       --button-bg: var(--control-default);
@@ -124,6 +127,7 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
     --button-bg: var(--danger-default);
     --button-color: var(--text-on-danger);
 
+    &.button--active,
     &:hover:not(#{$disabled}),
     &:active:not(#{$disabled}) {
       --button-bg: var(--danger-active);
@@ -151,6 +155,7 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
     min-width: var(--touch-target-xl);
     padding: var(--space-bonded);
 
+    &.button--active,
     &:hover:not(#{$disabled}),
     &:active:not(#{$disabled}) {
       --button-bg: var(--control-active);

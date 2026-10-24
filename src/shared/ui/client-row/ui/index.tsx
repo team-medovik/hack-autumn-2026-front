@@ -1,12 +1,15 @@
 import { clsx } from 'clsx';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react';
 
+import { Highlight } from '../../highlight';
 import { RiskScore, type RiskLevel } from '../../risk-score';
 import { Text } from '../../text';
 
 import './client-row.scss';
 
-interface ClientRowProps extends Omit<ComponentProps<'button'>, 'children'> {
+type ClientRowOwnProps<T extends ElementType> = {
+  /** Корневой элемент: по умолчанию `button`, для навигации — `Link` из react-router. */
+  as?: T;
   score: number | null;
   level: RiskLevel;
   email: ReactNode;
@@ -20,24 +23,28 @@ interface ClientRowProps extends Omit<ComponentProps<'button'>, 'children'> {
   highlightLoss?: boolean;
   /** Выбранная строка (Выбрана=Да). */
   selected?: boolean;
-}
+};
+
+type ClientRowProps<T extends ElementType> = ClientRowOwnProps<T> &
+  Omit<ComponentPropsWithoutRef<T>, keyof ClientRowOwnProps<T> | 'children'>;
 
 /**
  * Строка клиента в списке: риск, клиент, причина, потеря в месяц.
  *
  * @example
  * <ClientRow
+ *   as={Link}
+ *   to={ROUTES.client(client.id)}
  *   score={100}
  *   level="high"
  *   email="client17@mail.ru"
  *   clientId="ID 1321245"
  *   reason="Ожидает оплаты, удалят 21.10"
  *   loss="9,05 €"
- *   selected={selectedId === 1321245}
- *   onClick={() => select(1321245)}
  * />
  */
-export const ClientRow = ({
+export const ClientRow = <T extends ElementType = 'button'>({
+  as,
   score,
   level,
   email,
@@ -46,43 +53,45 @@ export const ClientRow = ({
   loss,
   highlightLoss = false,
   selected = false,
-  type = 'button',
   className,
   ...props
-}: ClientRowProps) => (
-  <button
-    type={type}
-    aria-pressed={selected}
-    className={clsx('client-row', { 'client-row--selected': selected }, className)}
-    {...props}
-  >
-    <RiskScore score={score} level={level} />
+}: ClientRowProps<T>) => {
+  const Component: ElementType = as ?? 'button';
+  const isButton = Component === 'button';
 
-    <span className="client-row__client">
-      <Text as="span" variant="caption" color="main" truncate>
-        {email}
-      </Text>
-      <Text as="span" variant="caption-2" color="tertiary" truncate>
-        {clientId}
-      </Text>
-    </span>
+  return (
+    <Component
+      type={isButton ? 'button' : undefined}
+      aria-pressed={isButton ? selected : undefined}
+      aria-current={!isButton && selected ? 'true' : undefined}
+      className={clsx('client-row', { 'client-row--selected': selected }, className)}
+      {...props}
+    >
+      <RiskScore score={score} level={level} />
 
-    <Text as="span" variant="caption-2" color="secondary" truncate className="client-row__reason">
-      {reason}
-    </Text>
+      <span className="client-row__client">
+        <Text as="span" variant="caption" color="main" truncate>
+          {email}
+        </Text>
+        <Text as="span" variant="caption-2" color="tertiary" truncate>
+          {clientId}
+        </Text>
+      </span>
 
-    <span className="client-row__loss">
-      <Text
-        as="span"
-        variant="caption"
-        color="main"
-        className={clsx('client-row__amount', { 'client-row__amount--highlight': highlightLoss })}
-      >
-        {loss}
+      <Text as="span" variant="caption-2" color="secondary" truncate className="client-row__reason">
+        {reason}
       </Text>
-      <Text as="span" variant="caption-2" color="tertiary">
-        в месяц
-      </Text>
-    </span>
-  </button>
-);
+
+      <span className="client-row__loss">
+        <Highlight active={highlightLoss}>
+          <Text as="span" variant="caption" color="main">
+            {loss}
+          </Text>
+        </Highlight>
+        <Text as="span" variant="caption-2" color="tertiary">
+          в месяц
+        </Text>
+      </span>
+    </Component>
+  );
+};

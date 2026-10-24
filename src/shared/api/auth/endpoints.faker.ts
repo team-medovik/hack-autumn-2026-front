@@ -5,21 +5,102 @@
  * API аутентификации сотрудников. Учётные записи создаются из конфигурации приложения; публичная регистрация и подтверждение email намеренно не предусмотрены.
  * OpenAPI spec version: v1
  */
-import {
-  faker
-} from '@faker-js/faker';
+import { faker } from '@faker-js/faker';
 
-import type {
-  AuthenticationResponse,
-  CurrentUserResponse
-} from './model';
+import type { AuthenticationResponse, CurrentUserResponse } from './model';
 
+export const getRefreshResponseMock = (
+  overrideResponse: Partial<Extract<AuthenticationResponse, object>> = {},
+): AuthenticationResponse => ({
+  accessToken: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  expiresIn: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  user: faker.helpers.arrayElement([
+    {
+      id: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+      email: faker.helpers.arrayElement([
+        faker.string.alpha({ length: { min: 10, max: 20 } }),
+        undefined,
+      ]),
+      role: faker.helpers.arrayElement([
+        faker.string.alpha({ length: { min: 10, max: 20 } }),
+        undefined,
+      ]),
+      createdAt: faker.helpers.arrayElement([
+        faker.date.past().toISOString().slice(0, 19) + 'Z',
+        undefined,
+      ]),
+    },
+    undefined,
+  ]),
+  ...overrideResponse,
+});
 
-export const getRefreshResponseMock = (overrideResponse: Partial<Extract<AuthenticationResponse, object>> = {}): AuthenticationResponse => ({accessToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), expiresIn: faker.helpers.arrayElement([faker.number.int(), undefined]), user: faker.helpers.arrayElement([{id: faker.helpers.arrayElement([faker.string.uuid(), undefined]), email: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), role: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), createdAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined])}, undefined]), ...overrideResponse})
+export const getLoginResponseMock = (
+  overrideResponse: Partial<Extract<AuthenticationResponse, object>> = {},
+): AuthenticationResponse => ({
+  accessToken: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  expiresIn: faker.helpers.arrayElement([faker.number.int(), undefined]),
+  user: faker.helpers.arrayElement([
+    {
+      id: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+      email: faker.helpers.arrayElement([
+        faker.string.alpha({ length: { min: 10, max: 20 } }),
+        undefined,
+      ]),
+      role: faker.helpers.arrayElement([
+        faker.string.alpha({ length: { min: 10, max: 20 } }),
+        undefined,
+      ]),
+      createdAt: faker.helpers.arrayElement([
+        faker.date.past().toISOString().slice(0, 19) + 'Z',
+        undefined,
+      ]),
+    },
+    undefined,
+  ]),
+  ...overrideResponse,
+});
 
-export const getLoginResponseMock = (overrideResponse: Partial<Extract<AuthenticationResponse, object>> = {}): AuthenticationResponse => ({accessToken: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), expiresIn: faker.helpers.arrayElement([faker.number.int(), undefined]), user: faker.helpers.arrayElement([{id: faker.helpers.arrayElement([faker.string.uuid(), undefined]), email: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), role: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), createdAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined])}, undefined]), ...overrideResponse})
+export const getCreateResponseMock = (
+  overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {},
+): CurrentUserResponse => ({
+  id: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  email: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  role: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  createdAt: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 19) + 'Z',
+    undefined,
+  ]),
+  ...overrideResponse,
+});
 
-export const getCreateResponseMock = (overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {}): CurrentUserResponse => ({id: faker.helpers.arrayElement([faker.string.uuid(), undefined]), email: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), role: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), createdAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]), ...overrideResponse})
-
-export const getMeResponseMock = (overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {}): CurrentUserResponse => ({id: faker.helpers.arrayElement([faker.string.uuid(), undefined]), email: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), role: faker.helpers.arrayElement([faker.string.alpha({length: {min: 10, max: 20}}), undefined]), createdAt: faker.helpers.arrayElement([faker.date.past().toISOString().slice(0, 19) + 'Z', undefined]), ...overrideResponse})
-
+export const getMeResponseMock = (
+  overrideResponse: Partial<Extract<CurrentUserResponse, object>> = {},
+): CurrentUserResponse => ({
+  id: faker.helpers.arrayElement([faker.string.uuid(), undefined]),
+  email: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  role: faker.helpers.arrayElement([
+    faker.string.alpha({ length: { min: 10, max: 20 } }),
+    undefined,
+  ]),
+  createdAt: faker.helpers.arrayElement([
+    faker.date.past().toISOString().slice(0, 19) + 'Z',
+    undefined,
+  ]),
+  ...overrideResponse,
+});

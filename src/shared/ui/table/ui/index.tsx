@@ -13,6 +13,7 @@ type Align = 'left' | 'right';
 
 /**
  * Таблица на div + ARIA-ролях: строки — скруглённые плашки с hover, что неудобно делать на <tr>.
+ * Подсветка строк — control/default, поэтому таблицу кладут в карточку (слой `card`).
  * Ширины колонок задаются одинаково в TableHeader и TableRow через `width` / `grow` у ячеек.
  *
  * @example
@@ -37,7 +38,7 @@ export const Table = ({ className, ...props }: ComponentProps<'div'>) => (
   <div role="table" className={clsx('table', className)} {...props} />
 );
 
-/** Таблица / шапка: строка 40px с заголовками колонок. */
+/** Таблица / шапка: строка 40px с заголовками колонок и разделителем снизу. */
 export const TableHeader = ({ className, ...props }: ComponentProps<'div'>) => (
   <div role="row" className={clsx('table__row', 'table__row--header', className)} {...props} />
 );
@@ -47,7 +48,10 @@ interface TableRowProps extends ComponentProps<'div'> {
   selected?: boolean;
 }
 
-/** Таблица / строка: 56px, при наведении — фон control/default. С `onClick` строка доступна с клавиатуры. */
+/**
+ * Таблица / строка: 56px. С `onClick` строка кликабельна: подсвечивается при наведении
+ * и доступна с клавиатуры (Enter / пробел).
+ */
 export const TableRow = ({
   selected = false,
   onClick,
@@ -80,6 +84,24 @@ export const TableRow = ({
     />
   );
 };
+
+interface TableMessageRowProps {
+  /** Содержимое по центру — обычно `<StateMessage>`. */
+  children: ReactNode;
+  className?: string;
+}
+
+/**
+ * Строка-сообщение вместо данных: «ничего не нашлось», ошибка, пустая таблица.
+ * Занимает всю ширину, отступ 96px сверху и снизу (слой «Сообщение» в Figma).
+ */
+export const TableMessageRow = ({ children, className }: TableMessageRowProps) => (
+  <div role="row" className={clsx('table__message', className)}>
+    <div role="cell" className="table__message-cell">
+      {children}
+    </div>
+  </div>
+);
 
 interface CellLayoutProps {
   /** Фиксированная ширина колонки в px (в Figma: 64, 64, 148, 96, 88, 100, 97). */

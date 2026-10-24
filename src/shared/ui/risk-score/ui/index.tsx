@@ -1,5 +1,7 @@
 import { clsx } from 'clsx';
 
+import { formatNumber } from '@/shared/lib/format';
+
 import { Text } from '../../text';
 
 import './risk-score.scss';
@@ -33,10 +35,11 @@ const ARC = {
  */
 export const RiskScore = ({ score, level, size = 's', className }: RiskScoreProps) => {
   const { width, height, cx, cy, r, stroke } = ARC[size];
-  const value = score === null ? 0 : Math.min(100, Math.max(0, Math.round(score)));
+  const value = score === null ? 0 : Math.min(100, Math.max(0, score));
   const arc = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const hasValue = level !== 'none' && value > 0;
-  const label = score === null ? '—' : String(value);
+  // Score бывает дробным: 94,2
+  const label = score === null ? '—' : formatNumber(value);
 
   return (
     <div

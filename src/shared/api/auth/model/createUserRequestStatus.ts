@@ -6,8 +6,8 @@
  * OpenAPI spec version: v1
  */
 
-export type CreateUserRequestStatus = typeof CreateUserRequestStatus[keyof typeof CreateUserRequestStatus];
-
+export type CreateUserRequestStatus =
+  (typeof CreateUserRequestStatus)[keyof typeof CreateUserRequestStatus];
 
 export const CreateUserRequestStatus = {
   ACTIVE: 'ACTIVE',

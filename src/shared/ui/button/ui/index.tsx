@@ -21,6 +21,12 @@ interface ButtonProps extends ComponentProps<'button'> {
   /** Растянуть на всю ширину контейнера. */
   fullWidth?: boolean;
   /**
+   * Состояние «Активное» из Figma постоянно, а не только при наведении:
+   * выбранный фильтр, текущая страница, вторичная кнопка на фоне карточки.
+   * Семантику (`aria-pressed` / `aria-current`) задаёт вызывающий код.
+   */
+  active?: boolean;
+  /**
    * Отрендерить стили кнопки на единственном дочернем элементе (Radix Slot),
    * например `<Link>`. Его содержимое оборачивается так же, как у обычной кнопки.
    */
@@ -41,6 +47,7 @@ export const Button = ({
   loading = false,
   iconRight,
   fullWidth = false,
+  active = false,
   asChild = false,
   disabled,
   type = 'button',
@@ -69,6 +76,7 @@ export const Button = ({
         'button--loading': loading,
         'button--with-icon': hasIconRight && !loading,
         'button--full-width': fullWidth,
+        'button--active': active,
       },
       className,
     ),

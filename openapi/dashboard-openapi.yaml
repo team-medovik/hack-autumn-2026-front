@@ -1,0 +1,569 @@
+openapi: 3.1.0
+info:
+  title: API Hack Autumn 2026 — дашборд и клиенты
+  version: v1
+  description: |
+    Сводка главного экрана и сводная таблица клиентов админ-панели по последнему снимку биллинга.
+
+    Соглашения:
+    - суммы — в евро, числом с двумя знаками после запятой (BigDecimal → number);
+    - даты — ISO 8601 с часовым поясом;
+    - enum'ы — в нижнем регистре (в Java: `@JsonValue` на enum'е);
+    - нет снимков — это не ошибка: 200 и `snapshot: null`, остальные поля пустые.
+servers:
+  - url: http://localhost:33000
+tags:
+  - name: Дашборд
+    description: Сводка рисков оттока клиентов для главного экрана.
+  - name: Клиенты
+    description: Сводная таблица клиентов с фильтром, поиском, сортировкой и пагинацией.
+
+paths:
+  /api/v1/dashboard:
+    get:
+      tags: [Дашборд]
+      operationId: getDashboard
+      summary: Получить сводку главного экрана
+      description: |
+        Всё, что нужно главному экрану, одним запросом. Фронт перезапрашивает его раз в 30 секунд.
+
+        Пустые состояния фронт рисует сам по содержимому ответа:
+        - `snapshot: null` — экран «Данных пока нет»;
+        - `topRisk: null` — «Выделять некого»;
+        - пустые `riskQueue.items` / `lossReasons` — «Очередь пуста» / «Потерь нет»;
+        - пустой `churn.weeks` — «График появится после второго снимка».
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Сводка получена (в том числе когда снимков ещё нет)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+              examples:
+                withSnapshot:
+                  $ref: '#/components/examples/DashboardWithSnapshot'
+                noSnapshot:
+                  $ref: '#/components/examples/DashboardWithoutSnapshot'
+        '401':
+          description: Access-токен отсутствует, истёк или некорректен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /api/v1/clients:
+    get:
+      tags: [Клиенты]
+      operationId: listClients
+      summary: Страница сводной таблицы клиентов
+      description: |
+        Клиенты последнего снимка. Фильтр, поиск, сортировка и пагинация — на сервере.
+
+        - `search` ищет подстроку в email или ID **по всем клиентам**: с ним `level` не применяется;
+        - при сортировке по `score` клиенты без оценки (`score: null`) всегда в конце;
+        - `page` больше последней страницы — отдаётся последняя (в ответе её номер);
+        - снимков ещё нет — это не ошибка: 200, пустые `items` и нули в `levelCounts`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: level
+          in: query
+          description: Уровень риска. Без параметра — все уровни.
+          schema:
+            $ref: '#/components/schemas/RiskLevel'
+        - name: search
+          in: query
+          description: Подстрока email или ID, без учёта регистра.
+          schema:
+            type: string
+            example: client5
+        - name: sort
+          in: query
+          schema:
+            $ref: '#/components/schemas/ClientSortField'
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Номер страницы, с 1.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 12
+      responses:
+        '200':
+          description: Страница получена (в том числе когда снимков ещё нет)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientsResponse'
+              examples:
+                firstPage:
+                  $ref: '#/components/examples/ClientsFirstPage'
+                noSnapshot:
+                  $ref: '#/components/examples/ClientsWithoutSnapshot'
+        '401':
+          description: Access-токен отсутствует, истёк или некорректен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    DashboardResponse:
+      type: object
+      description: |
+        Сводка по последнему снимку. Если снимков нет — `snapshot: null`, `monthlyLoss: 0`,
+        `riskBuckets` с нулями, `topRisk: null`, пустые массивы.
+      required: [snapshot, monthlyLoss, riskBuckets, topRisk, riskQueue, lossReasons, churn]
+      properties:
+        snapshot:
+          oneOf:
+            - $ref: '#/components/schemas/SnapshotInfo'
+            - type: 'null'
+        monthlyLoss:
+          type: number
+          format: double
+          description: Сколько потеряем в месяц, если ничего не делать (сумма потерь всех клиентов).
+          example: 1296.9
+        riskBuckets:
+          type: array
+          description: Ровно четыре элемента — по одному на каждый уровень риска.
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/RiskBucket'
+        topRisk:
+          description: Клиент с наибольшим score. `null` — ни у кого нет риска.
+          oneOf:
+            - $ref: '#/components/schemas/TopRiskClient'
+            - type: 'null'
+        riskQueue:
+          $ref: '#/components/schemas/RiskQueue'
+        lossReasons:
+          type: array
+          description: Потери по главной причине клиента, по убыванию `monthlyLoss`.
+          items:
+            $ref: '#/components/schemas/LossReason'
+        churn:
+          $ref: '#/components/schemas/ChurnForecast'
+
+    SnapshotInfo:
+      type: object
+      description: Снимок данных биллинга, по которому посчитана сводка.
+      required: [id, takenAt]
+      properties:
+        id:
+          type: string
+          example: snapshot-2026-10-23
+        takenAt:
+          type: string
+          format: date-time
+          description: Когда снят снимок — показывается как «Данные актуальны на 22:10».
+          example: '2026-10-23T22:10:00+03:00'
+
+    RiskLevel:
+      type: string
+      description: Уровень риска не продлить услуги. `none` — score не посчитан (мало данных).
+      enum: [high, medium, low, none]
+
+    RiskBucket:
+      type: object
+      required: [level, clients, monthlyLoss, changed]
+      properties:
+        level:
+          $ref: '#/components/schemas/RiskLevel'
+        clients:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 13
+        monthlyLoss:
+          type: [number, 'null']
+          format: double
+          description: Потеря в месяц клиентов этого уровня. Для `none` — всегда `null`.
+          example: 854.5
+        changed:
+          type: boolean
+          description: Сумма изменилась относительно предыдущего снимка — фронт её подсвечивает.
+
+    RiskClient:
+      type: object
+      description: Клиент в очереди риска.
+      required: [id, email, score, level, reason, monthlyLoss, lossChanged]
+      properties:
+        id:
+          type: string
+          description: ID клиента в биллинге.
+          example: '1321245'
+        email:
+          type: string
+          example: client5@mail.ru
+        score:
+          type: [number, 'null']
+          format: double
+          minimum: 0
+          maximum: 100
+          description: Score риска 0–100, может быть дробным (94.2). `null` — нет оценки.
+          example: 100
+        level:
+          $ref: '#/components/schemas/RiskLevel'
+        reason:
+          type: string
+          description: Главная причина риска, готовая к показу.
+          example: Ожидает оплаты, удалят завтра
+        monthlyLoss:
+          type: number
+          format: double
+          example: 14.4
+        lossChanged:
+          type: boolean
+          description: Потеря изменилась относительно предыдущего снимка — фронт её подсвечивает.
+
+    TopRiskClient:
+      description: Клиент с наибольшим риском — с разбором score и балансом.
+      allOf:
+        - $ref: '#/components/schemas/RiskClient'
+        - type: object
+          required: [factors, balance]
+          properties:
+            factors:
+              type: array
+              description: Из чего сложился score, по убыванию `points`.
+              items:
+                $ref: '#/components/schemas/ScoreFactor'
+            balance:
+              $ref: '#/components/schemas/ClientBalance'
+
+    ScoreFactor:
+      type: object
+      required: [id, label, points]
+      properties:
+        id:
+          type: string
+          example: awaiting-payment
+        label:
+          type: string
+          description: Фактор, готовый к показу.
+          example: Ожидает оплаты, удалят завтра
+        points:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: Сколько баллов score дал фактор («+70»).
+          example: 70
+
+    ClientBalance:
+      type: object
+      required: [available, required]
+      properties:
+        available:
+          type: number
+          format: double
+          description: Сейчас на счёте.
+          example: 0
+        required:
+          type: number
+          format: double
+          description: Нужно на продления в ближайшие дни. «Не хватает» фронт считает сам.
+          example: 28.8
+
+    RiskQueue:
+      type: object
+      required: [total, items]
+      properties:
+        total:
+          type: integer
+          format: int32
+          description: Всего клиентов в базе.
+          example: 42
+        items:
+          type: array
+          description: Первые 5 клиентов по убыванию score.
+          maxItems: 5
+          items:
+            $ref: '#/components/schemas/RiskClient'
+
+    LossReason:
+      type: object
+      description: |
+        Потери по главной причине. Каждый клиент учитывается один раз — по причине,
+        которая сильнее всего влияет на его риск.
+      required: [id, label, level, clients, monthlyLoss]
+      properties:
+        id:
+          type: string
+          example: awaiting-payment
+        label:
+          type: string
+          example: Ожидает оплаты
+        level:
+          $ref: '#/components/schemas/RiskLevel'
+        clients:
+          type: integer
+          format: int32
+          example: 16
+        monthlyLoss:
+          type: number
+          format: double
+          example: 612.4
+
+    ChurnWeekKind:
+      type: string
+      description: '`fact` — удалено по факту, `forecast` — прогноз непродлений.'
+      enum: [fact, forecast]
+
+    ChurnWeek:
+      type: object
+      required: [weekStart, kind, services]
+      properties:
+        weekStart:
+          type: string
+          format: date
+          description: Понедельник недели.
+          example: '2026-08-31'
+        kind:
+          $ref: '#/components/schemas/ChurnWeekKind'
+        services:
+          type: integer
+          format: int32
+          minimum: 0
+          example: 9
+
+    ChurnForecast:
+      type: object
+      required: [atRiskServices, weeks]
+      properties:
+        atRiskServices:
+          type: integer
+          format: int32
+          description: Сколько услуг под риском прямо сейчас.
+          example: 58
+        weeks:
+          type: array
+          description: |
+            Недели по возрастанию даты: сначала факт (8 недель), затем прогноз (4 недели).
+            Пустой массив — снимок пока один, считать отток не по чему.
+          items:
+            $ref: '#/components/schemas/ChurnWeek'
+
+    ClientSortField:
+      type: string
+      description: Поле сортировки сводной таблицы.
+      enum: [score, id, email, balance, topUp, monthlyLoss]
+      default: score
+
+    ClientListItem:
+      type: object
+      description: Строка сводной таблицы.
+      required: [id, email, score, level, reason, balance, topUp, monthlyLoss]
+      properties:
+        id:
+          type: string
+          example: '1321245'
+        email:
+          type: string
+          format: email
+          example: client5@mail.ru
+        score:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 100
+          description: Score 0–100, `null` — нет оценки.
+          example: 100
+        level:
+          $ref: '#/components/schemas/RiskLevel'
+        reason:
+          type: [string, 'null']
+          description: Главная причина риска, человекочитаемо. `null` — причины нет (нет оценки).
+          example: Ожидает оплаты, удалят завтра
+        balance:
+          type: number
+          description: Сейчас на счёте, €.
+          example: 0
+        topUp:
+          type: number
+          description: Пополнено за всё время, €.
+          example: 312.4
+        monthlyLoss:
+          type: number
+          description: Потеря в месяц, если клиент уйдёт, €.
+          example: 28.8
+
+    ClientsResponse:
+      type: object
+      required: [items, page, pageSize, total, levelCounts]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientListItem'
+        page:
+          type: integer
+          format: int32
+          description: Номер отданной страницы, с 1.
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+          description: Найдено по фильтру или поиску — для пагинации.
+        levelCounts:
+          type: object
+          description: |
+            Клиентов в снимке по уровням — для счётчиков фильтров. Не зависят от фильтра и поиска.
+            Все нули — снимков ещё не загружали.
+          required: [high, medium, low, none]
+          properties:
+            high: { type: integer, format: int32 }
+            medium: { type: integer, format: int32 }
+            low: { type: integer, format: int32 }
+            none: { type: integer, format: int32 }
+
+    ApiErrorResponse:
+      type: object
+      description: Стандартный формат ошибки API (как в auth).
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+          example: UNAUTHORIZED
+        message:
+          type: string
+        path:
+          type: string
+          example: /api/v1/dashboard
+        timestamp:
+          type: string
+          format: date-time
+
+  examples:
+    DashboardWithSnapshot:
+      summary: Обычный день (основной макет «Дом»), очередь и причины сокращены
+      value:
+        snapshot: { id: snapshot-2026-10-23, takenAt: '2026-10-23T22:10:00+03:00' }
+        monthlyLoss: 1296.9
+        riskBuckets:
+          - { level: high, clients: 13, monthlyLoss: 854.5, changed: true }
+          - { level: medium, clients: 14, monthlyLoss: 356.2, changed: false }
+          - { level: low, clients: 9, monthlyLoss: 86.2, changed: false }
+          - { level: none, clients: 6, monthlyLoss: null, changed: false }
+        topRisk:
+          id: '1321245'
+          email: client5@mail.ru
+          score: 100
+          level: high
+          reason: Ожидает оплаты, удалят завтра
+          monthlyLoss: 14.4
+          lossChanged: false
+          factors:
+            - { id: awaiting-payment, label: 'Ожидает оплаты, удалят завтра', points: 70 }
+            - { id: low-balance, label: 'На счёте не хватает 28,80 € на продление', points: 40 }
+          balance: { available: 0, required: 28.8 }
+        riskQueue:
+          total: 42
+          items:
+            - id: '1321245'
+              email: client5@mail.ru
+              score: 100
+              level: high
+              reason: Ожидает оплаты, удалят завтра
+              monthlyLoss: 14.4
+              lossChanged: false
+            - id: '1321746'
+              email: client17@mail.ru
+              score: 94.2
+              level: high
+              reason: Ожидает оплаты, удалят 21.10
+              monthlyLoss: 9.05
+              lossChanged: true
+        lossReasons:
+          - {
+              id: awaiting-payment,
+              label: Ожидает оплаты,
+              level: high,
+              clients: 16,
+              monthlyLoss: 612.4,
+            }
+          - { id: disabled, label: Выключена клиентом, level: low, clients: 3, monthlyLoss: 72.3 }
+        churn:
+          atRiskServices: 58
+          weeks:
+            - { weekStart: '2026-10-12', kind: fact, services: 11 }
+            - { weekStart: '2026-10-19', kind: fact, services: 10 }
+            - { weekStart: '2026-10-26', kind: forecast, services: 18 }
+            - { weekStart: '2026-11-02', kind: forecast, services: 12 }
+    DashboardWithoutSnapshot:
+      summary: Снимков ещё не загружали
+      value:
+        snapshot: null
+        monthlyLoss: 0
+        riskBuckets:
+          - { level: high, clients: 0, monthlyLoss: 0, changed: false }
+          - { level: medium, clients: 0, monthlyLoss: 0, changed: false }
+          - { level: low, clients: 0, monthlyLoss: 0, changed: false }
+          - { level: none, clients: 0, monthlyLoss: null, changed: false }
+        topRisk: null
+        riskQueue: { total: 0, items: [] }
+        lossReasons: []
+        churn: { atRiskServices: 0, weeks: [] }
+
+    ClientsFirstPage:
+      summary: Первая страница по убыванию риска (макет «Сводная таблица»), сокращено до двух строк
+      value:
+        items:
+          - id: '1321245'
+            email: client5@mail.ru
+            score: 100
+            level: high
+            reason: Ожидает оплаты, удалят завтра
+            balance: 0
+            topUp: 312.4
+            monthlyLoss: 28.8
+          - id: '1321746'
+            email: client17@mail.ru
+            score: 94.2
+            level: high
+            reason: Ожидает оплаты, удалят 21.10
+            balance: 6.48
+            topUp: 148
+            monthlyLoss: 6.77
+        page: 1
+        pageSize: 12
+        total: 42
+        levelCounts: { high: 13, medium: 14, low: 9, none: 6 }
+
+    ClientsWithoutSnapshot:
+      summary: Снимков ещё не загружали (макет «Сводная таблица (без данных)»)
+      value:
+        items: []
+        page: 1
+        pageSize: 12
+        total: 0
+        levelCounts: { high: 0, medium: 0, low: 0, none: 0 }

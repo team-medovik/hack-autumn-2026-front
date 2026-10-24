@@ -11,10 +11,15 @@
   letter-spacing: 0;
 
   // ─── Стили ───────────────────────────────────────────────────────────────
-  &--heading-1 {
+  &--heading-1,
+  &--heading-1-italic {
     @include text-style(--heading-1-font-size, --heading-1-line-height, --heading-1-font-weight);
 
     letter-spacing: var(--heading-1-letter-spacing);
+  }
+
+  &--heading-1-italic {
+    font-style: italic;
   }
 
   &--heading-2 {

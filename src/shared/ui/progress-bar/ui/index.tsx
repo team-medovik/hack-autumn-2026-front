@@ -3,8 +3,11 @@ import { clsx } from 'clsx';
 
 import './progress-bar.scss';
 
-/** Цвет заполнения: danger — danger/default, status-danger — status/danger, muted — text/tertiary. */
-export type ProgressBarTone = 'danger' | 'status-danger' | 'muted';
+/**
+ * Цвет заполнения: danger — danger/default, danger-soft — status/danger,
+ * risk-medium / risk-low — цвета уровней риска (оранжевый / бирюзовый), muted — text/tertiary.
+ */
+export type ProgressBarTone = 'danger' | 'danger-soft' | 'risk-medium' | 'risk-low' | 'muted';
 
 interface ProgressBarProps {
   /** Заполнение в процентах 0–100. */

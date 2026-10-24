@@ -41,6 +41,11 @@
       color: var(--text-disabled);
       cursor: not-allowed;
     }
+
+    // У type="search" в макете нет крестика — очистка по Esc остаётся
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
   }
 
   // Пустое: лейбл по центру как плейсхолдер

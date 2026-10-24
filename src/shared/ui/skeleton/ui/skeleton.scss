@@ -1,0 +1,27 @@
+.skeleton {
+  display: block;
+  flex-shrink: 0;
+  width: var(--skeleton-width, 100%);
+  height: var(--skeleton-height, 16px);
+  border-radius: var(--radius-s);
+  background: var(--control-default);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
+  width: 100%;
+  padding-top: 8px;
+
+  &__line {
+    border-radius: 6px;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}

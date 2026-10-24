@@ -7,8 +7,16 @@
   border-radius: var(--radius-max);
   background: var(--control-default);
 
-  &--status-danger {
+  &--danger-soft {
     --progress-color: var(--status-danger);
+  }
+
+  &--risk-medium {
+    --progress-color: var(--risk-medium);
+  }
+
+  &--risk-low {
+    --progress-color: var(--risk-low);
   }
 
   &--muted {

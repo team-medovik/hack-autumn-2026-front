@@ -18,6 +18,10 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === 'true'),
+  VITE_ENABLE_MOCKS: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
 });
 
 const parsed = envSchema.safeParse(import.meta.env);
@@ -36,4 +40,6 @@ export const env = {
   isProd: import.meta.env.PROD,
   /** DevTools включены только если VITE_ENABLE_DEVTOOLS=true (или в dev-режиме по умолчанию) */
   enableDevtools: parsed.data.VITE_ENABLE_DEVTOOLS ?? import.meta.env.DEV,
+  /** MSW-моки в браузере. По умолчанию включены в dev: часть API (дашборд) пока есть только в моках. */
+  enableMocks: parsed.data.VITE_ENABLE_MOCKS ?? import.meta.env.DEV,
 } as const;

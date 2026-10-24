@@ -11,13 +11,24 @@ export const api = axios.create({
   },
 });
 
+// ─── Access-токен ─────────────────────────────────────────────────────────────
+// shared не знает о сторе сессии (он в entities), поэтому источник токена
+// подключается снаружи — в src/app/setup-api.ts.
+let getAccessToken: () => string | null = () => null;
+
+export const setAccessTokenGetter = (getter: () => string | null) => {
+  getAccessToken = getter;
+};
+
 // ─── Request-интерсептор ──────────────────────────────────────────────────────
 api.interceptors.request.use(
-  (config) =>
-    // Добавьте auth-токен здесь (замените на свою логику авторизации)
-    // const token = getAuthToken();
-    // if (token) config.headers.Authorization = `Bearer ${token}`;
-    config,
+  (config) => {
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
   (error: unknown) => Promise.reject(error),
 );
 

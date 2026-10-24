@@ -6,8 +6,8 @@
  * OpenAPI spec version: v1
  */
 
-export type CreateUserRequestRole = typeof CreateUserRequestRole[keyof typeof CreateUserRequestRole];
-
+export type CreateUserRequestRole =
+  (typeof CreateUserRequestRole)[keyof typeof CreateUserRequestRole];
 
 export const CreateUserRequestRole = {
   ADMIN: 'ADMIN',
