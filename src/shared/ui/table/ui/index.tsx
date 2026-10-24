@@ -57,6 +57,29 @@ export const Table = ({ variant = 'plain', rowGap = 'none', className, ...props 
   />
 );
 
+interface TableScrollProps {
+  /** Ширина, уже которой колонки не сжимаются, а таблица прокручивается вбок. */
+  minWidth: number;
+  children: ReactNode;
+  className?: string;
+}
+
+/**
+ * Обёртка для узких экранов: таблица с фиксированными колонками прокручивается вбок,
+ * а не обрезается краем страницы.
+ *
+ * @example
+ * <TableScroll minWidth={640}><Table>…</Table></TableScroll>
+ */
+export const TableScroll = ({ minWidth, children, className }: TableScrollProps) => (
+  <div
+    className={clsx('table-scroll', className)}
+    style={{ '--table-min-width': `${minWidth}px` } as CSSProperties}
+  >
+    {children}
+  </div>
+);
+
 /** Таблица / шапка: строка 40px с заголовками колонок и разделителем снизу. */
 export const TableHeader = ({ className, ...props }: ComponentProps<'div'>) => (
   <div role="row" className={clsx('table__row', 'table__row--header', className)} {...props} />

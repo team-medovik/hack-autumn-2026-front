@@ -23,6 +23,9 @@ window.matchMedia ??= (query: string) =>
     dispatchEvent: () => false,
   }) satisfies MediaQueryList;
 
+// jsdom не прокручивает окно и ругается «Not implemented» — прокрутка в тестах не важна
+window.scrollTo = () => {};
+
 // Запускаем MSW-сервер перед всеми тестами
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 

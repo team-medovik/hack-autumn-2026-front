@@ -26,6 +26,17 @@
     animation-delay: calc(var(--motion-stagger) * 4);
   }
 
+  // Обёртка <Reveal>: карточка тянется на всю высоту ряда
+  &__card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    > * {
+      flex: 1 0 auto;
+    }
+  }
+
   &__row {
     display: grid;
     gap: var(--space-related);

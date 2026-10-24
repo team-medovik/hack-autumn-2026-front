@@ -128,8 +128,8 @@ describe('вход', () => {
     const user = userEvent.setup();
     renderApp('/login');
 
-    await user.type(screen.getByLabelText('Логин'), login);
-    await user.type(screen.getByLabelText('Пароль'), password);
+    await user.type(screen.getByLabelText('логин'), login);
+    await user.type(screen.getByLabelText('пароль'), password);
     await user.click(screen.getByRole('button', { name: 'Продолжить' }));
 
     expect(await screen.findByText('Неверный логин или пароль')).toBeInTheDocument();
@@ -141,13 +141,13 @@ describe('вход', () => {
     const user = userEvent.setup();
     renderApp('/login');
 
-    await user.type(screen.getByLabelText('Логин'), 'admin');
-    await user.type(screen.getByLabelText('Пароль'), 'Wrong1234');
+    await user.type(screen.getByLabelText('логин'), 'admin');
+    await user.type(screen.getByLabelText('пароль'), 'Wrong1234');
     await user.click(screen.getByRole('button', { name: 'Продолжить' }));
 
     expect(await screen.findByText('Неверный логин или пароль')).toBeInTheDocument();
-    expect(screen.getByLabelText('Пароль')).toHaveValue('');
-    expect(screen.getByLabelText('Логин')).toHaveValue('admin');
+    expect(screen.getByLabelText('пароль')).toHaveValue('');
+    expect(screen.getByLabelText('логин')).toHaveValue('admin');
   });
 
   it('после входа возвращает туда, куда шёл пользователь', async () => {
@@ -159,8 +159,8 @@ describe('вход', () => {
     const user = userEvent.setup();
     renderApp('/clients');
 
-    await user.type(screen.getByLabelText('Логин'), 'admin');
-    await user.type(screen.getByLabelText('Пароль'), 'Secret123');
+    await user.type(screen.getByLabelText('логин'), 'admin');
+    await user.type(screen.getByLabelText('пароль'), 'Secret123');
     await user.click(screen.getByRole('button', { name: 'Продолжить' }));
 
     await waitFor(() => expect(screen.getByText('Клиенты')).toBeInTheDocument());

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import { useClients } from '@/entities/client';
 import { ClientSearch, LevelFilter } from '@/features/clients-filter';
+import { scrollToTop } from '@/shared/lib/scroll';
 import { ClientsTable } from '@/widgets/clients-table';
 
 import { useClientsQuery } from '../model/use-clients-query';
@@ -14,7 +15,7 @@ import './clients-page.scss';
  */
 export const ClientsPage = () => {
   const { query, setLevel, setSearch, setSort, setPage } = useClientsQuery();
-  const { data, isError, isFetching, refetch } = useClients(query);
+  const { data, isError, isFetching, isPlaceholderData, refetch } = useClients(query);
 
   return (
     <div className="clients-page">
@@ -35,9 +36,14 @@ export const ClientsPage = () => {
         data={data}
         isError={isError}
         isFetching={isFetching}
+        isUpdating={isPlaceholderData}
         onRetry={() => void refetch()}
         onSortChange={setSort}
-        onPageChange={setPage}
+        onPageChange={(page) => {
+          setPage(page);
+          // Пагинация внизу таблицы — новая страница читается сверху
+          scrollToTop('smooth');
+        }}
         onResetSearch={() => setSearch('')}
       />
 

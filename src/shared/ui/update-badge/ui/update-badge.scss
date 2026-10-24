@@ -1,11 +1,17 @@
 .update-badge {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 var(--space-close) 0 var(--space-related);
+  gap: 0 8px;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 10px var(--space-close) 10px var(--space-related);
   border-radius: var(--radius-max);
-  white-space: nowrap;
+
+  // На узком экране дата уходит второй строкой — плашка скругляется как карточка
+  @include down(tablet) {
+    border-radius: var(--radius-l);
+  }
 
   // Смена состояния: плашка мягко проявляется, иконка отыгрывает своё
   animation: motion-fade-in var(--duration-enter) var(--ease-out);

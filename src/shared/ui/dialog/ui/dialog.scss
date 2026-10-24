@@ -25,8 +25,11 @@
     --dialog-width: 480px;
   }
 
+  // Окно-пояснение с блоками расчёта: блоки через 20px
   &--l {
     --dialog-width: 560px;
+
+    gap: var(--space-adjacent);
   }
 
   &:focus-visible {

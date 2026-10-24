@@ -21,5 +21,24 @@
 
   @include down(desktop-s) {
     gap: var(--space-grouped);
+
+    // Уровни не помещаются в ширину — лента прокручивается вбок, поиск под ней на всю ширину.
+    // Поля 4px — чтобы обводка фокуса не обрезалась краем прокрутки.
+    &__levels {
+      flex-wrap: nowrap;
+      max-width: calc(100% + 8px);
+      margin: -4px;
+      padding: 4px;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      > * {
+        flex-shrink: 0;
+      }
+    }
+
+    &__search {
+      flex-basis: 100%;
+    }
   }
 }

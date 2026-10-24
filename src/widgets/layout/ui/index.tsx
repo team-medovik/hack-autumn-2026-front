@@ -1,4 +1,7 @@
+import { useLayoutEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+
+import { scrollToTop } from '@/shared/lib/scroll';
 
 import { Navbar } from './navbar';
 
@@ -11,6 +14,11 @@ import './layout.scss';
 export const Layout = () => {
   // Ключ — раздел, а не полный путь: карточка клиента поверх таблицы не перезапускает появление
   const section = useLocation().pathname.split('/')[1];
+
+  // Новый раздел открывается с начала, а не с прокрутки прошлого
+  useLayoutEffect(() => {
+    scrollToTop();
+  }, [section]);
 
   return (
     <div className="layout">

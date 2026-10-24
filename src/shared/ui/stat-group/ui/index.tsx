@@ -35,15 +35,23 @@ interface StatProps {
    * tertiary — приглушённое значение, когда показателя нет («—»).
    */
   tone?: 'main' | 'danger' | 'tertiary';
+  /** Справочный показатель (бонусы, реферальный баланс): подпись и значение — text/tertiary. */
+  muted?: boolean;
 }
 
 /** Показатель: подпись Caption 2 и значение Label по центру. */
-export const Stat = ({ label, value, tone = 'main' }: StatProps) => (
+export const Stat = ({ label, value, tone = 'main', muted = false }: StatProps) => (
   <div className="stat-group__item">
     <Text as="dt" variant="caption-2" color="tertiary" truncate>
       {label}
     </Text>
-    <Text as="dd" variant="label" color={tone} truncate className="stat-group__value">
+    <Text
+      as="dd"
+      variant="label"
+      color={muted ? 'tertiary' : tone}
+      truncate
+      className="stat-group__value"
+    >
       {value}
     </Text>
   </div>

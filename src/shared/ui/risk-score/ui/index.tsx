@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 
 import { useCountUp } from '@/shared/lib/count-up';
 import { formatNumber } from '@/shared/lib/format';
+import { useRevealed } from '@/shared/lib/reveal';
 
 import { Text } from '../../text';
 
@@ -41,7 +42,8 @@ export const RiskScore = ({ score, level, size = 's', className }: RiskScoreProp
   const arc = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const hasValue = level !== 'none' && value > 0;
   // Крупный score досчитывает вместе с дугой; в таблицах — сразу итог
-  const shown = useCountUp(value, { enabled: size === 'l' });
+  const revealed = useRevealed();
+  const shown = useCountUp(value, { enabled: size === 'l', paused: !revealed });
   // Score бывает дробным: 94,2
   const label = score === null ? '—' : formatNumber(shown === value ? value : Math.round(shown));
 

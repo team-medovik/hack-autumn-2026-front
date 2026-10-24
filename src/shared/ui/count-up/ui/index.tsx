@@ -1,4 +1,5 @@
 import { useCountUp } from '@/shared/lib/count-up';
+import { useRevealed } from '@/shared/lib/reveal';
 
 interface CountUpProps {
   value: number;
@@ -9,14 +10,16 @@ interface CountUpProps {
 }
 
 /**
- * Число с досчётом от нуля (или от прошлого значения) до `value`.
+ * Число с досчётом от нуля (или от прошлого значения) до `value`. Внутри `<Reveal>` — после
+ * появления блока на экране.
  * Промежуточные кадры скрыты от скринридера — он сразу читает итог.
  *
  * @example
  * <Text variant="heading-1-italic"><CountUp value={data.monthlyLoss} format={formatMoney} /></Text>
  */
 export const CountUp = ({ value, format, durationMs }: CountUpProps) => {
-  const shown = useCountUp(value, { durationMs });
+  // Внутри <Reveal> досчёт начинается, когда блок показался
+  const shown = useCountUp(value, { durationMs, paused: !useRevealed() });
 
   return (
     <>

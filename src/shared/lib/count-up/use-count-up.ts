@@ -9,13 +9,17 @@ const easeOut = (progress: number) => 1 - (1 - progress) ** 3;
 /**
  * Число, которое «досчитывает» до `target`: при первом показе — от нуля, дальше — от прошлого
  * значения. Последний кадр — ровно `target`. С `enabled: false` и при «уменьшении движения»
- * сразу отдаёт `target`.
+ * сразу отдаёт `target`. С `paused: true` стоит на стартовом значении — например, пока блок
+ * не прокрутили до экрана.
  *
  * @example
  * const shown = useCountUp(monthlyLoss);
  * return <>{formatMoney(shown)}</>;
  */
-export const useCountUp = (target: number, { durationMs = 900, enabled = true } = {}) => {
+export const useCountUp = (
+  target: number,
+  { durationMs = 900, enabled = true, paused = false } = {},
+) => {
   const isStatic = !enabled || prefersReducedMotion();
   const [value, setValue] = useState(() => (isStatic ? target : 0));
   const from = useRef(value);
@@ -24,6 +28,9 @@ export const useCountUp = (target: number, { durationMs = 900, enabled = true } 
     if (!enabled || prefersReducedMotion()) {
       from.current = target;
       setValue(target);
+      return;
+    }
+    if (paused) {
       return;
     }
 
@@ -41,7 +48,7 @@ export const useCountUp = (target: number, { durationMs = 900, enabled = true } 
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [target, durationMs, enabled]);
+  }, [target, durationMs, enabled, paused]);
 
   return isStatic ? target : value;
 };
