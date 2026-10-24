@@ -3,6 +3,7 @@ export {
   useSessionStatus,
   useIsAuthenticated,
   useSessionUser,
+  useIsAdmin,
   useSessionActions,
   getAccessToken,
   type SessionStatus,

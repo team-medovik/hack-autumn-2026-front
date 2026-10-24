@@ -29,18 +29,43 @@ export const INITIAL_SNAPSHOTS: readonly SnapshotRecord[] = [
   },
 ];
 
+const MOCK_CREATED_AT = '2026-10-01T12:00:00.000Z';
+const MOCK_EXPIRES_AT = '2026-11-01T12:00:00.000Z';
+
 /**
  * Содержимое файла снимка с нужным числом клиентов и услуг — для «Скачать JSON».
- * Каркас `{ clients: [{ services: [] }] }`, как проверяет фронт; поля — для правдоподобия.
+ * Формат тестовых данных кейса: `{ accounts, services, transactions }`, суммы в евроцентах.
+ * На каждую услугу — оплаченный заказ.
  */
 export const buildSnapshotFile = ({ clients, services }: SnapshotVolume) => ({
-  clients: Array.from({ length: clients }, (_, index) => ({
-    id: String(10_000 + index),
-    email: `client${index + 1}@example.com`,
-    // Услуги раскладываем поровну, остаток — первым клиентам
-    services: Array.from(
-      { length: Math.floor(services / clients) + (index < services % clients ? 1 : 0) },
-      (_, serviceIndex) => ({ id: `${10_000 + index}-${serviceIndex + 1}`, status: 'active' }),
-    ),
+  accounts: Array.from({ length: clients }, (_, index) => ({
+    id: index + 1,
+    email: `user-${String(index + 1).padStart(4, '0')}@example.test`,
+    balance: 10_000,
+    withdrawBalance: 0,
+    totalReplenished: 50_000,
+    bonusBalance: 0,
+    bonusState: 'locked',
+  })),
+  // Услуги раскладываем по клиентам по кругу
+  services: Array.from({ length: services }, (_, index) => ({
+    id: index + 1,
+    name: `service-${String(index + 1).padStart(4, '0')}`,
+    ownerId: (index % clients) + 1,
+    paymentTerm: 'month',
+    autoProlong: true,
+    createdAt: MOCK_CREATED_AT,
+    expiresAt: MOCK_EXPIRES_AT,
+    status: 'active',
+    price: 500,
+  })),
+  transactions: Array.from({ length: services }, (_, index) => ({
+    id: index + 1,
+    amount: 500,
+    status: 'performed',
+    performedAt: MOCK_CREATED_AT,
+    createdAt: MOCK_CREATED_AT,
+    type: 'order',
+    serviceId: index + 1,
   })),
 });

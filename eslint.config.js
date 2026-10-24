@@ -227,7 +227,7 @@ export default [
       'test-results',
       'node_modules',
       'public/mockServiceWorker.js',
-      'src/shared/api/auth',
+      'src/shared/api/generated',
     ],
   },
 ];

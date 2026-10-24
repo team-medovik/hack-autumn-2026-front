@@ -29,7 +29,6 @@ const rowOf = (login: string) =>
     .getAllByRole('row')
     .find((row) => within(row).queryByText(login, { exact: true }));
 const loginField = () => screen.getByLabelText('Логин');
-const passwordField = () => screen.getByLabelText('Пароль');
 const createButton = () => screen.getByRole('button', { name: 'Создать' });
 
 /** Список загружен — видна строка аналитика. */
@@ -39,7 +38,7 @@ describe('UsersSettings', () => {
   beforeEach(() => {
     resetUsersMock();
     useSessionStore.getState().setUser({
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       login: 'admin',
       role: 'ADMIN',
       createdAt: '2026-10-01T00:00:00Z',
@@ -48,49 +47,49 @@ describe('UsersSettings', () => {
 
   afterEach(() => {
     useSessionStore.getState().clearSession();
+    server.events.removeAllListeners();
   });
 
-  it('показывает учётки: себя без удаления, остальных — с датой, автором и корзиной', async () => {
+  it('показывает учётки: себя без удаления, остальных — с ролью, датой и корзиной', async () => {
     renderWidget();
     await waitForUsers();
 
     const admin = rowOf('admin (вы)');
     expect(admin).toBeDefined();
     expect(within(admin!).getByText('Администратор')).toBeInTheDocument();
-    expect(within(admin!).getByText('из конфигурации')).toBeInTheDocument();
     expect(within(admin!).queryByRole('button')).not.toBeInTheDocument();
 
     const analyst = rowOf('analyst')!;
     expect(within(analyst).getByText('Пользователь')).toBeInTheDocument();
     expect(within(analyst).getByText('20.10.2026')).toBeInTheDocument();
-    expect(within(analyst).getByText('admin')).toBeInTheDocument();
     expect(within(analyst).getByRole('button', { name: 'Удалить analyst' })).toBeInTheDocument();
 
     expect(screen.getByRole('button', { name: 'Удалить manager' })).toBeInTheDocument();
     expect(createButton()).toBeDisabled();
   });
 
-  it('создаёт пользователя со сгенерированным паролем и даёт скопировать данные', async () => {
+  it('создаёт пользователя, показывает выданный сервером пароль и даёт скопировать данные', async () => {
+    let body: unknown;
+    server.events.on('request:start', async ({ request }) => {
+      if (request.method === 'POST') {
+        body = await request.clone().json();
+      }
+    });
     const user = userEvent.setup();
     renderWidget();
     await waitForUsers();
 
     await user.type(loginField(), 'manager2');
-    await user.click(screen.getByRole('button', { name: 'Сгенерировать пароль' }));
-
-    expect(passwordField()).toHaveAttribute('type', 'password');
-    expect((passwordField() as HTMLInputElement).value).toMatch(GENERATED_PASSWORD);
-    expect(screen.queryByRole('button', { name: 'Сгенерировать пароль' })).not.toBeInTheDocument();
-    expect(createButton()).toHaveFocus();
-
     await user.click(createButton());
 
     expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
+    expect(body).toEqual({ login: 'manager2', role: 'EMPLOYEE', status: 'ACTIVE' });
     expect(loginField()).toHaveValue('manager2');
-    const password = (passwordField() as HTMLInputElement).value;
+    const passwordField = screen.getByLabelText('Временный пароль');
+    const password = (passwordField as HTMLInputElement).value;
     expect(password).toMatch(GENERATED_PASSWORD);
-    expect(passwordField()).toHaveAttribute('readonly');
-    expect(rowOf('manager2')).toBeDefined();
+    expect(passwordField).toHaveAttribute('readonly');
+    await waitFor(() => expect(rowOf('manager2')).toBeDefined());
 
     const copyButton = screen.getByRole('button', { name: 'Скопировать логин и пароль' });
     expect(copyButton).toHaveFocus();
@@ -103,27 +102,21 @@ describe('UsersSettings', () => {
     expect(screen.getByText('Новый пользователь')).toBeInTheDocument();
     expect(loginField()).toHaveValue('');
     expect(loginField()).toHaveFocus();
-    expect(passwordField()).toHaveValue('');
+    expect(screen.queryByLabelText('Временный пароль')).not.toBeInTheDocument();
   });
 
-  it('не даёт создать с коротким логином или слабым паролем', async () => {
+  it('не даёт создать с коротким логином', async () => {
     const user = userEvent.setup();
     renderWidget();
     await waitForUsers();
 
     await user.type(loginField(), 'ab');
-    await user.type(passwordField(), 'secret12');
     await user.tab();
 
     expect(screen.getByText('Логин — от 3 символов')).toBeInTheDocument();
-    expect(
-      screen.getByText('От 8 символов: строчная и заглавная буквы и цифра'),
-    ).toBeInTheDocument();
     expect(createButton()).toBeDisabled();
 
     await user.type(loginField(), 'c');
-    await user.clear(passwordField());
-    await user.type(passwordField(), 'Secret12');
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(createButton()).toBeEnabled();
@@ -135,7 +128,6 @@ describe('UsersSettings', () => {
     await waitForUsers();
 
     await user.type(loginField(), 'Analyst');
-    await user.type(passwordField(), 'Secret123');
     await user.click(createButton());
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Логин Analyst уже занят');
@@ -178,7 +170,7 @@ describe('UsersSettings', () => {
   it('при ошибке загрузки показывает сообщение и повторяет запрос', async () => {
     let requests = 0;
     server.use(
-      http.get('*/api/v1/users', () => {
+      http.get('*/api/v1/admin/users', () => {
         requests += 1;
         return HttpResponse.json({ message: 'Service Unavailable' }, { status: 503 });
       }),

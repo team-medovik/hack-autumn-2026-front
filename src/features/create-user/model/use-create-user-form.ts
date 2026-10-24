@@ -2,78 +2,68 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  addUserToList,
-  isSameLogin,
-  getLoginError,
-  usersApi,
-  type CreateUserRequest,
-} from '@/entities/user';
+import { isSameLogin, getLoginError, usersApi, usersKeys } from '@/entities/user';
 import { isConflictError } from '@/shared/api';
-import { generatePassword, getPasswordError } from '@/shared/lib/password';
 
-const EMPTY: CreateUserRequest = { login: '', password: '' };
-
-type Field = keyof CreateUserRequest;
+/** Что показать после создания: логин и временный пароль от сервера. */
+export interface CreatedCredentials {
+  login: string;
+  password: string;
+}
 
 /**
- * Форма «Новый пользователь»: ввод, создание и показ созданных данных.
- * Пароль виден только после создания — сервер его больше не отдаст.
+ * Форма «Новый пользователь»: ввод логина, создание и показ выданных данных. Пароль генерирует
+ * сервер и отдаёт один раз — он виден только до «Готово», нигде не сохраняется.
  */
 export const useCreateUserForm = () => {
   const queryClient = useQueryClient();
-  const [values, setValues] = useState(EMPTY);
+  const [login, setLogin] = useState('');
   /** Логин, на котором сервер ответил «занят». Ошибка висит, пока его не поменяют. */
   const [takenLogin, setTakenLogin] = useState<string | null>(null);
-  const [created, setCreated] = useState<CreateUserRequest | null>(null);
-  /** Ошибки правил показываем, когда с поля ушли, — не мешают набирать. */
-  const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
+  const [created, setCreated] = useState<CreatedCredentials | null>(null);
+  /** Ошибку правил показываем, когда с поля ушли, — не мешает набирать. */
+  const [isTouched, setIsTouched] = useState(false);
 
   const { mutate, isPending } = useMutation({
     mutationFn: usersApi.create,
-    onSuccess: (user, { password }) => {
-      addUserToList(queryClient, user);
-      setCreated({ login: user.login, password });
-      setValues(EMPTY);
+    onSuccess: ({ login: createdLogin, temporaryPassword }) => {
+      // В ответе на создание роль и статус — без перечня значений, список берём с сервера
+      void queryClient.invalidateQueries({ queryKey: usersKeys.all });
+      setCreated({ login: createdLogin, password: temporaryPassword });
+      setLogin('');
       setTakenLogin(null);
-      setTouched({});
+      setIsTouched(false);
     },
-    onError: (error, { login }) => {
+    onError: (error, { login: requested }) => {
       if (isConflictError(error)) {
-        setTakenLogin(login);
+        setTakenLogin(requested);
         return;
       }
       toast.error('Не удалось создать пользователя', {
-        description: 'Сервер не ответил. Данные остались в форме — попробуйте ещё раз',
+        description: 'Сервер не ответил. Логин остался в форме — попробуйте ещё раз',
       });
     },
   });
 
-  const login = values.login.trim();
-  const loginRuleError = getLoginError(login);
-  const passwordRuleError = getPasswordError(values.password);
-  const isLoginTaken = takenLogin !== null && isSameLogin(login, takenLogin);
+  const trimmed = login.trim();
+  const ruleError = getLoginError(trimmed);
+  const isLoginTaken = takenLogin !== null && isSameLogin(trimmed, takenLogin);
 
   const resolveLoginError = () => {
     if (isLoginTaken) {
       return `Логин ${takenLogin} уже занят`;
     }
-    return touched.login && login !== '' ? (loginRuleError ?? undefined) : undefined;
+    return isTouched && trimmed !== '' ? (ruleError ?? undefined) : undefined;
   };
 
   return {
-    values,
-    setLogin: (next: string) => setValues((current) => ({ ...current, login: next })),
-    setPassword: (next: string) => setValues((current) => ({ ...current, password: next })),
-    generatePassword: () => setValues((current) => ({ ...current, password: generatePassword() })),
-
-    touch: (field: Field) => setTouched((current) => ({ ...current, [field]: true })),
+    login,
+    setLogin,
+    touch: () => setIsTouched(true),
     loginError: resolveLoginError(),
-    passwordError:
-      touched.password && values.password !== '' ? (passwordRuleError ?? undefined) : undefined,
     isCreating: isPending,
-    canCreate: !loginRuleError && !passwordRuleError && !isLoginTaken && !isPending,
-    create: () => mutate({ login, password: values.password }),
+    canCreate: !ruleError && !isLoginTaken && !isPending,
+    create: () => mutate({ login: trimmed, role: 'EMPLOYEE', status: 'ACTIVE' }),
 
     /** Создан — показываем логин и пароль, пока админ не нажмёт «Готово». */
     created,

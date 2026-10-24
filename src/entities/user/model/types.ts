@@ -1,30 +1,18 @@
-/**
- * Контракт /users — учётки админ-панели (страница «Настройки → Пользователи»).
- * Пока бэкенда нет, отдаётся MSW (src/app/mocks/users). Даты — ISO 8601.
- */
-
-/** admin — Администратор (из конфигурации сервера), user — Пользователь (создан в панели). */
-export type UserRole = 'admin' | 'user';
+import type { AdminUserResponse } from '@/shared/api';
 
 /**
- * Откуда учётка: config — задана в конфигурации сервера, удалить из панели нельзя;
- * panel — создана администратором в панели.
+ * Учётки сотрудников: /admin/users (страница «Настройки → Пользователи», только для ADMIN).
+ * DTO — из openapi/openapi.yaml (src/shared/api/generated). В dev отдаётся MSW
+ * (src/app/mocks/users). Даты — ISO 8601.
+ *
+ * Пароль новой учётки генерирует сервер и отдаёт один раз — в ответе на создание.
  */
-export type UserSource = 'config' | 'panel';
+export type { CreatedUserResponse, CreateUserRequest } from '@/shared/api';
 
-export interface User {
-  /** Уникален без учёта регистра. Он же — идентификатор в URL. */
-  login: string;
-  role: UserRole;
-  source: UserSource;
-  /** Когда создан в панели. `null` — учётка из конфигурации. */
-  createdAt: string | null;
-  /** Логин того, кто создал. `null` — учётка из конфигурации. */
-  createdBy: string | null;
-}
+export type User = AdminUserResponse;
 
-export interface CreateUserRequest {
-  login: string;
-  /** Пароль задаёт администратор; сервер хранит только хэш и больше его не отдаёт. */
-  password: string;
-}
+/** ADMIN — Администратор, EMPLOYEE — Пользователь (сотрудник без админки). */
+export type UserRole = AdminUserResponse['role'];
+
+/** DISABLED — учётка есть, но войти с ней нельзя. */
+export type UserStatus = AdminUserResponse['status'];

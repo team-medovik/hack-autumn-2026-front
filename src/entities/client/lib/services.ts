@@ -20,8 +20,6 @@ const EVENT_LABELS: Record<ServiceEventType, string> = {
   renew: 'продлится',
   expire: 'истекает',
   delete: 'удалят',
-  deleted: 'удалена',
-  blocked: 'заблокирована',
 };
 
 export interface ServiceGroup {
@@ -56,7 +54,7 @@ export const groupServices = (services: readonly ClientService[]): ServiceGroup[
     ];
   });
 
-/** Подпись услуги: «удалят 21.10, автопродление выкл.», «удалена 02.09». */
+/** Подпись услуги: «удалят 21.10, автопродление выкл.»; у удалённой события нет — пусто. */
 export const formatServiceNote = ({
   event,
   autoRenew,

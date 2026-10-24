@@ -1,19 +1,24 @@
 import { delay, http, HttpResponse } from 'msw';
 
-import { getLoginError, type CreateUserRequest, type User } from '@/entities/user';
-import { getPasswordError } from '@/shared/lib/password';
+import {
+  getLoginError,
+  type CreatedUserResponse,
+  type CreateUserRequest,
+  type User,
+} from '@/entities/user';
+import { generatePassword } from '@/shared/lib/password';
 
 import { INITIAL_USERS } from './fixtures';
 import { readMockScenario } from '../scenario';
 
 /**
- * Сценарии /users — по макетам «Настройки — пользователи (…)»: /settings?mock=users-error
+ * Сценарии /admin/users — по макетам «Настройки — пользователи (…)»: /settings?mock=users-error
  * main                — список, создание и удаление работают (по умолчанию)
  * users-loading       — список грузится бесконечно
  * users-error         — список не загрузился
  * users-create-error  — сервер не принимает создание
  * users-delete-error  — сервер не принимает удаление
- * Занятый логин — создайте «analyst»; созданный пароль и диалог удаления — состояния страницы.
+ * Занятый логин — создайте «analyst»; выданный пароль и диалог удаления — состояния страницы.
  */
 export const USERS_SCENARIOS = [
   'main',
@@ -33,7 +38,7 @@ export const resetUsersMock = () => {
   users = [...INITIAL_USERS];
 };
 
-const findUser = (login: string) =>
+const findByLogin = (login: string) =>
   users.find((user) => user.login.toLowerCase() === login.toLowerCase());
 
 const serverUnavailable = () =>
@@ -42,7 +47,7 @@ const serverUnavailable = () =>
 const scenario = () => readMockScenario(USERS_SCENARIOS, 'main');
 
 export const usersHandlers = [
-  http.get('*/api/v1/users', async () => {
+  http.get('*/api/v1/admin/users', async () => {
     if (scenario() === 'users-loading') {
       await delay('infinite');
     }
@@ -54,47 +59,54 @@ export const usersHandlers = [
     return HttpResponse.json(users);
   }),
 
-  http.post('*/api/v1/users', async ({ request }) => {
+  http.post('*/api/v1/admin/users', async ({ request }) => {
     await delay();
 
     if (scenario() === 'users-create-error') {
       return serverUnavailable();
     }
 
-    const { login, password } = (await request.json()) as CreateUserRequest;
+    const {
+      login,
+      role = 'EMPLOYEE',
+      status = 'ACTIVE',
+    } = (await request.json()) as CreateUserRequest;
 
-    const ruleError = getLoginError(login) ?? getPasswordError(password);
+    const ruleError = getLoginError(login);
     if (ruleError) {
-      return HttpResponse.json({ message: ruleError }, { status: 422 });
+      return HttpResponse.json({ message: ruleError }, { status: 400 });
     }
-    if (findUser(login)) {
+    if (findByLogin(login)) {
       return HttpResponse.json({ message: `Логин ${login} уже занят` }, { status: 409 });
     }
 
     const user: User = {
+      id: crypto.randomUUID(),
       login: login.trim(),
-      role: 'user',
-      source: 'panel',
+      role,
+      status,
       createdAt: new Date().toISOString(),
-      createdBy: CURRENT_USER,
     };
     users = [...users, user];
-    return HttpResponse.json(user, { status: 201 });
+    return HttpResponse.json<CreatedUserResponse>(
+      { ...user, temporaryPassword: generatePassword() },
+      { status: 201 },
+    );
   }),
 
-  http.delete('*/api/v1/users/:login', async ({ params }) => {
+  http.delete('*/api/v1/admin/users/:id', async ({ params }) => {
     await delay();
 
     if (scenario() === 'users-delete-error') {
       return serverUnavailable();
     }
 
-    const user = findUser(String(params.login));
+    const user = users.find(({ id }) => id === params.id);
     if (!user) {
       return HttpResponse.json({ message: 'Пользователь не найден' }, { status: 404 });
     }
-    if (user.source === 'config' || user.login === CURRENT_USER) {
-      return HttpResponse.json({ message: 'Эту учётку нельзя удалить из панели' }, { status: 403 });
+    if (user.login === CURRENT_USER) {
+      return HttpResponse.json({ message: 'Нельзя удалить свою учётку' }, { status: 409 });
     }
 
     users = users.filter((item) => item !== user);

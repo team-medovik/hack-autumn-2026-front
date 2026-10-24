@@ -23,7 +23,8 @@ const round1 = (value: number) => Math.round(value * 10) / 10;
 
 /**
  * Бонусы и реферальный баланс — у части клиентов, детерминированно по месту в списке.
- * На потерю не влияют: в продления идёт только основной баланс.
+ * На потерю не влияют: в моках бонусы заблокированы, а реферальный баланс по настройкам не
+ * считается деньгами — в продления идёт только основной баланс (`available`).
  */
 const sideBalances = (index: number) => ({
   bonus: index % 3 === 0 ? 0 : round2(1 + (index % 5) * 1.5),
@@ -183,7 +184,7 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
 
 /** Без оценки: живых услуг нет — все удалены или заблокированы, продлевать нечего. */
 const buildUnscoredCard = (client: ClientListItem, index: number): ClientCard => {
-  const deadService = (suffix: string, status: 'deleted' | 'blocked', days: number) =>
+  const deadService = (suffix: string, status: 'deleted' | 'blocked') =>
     ({
       id: `service-${client.id.slice(-3)}${suffix}`,
       name: `service-${client.id.slice(-3)}${suffix}`,
@@ -191,7 +192,8 @@ const buildUnscoredCard = (client: ClientListItem, index: number): ClientCard =>
       level: 'none',
       status,
       monthlyPrice: null,
-      event: { type: status, date: addDays(-days) },
+      // Достоверного будущего события нет, а дату удаления один снимок не знает
+      event: null,
       autoRenew: null,
     }) satisfies ClientService;
 
@@ -208,9 +210,9 @@ const buildUnscoredCard = (client: ClientListItem, index: number): ClientCard =>
       monthlyLoss: 0,
     },
     services: [
-      deadService('1', 'deleted', 49),
-      deadService('2', 'deleted', 21),
-      deadService('3', 'blocked', 12),
+      deadService('1', 'deleted'),
+      deadService('2', 'deleted'),
+      deadService('3', 'blocked'),
     ],
     lossBreakdown: { k: K, uncoveredShare: 0, horizonDays: HORIZON_DAYS, items: [] },
   };

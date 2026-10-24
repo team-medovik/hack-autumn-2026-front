@@ -11,7 +11,7 @@ import {
 import { readMockScenario } from '../scenario';
 
 /**
- * Сценарии GET /dashboard — по одному на макет «Дом (…)». Выбираются параметром страницы:
+ * Сценарии GET /analytics/summary — по одному на макет «Дом (…)». Выбираются параметром страницы:
  *   /?mock=optimistic
  * main        — основной экран (по умолчанию)
  * optimistic  — высокого риска нет
@@ -46,7 +46,7 @@ const serverUnavailable = () =>
 let offlineRequests = 0;
 
 export const dashboardHandlers = [
-  http.get('*/dashboard', async () => {
+  http.get('*/api/v1/analytics/summary', async () => {
     const scenario = readMockScenario(DASHBOARD_SCENARIOS, 'main');
 
     if (scenario === 'loading') {

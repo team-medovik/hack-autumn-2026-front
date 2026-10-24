@@ -74,6 +74,9 @@ export const useIsAuthenticated = () => useSessionStore((s) => s.status === 'aut
 
 export const useSessionUser = () => useSessionStore((s) => s.user);
 
+/** Вошёл администратор — ему доступно управление сотрудниками. */
+export const useIsAdmin = () => useSessionStore((s) => s.user?.role === 'ADMIN');
+
 export const useSessionActions = () =>
   useSessionStore(
     useShallow((s) => ({

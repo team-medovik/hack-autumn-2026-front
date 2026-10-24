@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import {
   getConflictingSettings,
+  getSettingsChanges,
   isSameValues,
   isValidRiskThresholds,
   modelSettingsApi,
@@ -20,14 +21,28 @@ export interface SettingsConflict {
   values: ModelSettingsValues;
 }
 
+/** Что сохраняем: значения и версия, от которой их правили. */
+interface SaveRequest {
+  base: ModelSettings;
+  values: ModelSettingsValues;
+}
+
+/** PATCH только с изменёнными полями. Отличий нет — сохранённая версия и есть результат. */
+const saveSettings = ({ base, values }: SaveRequest): Promise<ModelSettings> => {
+  const changes = getSettingsChanges(base.values, values);
+  return changes
+    ? modelSettingsApi.patch({ version: base.version, changes })
+    : Promise.resolve(base);
+};
+
 interface EditorOptions {
   /** Сохранение прошло, риски пересчитаны. */
   onSaved?: () => void;
 }
 
 /**
- * Редактирование параметров модели: черновик, проверка, сохранение с защитой от одновременной
- * правки. Сохранённая версия попадает в кэш — редактор с `key={settings.version}` пересоздаётся
+ * Редактирование параметров модели: черновик, проверка, сохранение PATCH-ем изменённых полей
+ * с защитой от одновременной правки. Сохранённая версия попадает в кэш — редактор с `key={settings.version}` пересоздаётся
  * с чистым черновиком.
  */
 export const useModelSettingsEditor = (
@@ -40,7 +55,7 @@ export const useModelSettingsEditor = (
 
   // Колбэки уровня useMutation срабатывают, даже если редактор успел пересоздаться
   const { mutate, isPending } = useMutation({
-    mutationFn: modelSettingsApi.save,
+    mutationFn: saveSettings,
     onSuccess: (saved) => {
       applySavedSettings(queryClient, saved);
       onSaved?.();
@@ -70,21 +85,21 @@ export const useModelSettingsEditor = (
     canDiscard: isDirty && !isPending,
     canReset: !(isDefault && isSameValues(draft, settings.defaults)) && !isPending,
 
-    save: () => mutate({ version: settings.version, values: draft }),
+    save: () => mutate({ base: settings, values: draft }),
     discard,
     /**
      * Вернуть значения по умолчанию — правки черновика пропадают. Если они и так сохранены,
      * пересчитывать нечего: просто откатываем черновик.
      */
     resetToDefaults: () =>
-      isDefault ? discard() : mutate({ version: settings.version, values: settings.defaults }),
+      isDefault ? discard() : mutate({ base: settings, values: settings.defaults }),
 
     conflict,
     dismissConflict: () => setConflict(null),
-    /** Сохранить свои значения поверх чужой версии. */
+    /** Сохранить свои значения поверх чужой версии: отправляем отличия от неё. */
     overwrite: () => {
       if (conflict) {
-        mutate({ version: conflict.latest.version, values: conflict.values });
+        mutate({ base: conflict.latest, values: conflict.values });
         setConflict(null);
       }
     },

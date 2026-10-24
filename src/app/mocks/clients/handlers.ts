@@ -7,7 +7,7 @@ import { queryClients } from './query-clients';
 import { readMockScenario } from '../scenario';
 
 /**
- * Сценарии GET /clients — по одному на макет «Сводная таблица (…)». Выбираются параметром
+ * Сценарии GET /customers — по одному на макет «Сводная таблица (…)». Выбираются параметром
  * страницы, общим с дашбордом: /clients?mock=no-data
  * main     — 42 клиента (по умолчанию); «ничего не найдено» — просто поиск, например client99
  * no-data  — снимков ещё не загружали
@@ -28,7 +28,7 @@ export const CLIENT_CARD_SCENARIOS = ['main', 'card-loading', 'card-error'] as c
 const notFound = () => HttpResponse.json({ message: 'Client not found' }, { status: 404 });
 
 export const clientsHandlers = [
-  http.get('*/clients', async ({ request }) => {
+  http.get('*/api/v1/customers', async ({ request }) => {
     const scenario = readMockScenario(CLIENTS_SCENARIOS, 'main');
 
     if (scenario === 'loading') {
@@ -46,7 +46,7 @@ export const clientsHandlers = [
     return HttpResponse.json(queryClients(clients, new URL(request.url).searchParams));
   }),
 
-  http.get<{ id: string }>('*/clients/:id/position', async ({ params, request }) => {
+  http.get<{ id: string }>('*/api/v1/customers/:id/position', async ({ params, request }) => {
     await delay();
 
     if (!CLIENT_CARDS.has(params.id)) {
@@ -57,7 +57,7 @@ export const clientsHandlers = [
     );
   }),
 
-  http.get<{ id: string }>('*/clients/:id', async ({ params }) => {
+  http.get<{ id: string }>('*/api/v1/customers/:id', async ({ params }) => {
     const scenario = readMockScenario(CLIENT_CARD_SCENARIOS, 'main');
 
     if (scenario === 'card-loading') {

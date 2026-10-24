@@ -3,20 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { canDeleteUser, getLoginError, isSameLogin, isValidLogin } from './user-rules';
 import type { User } from '../model/types';
 
-const admin: User = {
-  login: 'admin',
-  role: 'admin',
-  source: 'config',
-  createdAt: null,
-  createdBy: null,
-};
-
 const analyst: User = {
+  id: '9d1f0c3e-2b4a-4c55-8e6f-2a7b9c0d1e2f',
   login: 'analyst',
-  role: 'user',
-  source: 'panel',
+  role: 'EMPLOYEE',
+  status: 'ACTIVE',
   createdAt: '2026-10-20T09:00:00.000Z',
-  createdBy: 'admin',
 };
 
 describe('isSameLogin', () => {
@@ -27,12 +19,8 @@ describe('isSameLogin', () => {
 });
 
 describe('canDeleteUser', () => {
-  it('разрешает удалить созданного в панели', () => {
+  it('разрешает удалить другого', () => {
     expect(canDeleteUser(analyst, 'admin')).toBe(true);
-  });
-
-  it('не даёт удалить учётку из конфигурации', () => {
-    expect(canDeleteUser(admin, 'manager')).toBe(false);
   });
 
   it('не даёт удалить себя', () => {
