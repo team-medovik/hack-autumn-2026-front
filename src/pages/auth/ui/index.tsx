@@ -30,10 +30,10 @@ export const AuthPage = () => {
   const [loginValue, password] = watch(['login', 'password']);
   const isEmpty = !loginValue && !password;
 
-  // Редирект после успешного входа делает GuestOnly. API ждёт логин в поле `email`.
+  // Редирект после успешного входа делает GuestOnly
   const onSubmit = (values: LoginFormValues) =>
     login(
-      { data: { email: values.login, password: values.password } },
+      { data: values },
       {
         onError: (error) => {
           if (error.response?.status === 401) {

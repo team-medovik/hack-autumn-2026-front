@@ -1,6 +1,6 @@
 import { delay, http, HttpResponse } from 'msw';
 
-import type { AuthenticationResponse, CurrentUserResponse } from '@/shared/api';
+import type { AuthenticationResponse, CurrentUserResponse, LoginRequest } from '@/shared/api';
 
 import { getMockPassword } from './account';
 
@@ -18,7 +18,7 @@ const ACCESS_TOKEN_TTL_SEC = 15 * 60;
 
 const MOCK_USER: CurrentUserResponse = {
   id: '1',
-  email: MOCK_LOGIN,
+  login: MOCK_LOGIN,
   role: 'ADMIN',
   createdAt: '2026-10-01T00:00:00Z',
 };
@@ -55,9 +55,9 @@ const unauthorized = (message: string) =>
 export const authHandlers = [
   http.post('*/api/v1/auth/login', async ({ request }) => {
     await delay(600); // чтобы увидеть состояние «вход выполняется»
-    const body = (await request.json()) as { email?: string; password?: string };
+    const body = (await request.json()) as LoginRequest;
 
-    if (body.email !== MOCK_LOGIN || body.password !== getMockPassword()) {
+    if (body.login !== MOCK_LOGIN || body.password !== getMockPassword()) {
       return unauthorized('Неверный логин или пароль');
     }
 

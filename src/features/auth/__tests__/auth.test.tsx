@@ -133,7 +133,7 @@ describe('вход', () => {
     await user.click(screen.getByRole('button', { name: 'Продолжить' }));
 
     expect(await screen.findByText('Неверный логин или пароль')).toBeInTheDocument();
-    expect(body).toEqual({ email: login, password });
+    expect(body).toEqual({ login, password });
   });
 
   it('при 401 показывает ошибку под паролем и очищает его, логин остаётся', async () => {
@@ -153,7 +153,7 @@ describe('вход', () => {
   it('после входа возвращает туда, куда шёл пользователь', async () => {
     server.use(
       http.post('*/auth/login', () =>
-        HttpResponse.json({ accessToken: 'token', expiresIn: 60, user: { email: 'admin' } }),
+        HttpResponse.json({ accessToken: 'token', expiresIn: 60, user: { login: 'admin' } }),
       ),
     );
     const user = userEvent.setup();

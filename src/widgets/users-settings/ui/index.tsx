@@ -19,8 +19,7 @@ import './users-settings.scss';
 export const UsersSettings = () => {
   const titleId = useId();
   const { data: users, isError, isFetching, refetch } = useUsers();
-  // В сессии логин лежит в поле email — так его называет API авторизации
-  const currentLogin = useSessionUser()?.email;
+  const currentLogin = useSessionUser()?.login;
 
   const renderList = () => {
     if (users) {

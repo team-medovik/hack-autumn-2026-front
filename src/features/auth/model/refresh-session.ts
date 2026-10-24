@@ -1,5 +1,5 @@
 import { useSessionStore } from '@/entities/session';
-import { refresh } from '@/shared/api';
+import { refreshSession as requestRefresh } from '@/shared/api';
 
 let inFlight: Promise<string | null> | null = null;
 
@@ -10,7 +10,7 @@ let inFlight: Promise<string | null> | null = null;
  * @returns новый access-токен или `null`, если сессии нет (стор уже сброшен в anonymous)
  */
 export const refreshSession = (): Promise<string | null> => {
-  inFlight ??= refresh()
+  inFlight ??= requestRefresh()
     .then((response) => {
       useSessionStore.getState().setSession(response);
       return response.accessToken ?? null;
