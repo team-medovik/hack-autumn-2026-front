@@ -21,13 +21,13 @@ describe('session store', () => {
     useSessionStore.getState().setSession({
       accessToken: 'token-1',
       expiresIn: 60,
-      user: { id: '1', email: 'a@b.c' },
+      user: { id: '1', login: 'admin' },
     });
 
     const state = useSessionStore.getState();
     expect(state.status).toBe('authenticated');
     expect(getAccessToken()).toBe('token-1');
-    expect(state.user?.email).toBe('a@b.c');
+    expect(state.user?.login).toBe('admin');
     expect(state.expiresAt).toBeGreaterThanOrEqual(before + 60_000);
   });
 

@@ -34,8 +34,7 @@ const SettingsCard = ({ title, description, children }: SettingsCardProps) => {
  * Правая колонка в макете пустая — блоки той же ширины, что на соседних вкладках.
  */
 export const OtherSettings = () => {
-  // В сессии логин лежит в поле email — так его называет API авторизации
-  const login = useSessionUser()?.email;
+  const login = useSessionUser()?.login;
 
   return (
     <AsideLayout>

@@ -39,7 +39,7 @@ describe('OtherSettings', () => {
     resetAccountMock();
     useSessionStore.getState().setUser({
       id: '1',
-      email: 'admin',
+      login: 'admin',
       role: 'ADMIN',
       createdAt: '2026-10-01T00:00:00Z',
     });
