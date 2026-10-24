@@ -1,0 +1,22 @@
+// Макет «Настройки — модель»: ряд вкладок с плашкой обновления, под ним через 40px — содержимое.
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-distant);
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-related);
+  }
+
+  &__soon {
+    padding-block: var(--space-unrelated);
+  }
+
+  @include down(desktop-s) {
+    gap: var(--space-grouped);
+  }
+}

@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import {
   formatCount,
+  formatDateTime,
   formatDayMonth,
   formatMoney,
   formatNumber,
   formatPercent,
+  parseDecimal,
   pluralize,
   type PluralForms,
 } from './format';
@@ -39,6 +41,27 @@ describe('formatPercent', () => {
   it('переводит долю в целые проценты', () => {
     expect(plain(formatPercent(0.3455))).toBe('35 %');
     expect(plain(formatPercent(0))).toBe('0 %');
+  });
+});
+
+describe('formatDateTime', () => {
+  it('показывает дату и время в часовом поясе пользователя', () => {
+    expect(formatDateTime(new Date(2026, 9, 23, 18, 0).toISOString())).toBe('23.10.2026, 18:00');
+  });
+});
+
+describe('parseDecimal', () => {
+  it('понимает и запятую, и точку', () => {
+    expect(parseDecimal('0,5')).toBe(0.5);
+    expect(parseDecimal(' 0.25 ')).toBe(0.25);
+    expect(parseDecimal('70')).toBe(70);
+  });
+
+  it('не принимает пустой и мусорный ввод', () => {
+    expect(parseDecimal('')).toBeNull();
+    expect(parseDecimal('12abc')).toBeNull();
+    expect(parseDecimal('1e3')).toBeNull();
+    expect(parseDecimal(',5')).toBeNull();
   });
 });
 

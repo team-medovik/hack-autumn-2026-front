@@ -4,6 +4,7 @@ import type { Post } from '@/entities/post';
 
 import { clientsHandlers } from './clients';
 import { dashboardHandlers } from './dashboard';
+import { settingsHandlers } from './settings';
 
 // Общие MSW-хэндлеры — используются и в браузере (dev), и в Node (тесты).
 // Описывайте здесь форму реального API для точного покрытия тестами.
@@ -17,6 +18,7 @@ const MOCK_POSTS: Post[] = [
 export const handlers = [
   ...dashboardHandlers,
   ...clientsHandlers,
+  ...settingsHandlers,
 
   // GET /posts
   http.get('*/posts', () => HttpResponse.json(MOCK_POSTS)),

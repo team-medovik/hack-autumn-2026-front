@@ -27,6 +27,14 @@ const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2
 
 const dayMonthFormat = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: '2-digit' });
 
+const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 /** 1296.9 → «1 296,90 €» (разделители — неразрывные пробелы). */
 export const formatMoney = (value: number) => moneyFormat.format(value);
 
@@ -39,6 +47,20 @@ export const formatPercent = (share: number) => percentFormat.format(share);
 
 /** ISO-дата → «22:10» в часовом поясе пользователя. */
 export const formatTime = (iso: string) => timeFormat.format(new Date(iso));
+
+/** ISO-дата → «23.10.2026, 18:00» в часовом поясе пользователя. */
+export const formatDateTime = (iso: string) => dateTimeFormat.format(new Date(iso));
+
+const DECIMAL = /^-?\d+([.,]\d+)?$/;
+
+/**
+ * Число из ввода пользователя: «0,5» и «0.5» → 0.5, пробелы по краям не важны.
+ * Пустая строка, «1e3», «12abc» — `null`.
+ */
+export const parseDecimal = (text: string) => {
+  const trimmed = text.trim();
+  return DECIMAL.test(trimmed) ? Number(trimmed.replace(',', '.')) : null;
+};
 
 const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
 

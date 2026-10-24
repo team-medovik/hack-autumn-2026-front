@@ -1,0 +1,7 @@
+.forecast-section {
+  &__fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-grouped) var(--space-lil-distant);
+  }
+}

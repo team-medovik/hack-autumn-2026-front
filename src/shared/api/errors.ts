@@ -6,8 +6,15 @@ const statusOf = (error: unknown) =>
 /** Сервер ответил 404 — сущности нет. */
 export const isNotFoundError = (error: unknown) => statusOf(error) === 404;
 
+/** Сервер ответил 409 — данные успели изменить, пока с ними работали. */
+export const isConflictError = (error: unknown) => statusOf(error) === 409;
+
 /** Ошибка запроса (4xx): повтор ответа не изменит. */
 export const isClientError = (error: unknown) => {
   const status = statusOf(error);
   return status !== undefined && status >= 400 && status < 500;
 };
+
+/** Тело ответа с ошибкой. Форму гарантирует контракт эндпоинта — проверяет вызывающий код. */
+export const getErrorData = (error: unknown): unknown =>
+  axios.isAxiosError(error) ? error.response?.data : undefined;

@@ -1,0 +1,10 @@
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--space-grouped);
+
+  @include down(desktop-s) {
+    padding-inline: 0;
+  }
+}

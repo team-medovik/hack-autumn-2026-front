@@ -37,6 +37,11 @@ interface DialogProps {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   onConfirm?: () => void;
+  /**
+   * Действие второй кнопки, если она не просто закрывает диалог («Сохранить поверх»).
+   * Esc и клик мимо окна его не вызывают — только `onOpenChange(false)`.
+   */
+  onCancel?: () => void;
   className?: string;
 }
 
@@ -63,6 +68,7 @@ export const Dialog = ({
   confirmLabel = variant === 'info' ? 'Понятно' : 'Подтвердить',
   cancelLabel = 'Отмена',
   onConfirm,
+  onCancel,
   className,
 }: DialogProps) => (
   <Root open={open} onOpenChange={onOpenChange}>
@@ -88,7 +94,9 @@ export const Dialog = ({
         <div className="dialog__actions">
           {variant !== 'info' && (
             <Cancel asChild>
-              <Button variant="secondary">{cancelLabel}</Button>
+              <Button variant="secondary" onClick={onCancel}>
+                {cancelLabel}
+              </Button>
             </Cancel>
           )}
           <Action asChild>
