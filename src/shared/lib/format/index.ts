@@ -1,4 +1,5 @@
 export {
+  formatAmount,
   formatCount,
   formatDate,
   formatDateTime,

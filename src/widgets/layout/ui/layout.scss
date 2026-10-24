@@ -5,10 +5,14 @@
   min-height: 100dvh;
   background: var(--bg-page);
 
+  // Навбар на всю высоту окна; если окно ниже навбара — он прокручивается сам, а не обрезается
   .navbar {
     position: sticky;
     top: 0;
     height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
 
   &__main {
@@ -36,6 +40,7 @@
     .navbar {
       position: static;
       height: auto;
+      overflow-y: visible;
     }
 
     &__main {

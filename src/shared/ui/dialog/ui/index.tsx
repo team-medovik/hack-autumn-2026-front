@@ -20,13 +20,15 @@ import './dialog.scss';
 /** Тип из Figma: default — Обычный, danger — Опасный, info — Информация (одна кнопка). */
 export type DialogVariant = 'default' | 'danger' | 'info';
 
-/** Ширина: m — 480px (подтверждения), l — 560px (пояснения с формулами). */
+/** Ширина: m — 480px (подтверждения), l — 560px (пояснения с блоками расчёта, `children`). */
 export type DialogSize = 'm' | 'l';
 
 interface DialogProps {
   title: ReactNode;
   /** Строка или несколько абзацев (`<p>`) — обёртка блочная. */
   description?: ReactNode;
+  /** Содержимое под текстом, перед кнопками: блоки расчёта, списки. */
+  children?: ReactNode;
   variant?: DialogVariant;
   size?: DialogSize;
   open?: boolean;
@@ -60,6 +62,7 @@ interface DialogProps {
 export const Dialog = ({
   title,
   description,
+  children,
   variant = 'default',
   size = 'm',
   open,
@@ -90,6 +93,8 @@ export const Dialog = ({
             </Description>
           )}
         </div>
+
+        {children}
 
         <div className="dialog__actions">
           {variant !== 'info' && (

@@ -5,6 +5,7 @@ export {
   TableHeader,
   TableMessageRow,
   TableRow,
+  TableScroll,
   type SortDirection,
   type TableRowGap,
   type TableVariant,

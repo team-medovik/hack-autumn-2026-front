@@ -56,6 +56,10 @@ describe('ClientCardPage', () => {
     const balance = within(card).getByLabelText('Баланс клиента');
     expect(within(balance).getByText(plainText('3,42 €'))).toBeInTheDocument();
     expect(within(balance).getByText(plainText('6,77 €'))).toBeInTheDocument();
+    // Бонусы и реферальный баланс — справочно, рядом с основным
+    expect(within(balance).getByText('Бонусы (заблок.)')).toBeInTheDocument();
+    expect(within(balance).getByText(plainText('2,00 €'))).toBeInTheDocument();
+    expect(within(balance).getByText('Реф. баланс')).toBeInTheDocument();
 
     expect(within(card).getByRole('heading', { name: 'Услуги · 2' })).toBeInTheDocument();
     expect(within(card).getByRole('button', { name: /Ожидает оплаты/ })).toHaveAttribute(
@@ -90,16 +94,13 @@ describe('ClientCardPage', () => {
     const dialog = screen.getByRole('alertdialog', {
       name: /Как посчитана потеря 6,77\s€ в месяц/,
     });
+    expect(within(dialog).getByText(/^Нужно на продления за 5\sдн\.$/)).toBeInTheDocument();
+    expect(within(dialog).getByText('(9,90 − 6,48) / 9,90')).toBeInTheDocument();
+    expect(within(dialog).getByText(plainText('35 %'))).toBeInTheDocument();
     expect(
-      within(dialog).getByText(
-        plainText('service-0017: 9,90 € × 0,942 × (0,5 + 0,5 × 0,35) = 6,27 €'),
-      ),
+      within(dialog).getByText(plainText('9,90 € × 0,942 × (0,5 + 0,5 × 0,35)')),
     ).toBeInTheDocument();
-    expect(
-      within(dialog).getByText(
-        plainText('Непокрытая доля 35 %: на счёте 6,48 € из нужных 9,90 €.'),
-      ),
-    ).toBeInTheDocument();
+    expect(within(dialog).getByText(plainText('6,27 €'))).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole('button', { name: 'Понятно' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();

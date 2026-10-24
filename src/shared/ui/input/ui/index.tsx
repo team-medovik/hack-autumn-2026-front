@@ -1,6 +1,7 @@
 import { Label } from '@radix-ui/react-label';
 import { clsx } from 'clsx';
-import { useId, type ComponentProps } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useId, useState, type ComponentProps } from 'react';
 
 import './input.scss';
 
@@ -13,19 +14,26 @@ interface InputProps extends Omit<ComponentProps<'input'>, 'placeholder'> {
 
 /**
  * Поле ввода дизайн-системы. Состояния из Figma: Пустое, Фокус, Заполненное, Ошибка, Недоступное.
+ * У `type="password"` справа «глаз» — показать или скрыть пароль.
  * Совместимо с react-hook-form: `<Input label="e-mail" {...register('email')} error={errors.email?.message} />`.
  */
-export const Input = ({ label, error, className, id, disabled, ...props }: InputProps) => {
+export const Input = ({ label, error, className, id, disabled, type, ...props }: InputProps) => {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const helperId = `${inputId}-helper`;
   const errorText = typeof error === 'string' ? error : undefined;
+  const isPassword = type === 'password';
+  const [isRevealed, setIsRevealed] = useState(false);
 
   return (
     <div
       className={clsx(
         'input',
-        { 'input--error': Boolean(error), 'input--disabled': disabled },
+        {
+          'input--error': Boolean(error),
+          'input--disabled': disabled,
+          'input--with-action': isPassword,
+        },
         className,
       )}
     >
@@ -33,6 +41,7 @@ export const Input = ({ label, error, className, id, disabled, ...props }: Input
         <input
           id={inputId}
           className="input__control"
+          type={isPassword && isRevealed ? 'text' : type}
           // Пробел нужен для :placeholder-shown — по нему CSS понимает, что поле пустое
           placeholder=" "
           disabled={disabled}
@@ -43,6 +52,23 @@ export const Input = ({ label, error, className, id, disabled, ...props }: Input
         <Label htmlFor={inputId} className="input__label">
           {label}
         </Label>
+        {isPassword && (
+          <button
+            type="button"
+            className="input__action"
+            disabled={disabled}
+            aria-label={isRevealed ? 'Скрыть пароль' : 'Показать пароль'}
+            aria-pressed={isRevealed}
+            aria-controls={inputId}
+            onClick={() => setIsRevealed((revealed) => !revealed)}
+          >
+            {isRevealed ? (
+              <EyeOff size={24} strokeWidth={1.5} aria-hidden />
+            ) : (
+              <Eye size={24} strokeWidth={1.5} aria-hidden />
+            )}
+          </button>
+        )}
       </div>
 
       {errorText && (

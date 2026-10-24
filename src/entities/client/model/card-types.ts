@@ -16,8 +16,12 @@ export interface ClientFactor {
 }
 
 export interface ClientCardBalance {
-  /** Сейчас на счёте. */
+  /** Основной баланс — сейчас на счёте. Только он идёт в продления. */
   available: number;
+  /** Бонусный баланс. Заблокирован: в продления не идёт. */
+  bonus: number;
+  /** Реферальный баланс. В продления не идёт. */
+  referral: number;
   /** Нужно на продления в ближайшие дни. `null` — продлевать нечего: живых услуг нет. */
   required: number | null;
   /** Потеря в месяц, если клиент уйдёт. */
@@ -78,6 +82,8 @@ export interface LossBreakdown {
   k: number;
   /** Какую часть нужного на продления не покрывает баланс, 0–1. */
   uncoveredShare: number;
+  /** За сколько дней вперёд считается `balance.required` — горизонт прогноза из настроек модели. */
+  horizonDays: number;
   /** Пусто — живых услуг нет, потери нет. */
   items: LossBreakdownItem[];
 }

@@ -67,13 +67,13 @@ export const AuthPage = () => {
       }
     >
       <Input
-        label="Логин"
+        label="логин"
         autoComplete="username"
         {...register('login')}
         error={errors.login?.message}
       />
       <Input
-        label="Пароль"
+        label="пароль"
         type="password"
         autoComplete="current-password"
         {...register('password')}

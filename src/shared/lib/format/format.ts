@@ -53,6 +53,14 @@ const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
 /** 1296.9 → «1 296,90 €» (разделители — неразрывные пробелы). */
 export const formatMoney = (value: number) => moneyFormat.format(value);
 
+const amountFormat = new Intl.NumberFormat(LOCALE, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/** Сумма без валюты — для формул: 9.9 → «9,90». */
+export const formatAmount = (value: number) => amountFormat.format(value);
+
 /** 94.2 → «94,2», 100 → «100». Доли — с нужной точностью: formatNumber(0.942, 3) → «0,942». */
 export const formatNumber = (value: number, maximumFractionDigits = 1) =>
   getNumberFormat(maximumFractionDigits).format(value);

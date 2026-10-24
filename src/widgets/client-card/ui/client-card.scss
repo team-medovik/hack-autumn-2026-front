@@ -36,6 +36,12 @@
     gap: 8px;
   }
 
+  // Подложка при наведении — поуже стандартной 24px: кнопки стоят вплотную к счётчику.
+  // Специфичнее паддингов .button
+  &__nav &__step {
+    padding-inline: var(--space-close);
+  }
+
   &__counter {
     white-space: nowrap;
   }
@@ -72,11 +78,19 @@
     list-style: none;
   }
 
-  &__money {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-close);
+  // Ряд «Балансы» на всю ширину: поля 16/24, показатели через 12px
+  &__balances {
+    gap: var(--space-related);
+    padding: var(--space-close) var(--space-grouped);
+
+    > * {
+      padding-block: var(--space-bonded);
+    }
+  }
+
+  // «Как посчитано» — ссылка, а не растянутая на колонку кнопка
+  &__explain {
+    align-self: flex-start;
   }
 
   &__services {
@@ -92,17 +106,6 @@
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-
-  // Пустые строки между абзацами в макете окна «Как посчитано»
-  &__explanation {
-    display: flex;
-    flex-direction: column;
-    gap: var(--body-line-height);
-
-    p {
-      margin: 0;
-    }
   }
 
   &__message {
@@ -130,13 +133,25 @@
       justify-content: space-between;
     }
 
-    // Специфичнее паддингов .button
     &__nav &__step {
       padding-inline: var(--space-bonded);
     }
 
     &__content {
       grid-template-columns: minmax(0, 1fr);
+    }
+
+    // Шесть показателей в ряд не влезают — сетка 3 × 2
+    &__balances {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      padding: var(--space-close);
+    }
+  }
+
+  @include down(tablet) {
+    &__balances {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 }

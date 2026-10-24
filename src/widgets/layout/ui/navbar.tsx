@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { LogoutButton } from '@/features/auth';
 import { ROUTES } from '@/shared/config';
 import { Logo } from '@/shared/ui/logo';
@@ -12,12 +14,13 @@ import './navbar.scss';
 export const Navbar = () => (
   <aside className="navbar">
     <div className="navbar__top">
-      <div className="navbar__heading">
+      {/* Название и свежесть данных ведут на главную, как логотип сайта */}
+      <Link to={ROUTES.home} className="navbar__heading">
         <Text variant="heading-2" as="p" color="main">
           админ-панéль
         </Text>
         <SnapshotStatusText />
-      </div>
+      </Link>
 
       <nav className="navbar__nav" aria-label="Основные разделы">
         <NavItem to={ROUTES.home} icon="home" end>
