@@ -1,0 +1,25 @@
+// Макет «Сводная таблица»: шапка с фильтрами, через 40px — таблица.
+.clients-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-distant);
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-related);
+  }
+
+  &__levels {
+    flex-shrink: 0;
+  }
+
+  &__search {
+    flex: 1 0 280px;
+  }
+
+  @include down(desktop-s) {
+    gap: var(--space-grouped);
+  }
+}

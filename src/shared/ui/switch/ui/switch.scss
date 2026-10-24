@@ -1,0 +1,40 @@
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 40px;
+  height: 24px;
+  border-radius: var(--radius-max);
+  background: var(--control-default);
+  transition: background-color 0.15s;
+
+  &[data-state='checked'] {
+    background: var(--accent-default);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-max);
+  }
+
+  // Ручка Ø18: Выкл — серая слева, Вкл — белая справа (отступ 3px)
+  &__thumb {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-max);
+    background: var(--fixed-disabled);
+    transform: translateX(3px);
+    transition:
+      transform 0.15s,
+      background-color 0.15s;
+
+    &[data-state='checked'] {
+      background: var(--fixed-main);
+      transform: translateX(19px);
+    }
+  }
+}

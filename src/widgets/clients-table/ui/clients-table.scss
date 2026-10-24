@@ -1,0 +1,12 @@
+// Фрейм «Таблица» в Figma: карточка с отступом 12, внутри таблица и пагинация.
+// Колонки фиксированной ширины не сжимаются — на узком экране таблица прокручивается вбок.
+.clients-table {
+  min-width: 0;
+  padding: var(--space-related);
+  overflow-x: auto;
+  border-radius: var(--radius-xl);
+
+  .table {
+    min-width: 960px;
+  }
+}

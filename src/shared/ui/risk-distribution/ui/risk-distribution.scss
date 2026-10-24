@@ -1,0 +1,29 @@
+.risk-distribution {
+  display: flex;
+  gap: var(--space-bonded);
+  width: 100%;
+  height: 10px;
+
+  &__segment {
+    flex: var(--segment-grow) 1 0;
+    // Узкие сегменты не исчезают совсем — минимальная ширина как у точки
+    min-width: 10px;
+    border-radius: var(--radius-max);
+
+    &--high {
+      background: var(--risk-high);
+    }
+
+    &--medium {
+      background: var(--risk-medium);
+    }
+
+    &--low {
+      background: var(--risk-low);
+    }
+
+    &--none {
+      border: 1px dashed var(--accent-disabled);
+    }
+  }
+}

@@ -7,9 +7,9 @@
 //
 //   .card {
 //     padding: var(--space-3);          // база — телефоны
-//     @include up(md) { padding: var(--space-6); }       // >= 768px
-//     @include down(sm) { border-radius: 0; }            // <  640px
-//     @include between(md, lg) { columns: 2; }           // 768px … 1023.98px
+//     @include up(tablet) { padding: var(--space-6); }          // >= 428px
+//     @include down(tablet) { border-radius: 0; }               // <  428px (Mobile)
+//     @include between(tablet, desktop-s) { columns: 2; }       // 428px … 1279.98px (Tablet)
 //   }
 // ─────────────────────────────────────────────────────────────────────────────
 

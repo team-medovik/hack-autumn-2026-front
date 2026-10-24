@@ -1,0 +1,28 @@
+// Layout guides из Figma (коллекция Breakpoint): поля, отступ между колонками, число колонок.
+// Используйте в сетках страниц: padding-inline: var(--layout-margin); gap: var(--layout-gutter).
+:root {
+  // Mobile
+  --layout-margin: var(--space-close); // 16
+  --layout-gutter: var(--space-close); // 16
+  --layout-columns: 4;
+
+  @include up(tablet) {
+    --layout-margin: var(--space-lil-distant); // 32
+    --layout-gutter: var(--space-grouped); // 24
+    --layout-columns: 8;
+  }
+
+  @include up(desktop-s) {
+    --layout-margin: 48px;
+    --layout-columns: 12;
+  }
+
+  @include up(desktop-m) {
+    --layout-margin: 64px;
+  }
+
+  @include up(desktop-l) {
+    --layout-margin: var(--space-unrelated); // 96
+    --layout-gutter: var(--space-lil-distant); // 32
+  }
+}

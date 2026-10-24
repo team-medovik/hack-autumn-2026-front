@@ -1,0 +1,142 @@
+// Макет «Карточка клиента»: шапка, через 40px — две колонки по 40px между ними.
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-distant);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-grouped);
+  }
+
+  &__identity {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: var(--space-compressed);
+    min-width: 0;
+
+    &--loading {
+      gap: 10px;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-compressed) var(--space-close);
+  }
+
+  &__nav {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__counter {
+    white-space: nowrap;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--space-distant);
+  }
+
+  &__column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lil-distant);
+    min-width: 0;
+
+    &--loading {
+      gap: var(--space-close);
+    }
+  }
+
+  // Строки-скелетоны в макете — «пилюли»
+  &__skeleton-line {
+    border-radius: var(--radius-max);
+  }
+
+  &__factors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-close);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__money {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-close);
+  }
+
+  &__services {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-close);
+  }
+
+  &__service-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-related);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // Пустые строки между абзацами в макете окна «Как посчитано»
+  &__explanation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--body-line-height);
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__message {
+    padding-block: var(--space-distant);
+  }
+
+  @include down(desktop-s) {
+    gap: var(--space-grouped);
+
+    // Риск и «Закрыть» — первой строкой, клиент и навигация — под ними на всю ширину
+    &__header {
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-close);
+    }
+
+    &__identity {
+      flex-basis: 100%;
+      order: 1;
+    }
+
+    &__nav {
+      order: 2;
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    // Специфичнее паддингов .button
+    &__nav &__step {
+      padding-inline: var(--space-bonded);
+    }
+
+    &__content {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}

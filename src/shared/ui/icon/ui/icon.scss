@@ -1,0 +1,20 @@
+.icon {
+  --icon-size: 24px;
+
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  background-color: currentColor;
+  mask: var(--icon-src) center / var(--icon-size) var(--icon-size) no-repeat;
+
+  &--spin {
+    animation: icon-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

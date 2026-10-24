@@ -6,8 +6,8 @@ import { BREAKPOINTS, type Breakpoint } from '@/shared/config';
  * Отслеживает соответствие CSS media query и реагирует на изменения.
  *
  * @example
- * const isTablet = useMediaQuery(breakpoints.md);     // >= 768px
- * const isMobile = useMediaQuery(breakpointsDown.md); // < 768px
+ * const isTablet = useMediaQuery(breakpoints.tablet);     // >= 428px
+ * const isMobile = useMediaQuery(breakpointsDown.tablet); // < 428px (Mobile)
  */
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -36,7 +36,7 @@ const mapBreakpoints = (toQuery: (px: number) => string) =>
  * Значения — в `@/shared/config/breakpoints`.
  *
  * @example
- * const isTablet = useMediaQuery(breakpoints.md);   // >= 768px
+ * const isTablet = useMediaQuery(breakpoints.tablet);   // >= 428px
  */
 export const breakpoints = mapBreakpoints((px) => `(min-width: ${px}px)`);
 
@@ -44,6 +44,6 @@ export const breakpoints = mapBreakpoints((px) => `(min-width: ${px}px)`);
  * Обратные пресеты (max-width). То же, что `@include down(...)` в SCSS.
  *
  * @example
- * const isMobile = useMediaQuery(breakpointsDown.md); // < 768px
+ * const isMobile = useMediaQuery(breakpointsDown.tablet); // < 428px (Mobile)
  */
 export const breakpointsDown = mapBreakpoints((px) => `(max-width: ${px - 0.02}px)`);

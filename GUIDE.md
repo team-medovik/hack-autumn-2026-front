@@ -899,33 +899,42 @@ $font-size-base: 1rem;
 
 Миксины из [`src/shared/styles/_breakpoints.scss`](src/shared/styles/_breakpoints.scss) Vite подключает в каждый `.scss` сам (`css.preprocessorOptions.scss.additionalData` в `vite.config.ts`), импортировать их не нужно.
 
-| Имя | xs  | sm  | md  | lg   | xl   | 2xl  |
-| --- | --- | --- | --- | ---- | ---- | ---- |
-| px  | 480 | 640 | 768 | 1024 | 1280 | 1536 |
+Значения взяты из коллекции **Breakpoint** в Figma:
+
+| Figma mode      | Диапазон  | Имя          |
+| --------------- | --------- | ------------ |
+| Mobile          | 330–427   | — (база)     |
+| Tablet          | 428–1279  | `tablet`     |
+| Desktop S 1280  | 1280–1439 | `desktop-s`  |
+| Desktop M 1440  | 1440–1599 | `desktop-m`  |
+| Desktop L 1600  | 1600–1919 | `desktop-l`  |
+| Desktop XL 1920 | 1920+     | `desktop-xl` |
+
+Поля и колонки сетки из Figma (Layout guides) меняются по этим же брейкпоинтам и доступны как CSS-переменные `--layout-margin`, `--layout-gutter`, `--layout-columns` ([`src/app/layout-guides.scss`](src/app/layout-guides.scss)).
 
 ```scss
 .card {
   // База без медиа-запроса — телефоны (mobile-first)
   padding: var(--space-3);
 
-  @include up(md) {
-    // >= 768px
+  @include up(tablet) {
+    // >= 428px
     padding: var(--space-6);
   }
 
-  @include down(sm) {
-    // < 640px (ровно противоположно up(sm), без пересечения на границе)
+  @include down(tablet) {
+    // < 428px — только Mobile (ровно противоположно up(tablet), без пересечения на границе)
     border-radius: 0;
   }
 
-  @include between(md, xl) {
-    // 768px … 1279.98px
+  @include between(tablet, desktop-s) {
+    // 428px … 1279.98px — только Tablet
     grid-template-columns: repeat(2, 1fr);
   }
 }
 ```
 
-Пишите mobile-first: базовые стили для телефона, расширяйте через `up(...)`. `down` и `between` нужны для точечных исключений. Опечатка в имени (`up(tablet)`) упадёт на сборке с понятной ошибкой.
+Пишите mobile-first: базовые стили для телефона, расширяйте через `up(...)`. `down` и `between` нужны для точечных исключений. Опечатка в имени (`up(desktop)`) упадёт на сборке с понятной ошибкой.
 
 Чтобы поменять или добавить брейкпоинт, правьте только `BREAKPOINTS` в `breakpoints.ts`.
 
@@ -3361,16 +3370,15 @@ const chartColors =
 import { breakpoints, breakpointsDown } from '@/shared/lib/media-query';
 
 // Mobile-first, min-width (как @include up(...)):
-breakpoints.xs; // >= 480px   — большие телефоны
-breakpoints.sm; // >= 640px   — маленькие планшеты
-breakpoints.md; // >= 768px   — планшеты
-breakpoints.lg; // >= 1024px  — ноутбуки
-breakpoints.xl; // >= 1280px  — десктоп
-breakpoints['2xl']; // >= 1536px — широкий десктоп
-// base (нет query) — всё от 0px, включая телефоны 300-479px
+breakpoints.tablet; // >= 428px  — Tablet
+breakpoints['desktop-s']; // >= 1280px — Desktop S
+breakpoints['desktop-m']; // >= 1440px — Desktop M
+breakpoints['desktop-l']; // >= 1600px — Desktop L
+breakpoints['desktop-xl']; // >= 1920px — Desktop XL
+// base (нет query) — Mobile, всё до 427px
 
 // max-width (как @include down(...)):
-breakpointsDown.md; // < 768px
+breakpointsDown.tablet; // < 428px — Mobile
 ```
 
 ### Базовое использование
@@ -3379,7 +3387,7 @@ breakpointsDown.md; // < 768px
 import { useMediaQuery, breakpoints } from '@/shared/lib/media-query';
 
 const Navbar = () => {
-  const isDesktop = useMediaQuery(breakpoints.lg);
+  const isDesktop = useMediaQuery(breakpoints['desktop-s']);
 
   return isDesktop ? <DesktopNav /> : <MobileNav />;
 };
@@ -3389,8 +3397,8 @@ const Navbar = () => {
 
 ```tsx
 // Адаптивный Grid — количество колонок из JS
-const isTablet = useMediaQuery(breakpoints.md);
-const isDesktop = useMediaQuery(breakpoints.xl);
+const isTablet = useMediaQuery(breakpoints.tablet);
+const isDesktop = useMediaQuery(breakpoints['desktop-s']);
 
 const columns = isDesktop ? 4 : isTablet ? 2 : 1;
 
@@ -3399,7 +3407,7 @@ const columns = isDesktop ? 4 : isTablet ? 2 : 1;
 
 ```tsx
 // Мобильное bottom sheet vs десктопный sidebar
-const isMobile = !useMediaQuery(breakpoints.md);
+const isMobile = useMediaQuery(breakpointsDown.tablet);
 
 {
   isMobile ? (
@@ -3423,7 +3431,7 @@ const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
 ```tsx
 // Не дублируй хук с одинаковым query — вынеси в переменную вверху компонента
-const isDesktop = useMediaQuery(breakpoints.lg);
+const isDesktop = useMediaQuery(breakpoints['desktop-s']);
 
 // Потом используй isDesktop сколько угодно раз
 <header className={isDesktop ? styles.headerDesktop : styles.headerMobile}>

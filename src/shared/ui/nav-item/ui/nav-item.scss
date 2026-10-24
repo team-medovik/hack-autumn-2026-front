@@ -1,0 +1,34 @@
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-bonded);
+  min-height: var(--touch-target-xl);
+  padding: var(--space-bonded) var(--space-related);
+  border-radius: var(--radius-l);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--body-font-size);
+  font-weight: var(--body-weight-accent);
+  line-height: var(--body-line-height);
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover,
+  &--active {
+    background: var(--control-default);
+    color: var(--text-main);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-l);
+  }
+
+  &__text {
+    flex: 1 0 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

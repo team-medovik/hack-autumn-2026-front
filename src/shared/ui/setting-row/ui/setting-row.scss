@@ -1,0 +1,20 @@
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-grouped);
+  width: 100%;
+  padding-block: var(--space-related);
+
+  &__description {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__slider {
+    flex-shrink: 0;
+    width: 200px;
+  }
+}
