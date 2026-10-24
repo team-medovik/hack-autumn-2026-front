@@ -20,10 +20,15 @@ import './dialog.scss';
 /** Тип из Figma: default — Обычный, danger — Опасный, info — Информация (одна кнопка). */
 export type DialogVariant = 'default' | 'danger' | 'info';
 
+/** Ширина: m — 480px (подтверждения), l — 560px (пояснения с формулами). */
+export type DialogSize = 'm' | 'l';
+
 interface DialogProps {
   title: ReactNode;
+  /** Строка или несколько абзацев (`<p>`) — обёртка блочная. */
   description?: ReactNode;
   variant?: DialogVariant;
+  size?: DialogSize;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Элемент, открывающий диалог (рендерится через asChild). Можно не передавать при управлении через `open`. */
@@ -51,6 +56,7 @@ export const Dialog = ({
   title,
   description,
   variant = 'default',
+  size = 'm',
   open,
   onOpenChange,
   trigger,
@@ -63,7 +69,7 @@ export const Dialog = ({
     {trigger && <Trigger asChild>{trigger}</Trigger>}
     <Portal>
       <Overlay className="dialog__overlay" />
-      <Content data-layer="card" className={clsx('dialog', className)}>
+      <Content data-layer="card" className={clsx('dialog', `dialog--${size}`, className)}>
         <div className="dialog__text">
           <Title asChild>
             <Text variant="heading-3" as="h2" color="main">
@@ -72,7 +78,7 @@ export const Dialog = ({
           </Title>
           {description && (
             <Description asChild>
-              <Text variant="body" color="secondary">
+              <Text as="div" variant="body" color="secondary">
                 {description}
               </Text>
             </Description>

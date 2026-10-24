@@ -86,9 +86,11 @@ export const RiskScore = ({ score, level, size = 's', className }: RiskScoreProp
           <Text as="span" variant="heading-3" color={level === 'none' ? 'tertiary' : 'main'}>
             {label}
           </Text>
-          <Text as="span" variant="caption-2" color="secondary">
-            /100
-          </Text>
+          {score !== null && (
+            <Text as="span" variant="caption-2" color="secondary">
+              /100
+            </Text>
+          )}
         </span>
       )}
     </div>

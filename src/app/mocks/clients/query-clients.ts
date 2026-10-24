@@ -26,18 +26,18 @@ const compare = (a: ClientListItem, b: ClientListItem, field: ClientSortField) =
 };
 
 /**
- * Эмуляция сервера GET /clients: поиск, фильтр, сортировка, пагинация.
+ * Список клиентов по поиску, фильтру и сортировке — без пагинации.
+ * Общий для таблицы и соседей в карточке, чтобы порядок совпадал.
  * Клиенты без оценки при сортировке по риску — всегда в конце.
  */
-export const queryClients = (
+export const selectClients = (
   clients: readonly ClientListItem[],
   params: URLSearchParams,
-): ClientsResponse => {
+): ClientListItem[] => {
   const search = params.get('search')?.trim().toLowerCase() ?? '';
   const level = pick<RiskLevel | 'all'>(RISK_LEVELS, params.get('level'), 'all');
   const sort = pick(CLIENT_SORT_FIELDS, params.get('sort'), 'score');
   const order = pick<SortOrder>(['asc', 'desc'], params.get('order'), 'desc');
-  const pageSize = positiveInt(params.get('pageSize'), DEFAULT_PAGE_SIZE);
 
   // Поиск — по всем клиентам, без учёта фильтра (так в макете «ничего не найдено»)
   const matched = clients.filter((client) =>
@@ -47,12 +47,21 @@ export const queryClients = (
   );
 
   const direction = order === 'asc' ? 1 : -1;
-  const sorted = [...matched].sort((a, b) => {
+  return [...matched].sort((a, b) => {
     if (sort === 'score' && (a.score === null || b.score === null)) {
       return Number(a.score === null) - Number(b.score === null);
     }
     return compare(a, b, sort) * direction;
   });
+};
+
+/** Эмуляция сервера GET /clients: поиск, фильтр, сортировка, пагинация. */
+export const queryClients = (
+  clients: readonly ClientListItem[],
+  params: URLSearchParams,
+): ClientsResponse => {
+  const pageSize = positiveInt(params.get('pageSize'), DEFAULT_PAGE_SIZE);
+  const sorted = selectClients(clients, params);
 
   const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize));
   const page = Math.min(positiveInt(params.get('page'), 1), pageCount);

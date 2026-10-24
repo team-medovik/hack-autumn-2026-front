@@ -1,13 +1,13 @@
 openapi: 3.1.0
 info:
-  title: API Hack Autumn 2026 — дашборд и клиенты
+  title: API Hack Autumn 2026 — дашборд
   version: v1
   description: |
-    Сводка главного экрана и сводная таблица клиентов админ-панели по последнему снимку биллинга.
+    Сводка главного экрана админ-панели по последнему снимку биллинга. Клиенты — в clients-openapi.yaml.
 
     Соглашения:
     - суммы — в евро, числом с двумя знаками после запятой (BigDecimal → number);
-    - даты — ISO 8601 с часовым поясом;
+    - даты — ISO 8601 с часовым поясом, даты без времени — `2026-10-21`;
     - enum'ы — в нижнем регистре (в Java: `@JsonValue` на enum'е);
     - нет снимков — это не ошибка: 200 и `snapshot: null`, остальные поля пустые.
 servers:
@@ -15,8 +15,6 @@ servers:
 tags:
   - name: Дашборд
     description: Сводка рисков оттока клиентов для главного экрана.
-  - name: Клиенты
-    description: Сводная таблица клиентов с фильтром, поиском, сортировкой и пагинацией.
 
 paths:
   /api/v1/dashboard:
@@ -46,77 +44,6 @@ paths:
                   $ref: '#/components/examples/DashboardWithSnapshot'
                 noSnapshot:
                   $ref: '#/components/examples/DashboardWithoutSnapshot'
-        '401':
-          description: Access-токен отсутствует, истёк или некорректен
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorResponse'
-
-  /api/v1/clients:
-    get:
-      tags: [Клиенты]
-      operationId: listClients
-      summary: Страница сводной таблицы клиентов
-      description: |
-        Клиенты последнего снимка. Фильтр, поиск, сортировка и пагинация — на сервере.
-
-        - `search` ищет подстроку в email или ID **по всем клиентам**: с ним `level` не применяется;
-        - при сортировке по `score` клиенты без оценки (`score: null`) всегда в конце;
-        - `page` больше последней страницы — отдаётся последняя (в ответе её номер);
-        - снимков ещё нет — это не ошибка: 200, пустые `items` и нули в `levelCounts`.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: level
-          in: query
-          description: Уровень риска. Без параметра — все уровни.
-          schema:
-            $ref: '#/components/schemas/RiskLevel'
-        - name: search
-          in: query
-          description: Подстрока email или ID, без учёта регистра.
-          schema:
-            type: string
-            example: client5
-        - name: sort
-          in: query
-          schema:
-            $ref: '#/components/schemas/ClientSortField'
-        - name: order
-          in: query
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
-        - name: page
-          in: query
-          description: Номер страницы, с 1.
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            default: 1
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            format: int32
-            minimum: 1
-            maximum: 100
-            default: 12
-      responses:
-        '200':
-          description: Страница получена (в том числе когда снимков ещё нет)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ClientsResponse'
-              examples:
-                firstPage:
-                  $ref: '#/components/examples/ClientsFirstPage'
-                noSnapshot:
-                  $ref: '#/components/examples/ClientsWithoutSnapshot'
         '401':
           description: Access-токен отсутствует, истёк или некорректен
           content:
@@ -186,7 +113,9 @@ components:
 
     RiskLevel:
       type: string
-      description: Уровень риска не продлить услуги. `none` — score не посчитан (мало данных).
+      description: |
+        Уровень риска не продлить услуги. `none` — score не считается: живых услуг не осталось,
+        все удалены или заблокированы.
       enum: [high, medium, low, none]
 
     RiskBucket:
@@ -269,11 +198,11 @@ components:
           description: Фактор, готовый к показу.
           example: Ожидает оплаты, удалят завтра
         points:
-          type: integer
-          format: int32
+          type: number
+          format: double
           minimum: 0
           maximum: 100
-          description: Сколько баллов score дал фактор («+70»).
+          description: Сколько баллов score дал фактор («+70», «+13,8»). Сумма по факторам — score.
           example: 70
 
     ClientBalance:
@@ -370,80 +299,6 @@ components:
           items:
             $ref: '#/components/schemas/ChurnWeek'
 
-    ClientSortField:
-      type: string
-      description: Поле сортировки сводной таблицы.
-      enum: [score, id, email, balance, topUp, monthlyLoss]
-      default: score
-
-    ClientListItem:
-      type: object
-      description: Строка сводной таблицы.
-      required: [id, email, score, level, reason, balance, topUp, monthlyLoss]
-      properties:
-        id:
-          type: string
-          example: '1321245'
-        email:
-          type: string
-          format: email
-          example: client5@mail.ru
-        score:
-          type: [number, 'null']
-          minimum: 0
-          maximum: 100
-          description: Score 0–100, `null` — нет оценки.
-          example: 100
-        level:
-          $ref: '#/components/schemas/RiskLevel'
-        reason:
-          type: [string, 'null']
-          description: Главная причина риска, человекочитаемо. `null` — причины нет (нет оценки).
-          example: Ожидает оплаты, удалят завтра
-        balance:
-          type: number
-          description: Сейчас на счёте, €.
-          example: 0
-        topUp:
-          type: number
-          description: Пополнено за всё время, €.
-          example: 312.4
-        monthlyLoss:
-          type: number
-          description: Потеря в месяц, если клиент уйдёт, €.
-          example: 28.8
-
-    ClientsResponse:
-      type: object
-      required: [items, page, pageSize, total, levelCounts]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/ClientListItem'
-        page:
-          type: integer
-          format: int32
-          description: Номер отданной страницы, с 1.
-        pageSize:
-          type: integer
-          format: int32
-        total:
-          type: integer
-          format: int32
-          description: Найдено по фильтру или поиску — для пагинации.
-        levelCounts:
-          type: object
-          description: |
-            Клиентов в снимке по уровням — для счётчиков фильтров. Не зависят от фильтра и поиска.
-            Все нули — снимков ещё не загружали.
-          required: [high, medium, low, none]
-          properties:
-            high: { type: integer, format: int32 }
-            medium: { type: integer, format: int32 }
-            low: { type: integer, format: int32 }
-            none: { type: integer, format: int32 }
-
     ApiErrorResponse:
       type: object
       description: Стандартный формат ошибки API (как в auth).
@@ -519,6 +374,7 @@ components:
             - { weekStart: '2026-10-19', kind: fact, services: 10 }
             - { weekStart: '2026-10-26', kind: forecast, services: 18 }
             - { weekStart: '2026-11-02', kind: forecast, services: 12 }
+
     DashboardWithoutSnapshot:
       summary: Снимков ещё не загружали
       value:
@@ -533,37 +389,3 @@ components:
         riskQueue: { total: 0, items: [] }
         lossReasons: []
         churn: { atRiskServices: 0, weeks: [] }
-
-    ClientsFirstPage:
-      summary: Первая страница по убыванию риска (макет «Сводная таблица»), сокращено до двух строк
-      value:
-        items:
-          - id: '1321245'
-            email: client5@mail.ru
-            score: 100
-            level: high
-            reason: Ожидает оплаты, удалят завтра
-            balance: 0
-            topUp: 312.4
-            monthlyLoss: 28.8
-          - id: '1321746'
-            email: client17@mail.ru
-            score: 94.2
-            level: high
-            reason: Ожидает оплаты, удалят 21.10
-            balance: 6.48
-            topUp: 148
-            monthlyLoss: 6.77
-        page: 1
-        pageSize: 12
-        total: 42
-        levelCounts: { high: 13, medium: 14, low: 9, none: 6 }
-
-    ClientsWithoutSnapshot:
-      summary: Снимков ещё не загружали (макет «Сводная таблица (без данных)»)
-      value:
-        items: []
-        page: 1
-        pageSize: 12
-        total: 0
-        levelCounts: { high: 0, medium: 0, low: 0, none: 0 }

@@ -30,8 +30,11 @@ export const StatGroup = ({ children, 'aria-label': ariaLabel, className }: Stat
 interface StatProps {
   label: ReactNode;
   value: ReactNode;
-  /** danger — значение цветом status/danger (например, «Не хватает»). */
-  tone?: 'main' | 'danger';
+  /**
+   * danger — значение цветом status/danger (например, «Не хватает»),
+   * tertiary — приглушённое значение, когда показателя нет («—»).
+   */
+  tone?: 'main' | 'danger' | 'tertiary';
 }
 
 /** Показатель: подпись Caption 2 и значение Label по центру. */

@@ -1,0 +1,87 @@
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
+  width: 100%;
+
+  &__item {
+    border-top: 1px solid var(--border-divider);
+  }
+
+  &__heading {
+    margin: 0;
+  }
+
+  &__trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: var(--space-related) 0;
+    color: var(--text-main);
+    text-align: left;
+
+    &:focus-visible {
+      border-radius: var(--radius-s);
+    }
+  }
+
+  &__trigger[data-state='closed'] &__chevron-open,
+  &__trigger[data-state='open'] &__chevron-closed {
+    display: none;
+  }
+
+  &__title {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  &__meta {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  // Колонка сумм одной ширины во всех группах — как в Figma
+  &__aside {
+    flex-shrink: 0;
+    width: 96px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  &__content {
+    overflow: hidden;
+
+    &[data-state='open'] {
+      animation: accordion-open 0.2s ease-out;
+    }
+
+    &[data-state='closed'] {
+      animation: accordion-close 0.2s ease-out;
+    }
+  }
+
+  &__body {
+    padding: 0 0 var(--space-related) var(--space-grouped);
+  }
+}
+
+@keyframes accordion-open {
+  from {
+    height: 0;
+  }
+
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-close {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+
+  to {
+    height: 0;
+  }
+}

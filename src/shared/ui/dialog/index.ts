@@ -1,1 +1,1 @@
-export { Dialog, type DialogVariant } from './ui';
+export { Dialog, type DialogSize, type DialogVariant } from './ui';

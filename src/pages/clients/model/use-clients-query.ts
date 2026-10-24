@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import type {
-  ClientLevelFilter,
-  ClientSortField,
-  ClientsQuery,
-  SortOrder,
+import {
+  parseClientsQuery,
+  writeClientsQuery,
+  type ClientLevelFilter,
+  type ClientSortField,
+  type ClientsQuery,
+  type SortOrder,
 } from '@/entities/client';
-
-import { parseClientsQuery, writeClientsQuery } from './clients-search-params';
 
 /**
  * Состояние сводной таблицы в URL: ссылкой можно поделиться, «назад» возвращает прошлый вид.

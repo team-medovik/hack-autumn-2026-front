@@ -5,6 +5,7 @@ import {
   formatDayMonth,
   formatMoney,
   formatNumber,
+  formatPercent,
   pluralize,
   type PluralForms,
 } from './format';
@@ -25,6 +26,19 @@ describe('formatNumber', () => {
   it('оставляет не больше одного знака после запятой', () => {
     expect(formatNumber(94.2)).toBe('94,2');
     expect(formatNumber(100)).toBe('100');
+  });
+
+  it('округляет до заданной точности', () => {
+    expect(formatNumber(0.942, 3)).toBe('0,942');
+    expect(formatNumber(0.3455, 2)).toBe('0,35');
+    expect(formatNumber(0.5, 2)).toBe('0,5');
+  });
+});
+
+describe('formatPercent', () => {
+  it('переводит долю в целые проценты', () => {
+    expect(plain(formatPercent(0.3455))).toBe('35 %');
+    expect(plain(formatPercent(0))).toBe('0 %');
   });
 });
 

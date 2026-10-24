@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { GuestOnly, RequireAuth } from '@/features/auth';
 import { AuthPage } from '@/pages/auth';
+import { ClientCardPage } from '@/pages/client-card';
 import { ClientsPage } from '@/pages/clients';
 import { DemoPage } from '@/pages/demo';
 import { HomePage } from '@/pages/home';
@@ -24,8 +25,12 @@ export const router = createBrowserRouter([
         element: <Layout />,
         children: [
           { index: true, element: <HomePage /> },
-          { path: ROUTES.clients, element: <ClientsPage /> },
-          { path: CLIENT_ROUTE_PATTERN, element: <PlaceholderPage title="Карточка клиента" /> },
+          {
+            path: ROUTES.clients,
+            element: <ClientsPage />,
+            // Карточка — окно поверх таблицы, поэтому дочерний роут
+            children: [{ path: CLIENT_ROUTE_PATTERN, element: <ClientCardPage /> }],
+          },
           { path: ROUTES.settings, element: <PlaceholderPage title="Настройки" /> },
           { path: ROUTES.snapshot, element: <PlaceholderPage title="Импорт и экспорт снимка" /> },
           { path: 'demo', element: <DemoPage /> },

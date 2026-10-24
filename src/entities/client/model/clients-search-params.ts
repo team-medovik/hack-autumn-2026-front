@@ -1,5 +1,6 @@
-import { CLIENT_SORT_FIELDS, type ClientLevelFilter, type ClientsQuery } from '@/entities/client';
 import { RISK_LEVELS } from '@/shared/ui/risk-level';
+
+import { CLIENT_SORT_FIELDS, type ClientLevelFilter, type ClientsQuery } from './types';
 
 /** Без параметров в URL — все клиенты по убыванию риска, первая страница. */
 export const DEFAULT_CLIENTS_QUERY: ClientsQuery = {
@@ -23,7 +24,7 @@ const KEYS = [
 const pick = <T extends string>(values: readonly T[], value: string | null, fallback: T): T =>
   values.includes(value as T) ? (value as T) : fallback;
 
-/** Параметры таблицы из URL. Мусор в URL — значения по умолчанию, а не ошибка. */
+/** Параметры таблицы из URL — и у самой таблицы, и у карточки клиента поверх неё. Мусор в URL — значения по умолчанию, а не ошибка. */
 export const parseClientsQuery = (params: URLSearchParams): ClientsQuery => {
   const page = Number(params.get('page'));
 

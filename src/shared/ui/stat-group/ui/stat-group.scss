@@ -16,6 +16,10 @@
     min-width: 0;
   }
 
+  &__item > * {
+    max-width: 100%;
+  }
+
   &__value {
     margin: 0;
   }

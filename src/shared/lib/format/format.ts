@@ -7,7 +7,21 @@ const moneyFormat = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 2,
 });
 
-const numberFormat = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+const numberFormats = new Map<number, Intl.NumberFormat>();
+
+const getNumberFormat = (maximumFractionDigits: number) => {
+  let format = numberFormats.get(maximumFractionDigits);
+  if (!format) {
+    format = new Intl.NumberFormat(LOCALE, { maximumFractionDigits });
+    numberFormats.set(maximumFractionDigits, format);
+  }
+  return format;
+};
+
+const percentFormat = new Intl.NumberFormat(LOCALE, {
+  style: 'percent',
+  maximumFractionDigits: 0,
+});
 
 const timeFormat = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' });
 
@@ -16,8 +30,12 @@ const dayMonthFormat = new Intl.DateTimeFormat(LOCALE, { day: '2-digit', month: 
 /** 1296.9 → «1 296,90 €» (разделители — неразрывные пробелы). */
 export const formatMoney = (value: number) => moneyFormat.format(value);
 
-/** 94.2 → «94,2», 100 → «100». */
-export const formatNumber = (value: number) => numberFormat.format(value);
+/** 94.2 → «94,2», 100 → «100». Доли — с нужной точностью: formatNumber(0.942, 3) → «0,942». */
+export const formatNumber = (value: number, maximumFractionDigits = 1) =>
+  getNumberFormat(maximumFractionDigits).format(value);
+
+/** Доля 0–1 → «35 %» (с неразрывным пробелом). */
+export const formatPercent = (share: number) => percentFormat.format(share);
 
 /** ISO-дата → «22:10» в часовом поясе пользователя. */
 export const formatTime = (iso: string) => timeFormat.format(new Date(iso));

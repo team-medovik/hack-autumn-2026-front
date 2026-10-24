@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import type { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   CLIENT_DATIVE_FORMS,
@@ -57,6 +57,8 @@ export const ClientsTable = ({
   className,
 }: ClientsTableProps) => {
   const navigate = useNavigate();
+  // Карточка открывается поверх таблицы с теми же фильтром и сортировкой — по ним листаются соседи
+  const { search } = useLocation();
   // До первого ответа шапка как в макете загрузки — с выбранной сортировкой
   const hasClients = !data || countClients(data.levelCounts) > 0;
 
@@ -125,7 +127,7 @@ export const ClientsTable = ({
       <ClientTableRow
         key={client.id}
         client={client}
-        onOpen={(id) => navigate(ROUTES.client(id))}
+        onOpen={(id) => navigate({ pathname: ROUTES.client(id), search })}
       />
     ));
   };

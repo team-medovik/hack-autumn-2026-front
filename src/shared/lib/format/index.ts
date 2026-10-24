@@ -3,6 +3,7 @@ export {
   formatDayMonth,
   formatMoney,
   formatNumber,
+  formatPercent,
   formatTime,
   pluralize,
   type PluralForms,

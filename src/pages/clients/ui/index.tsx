@@ -1,3 +1,5 @@
+import { Outlet } from 'react-router-dom';
+
 import { useClients } from '@/entities/client';
 import { ClientSearch, LevelFilter } from '@/features/clients-filter';
 import { ClientsTable } from '@/widgets/clients-table';
@@ -6,7 +8,10 @@ import { useClientsQuery } from '../model/use-clients-query';
 
 import './clients-page.scss';
 
-/** Сводная таблица: фильтр по уровню риска и поиск, под ними — таблица клиентов. */
+/**
+ * Сводная таблица: фильтр по уровню риска и поиск, под ними — таблица клиентов.
+ * В `<Outlet />` — карточка клиента окном поверх таблицы.
+ */
 export const ClientsPage = () => {
   const { query, setLevel, setSearch, setSort, setPage } = useClientsQuery();
   const { data, isError, isFetching, refetch } = useClients(query);
@@ -35,6 +40,8 @@ export const ClientsPage = () => {
         onPageChange={setPage}
         onResetSearch={() => setSearch('')}
       />
+
+      <Outlet />
     </div>
   );
 };
