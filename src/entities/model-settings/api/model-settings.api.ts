@@ -1,19 +1,26 @@
-import { api, getErrorData, isConflictError } from '@/shared/api';
+import {
+  getErrorData,
+  getRiskModelSettings,
+  isConflictError,
+  patchRiskModelSettings,
+} from '@/shared/api';
 
 import type {
   ModelSettings,
   ModelSettingsConflict,
-  SaveModelSettingsRequest,
+  PatchModelSettingsRequest,
 } from '../model/types';
 
-const URL = '/api/v1/settings/model';
-
 export const modelSettingsApi = {
-  get: (): Promise<ModelSettings> => api.get<ModelSettings>(URL).then((response) => response.data),
+  get: (): Promise<ModelSettings> => getRiskModelSettings(),
 
-  /** 409 — версию успели сохранить другие, актуальная — в теле ответа (см. getConflictingSettings). */
-  save: (request: SaveModelSettingsRequest): Promise<ModelSettings> =>
-    api.put<ModelSettings>(URL, request).then((response) => response.data),
+  /**
+   * Изменённые поля поверх версии `version`; ответ — полные настройки после пересчёта.
+   * 409 — версию успели сохранить другие, актуальная — в теле ответа (см. getConflictingSettings);
+   * 422 — значения не прошли проверку, ничего не применено.
+   */
+  patch: (request: PatchModelSettingsRequest): Promise<ModelSettings> =>
+    patchRiskModelSettings(request),
 };
 
 const isConflictBody = (data: unknown): data is ModelSettingsConflict =>

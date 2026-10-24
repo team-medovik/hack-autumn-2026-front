@@ -1,4 +1,4 @@
-import type { DashboardData } from '@/entities/dashboard';
+import type { DashboardResponse } from '@/entities/dashboard';
 import { Reveal } from '@/shared/ui/reveal';
 import { ChurnForecast } from '@/widgets/churn-forecast';
 import { LossOverview } from '@/widgets/loss-overview';
@@ -8,7 +8,7 @@ import { TopRisk } from '@/widgets/top-risk';
 
 interface DashboardGridProps {
   /** `undefined` — первая загрузка: каждый виджет показывает свой скелетон. */
-  data?: DashboardData;
+  data?: DashboardResponse;
 }
 
 /** Сетка главной по макету «Дом»: сводка, затем две пары карточек. */

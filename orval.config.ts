@@ -1,12 +1,14 @@
 import { defineConfig } from 'orval';
 
+// Единственный контракт фронта и бэка — openapi/openapi.yaml. Из него генерируются
+// типы DTO и функции запросов; сущности (src/entities) строят поверх них свои запросы.
 export default defineConfig({
-  auth: {
-    input: { target: './openapi/auth-openapi.yaml' },
+  api: {
+    input: { target: './openapi/openapi.yaml' },
     output: {
       mode: 'split',
-      target: 'src/shared/api/auth/endpoints.ts',
-      schemas: 'src/shared/api/auth/model',
+      target: 'src/shared/api/generated/endpoints.ts',
+      schemas: 'src/shared/api/generated/model',
       client: 'react-query',
       httpClient: 'axios',
       clean: true,
@@ -14,18 +16,6 @@ export default defineConfig({
       override: {
         mutator: { path: './src/shared/api/axios.ts', name: 'customInstance' },
       },
-      mock: true,
-    },
-  },
-  authZod: {
-    input: { target: './openapi/auth-openapi.yaml' },
-    output: {
-      mode: 'split',
-      client: 'zod',
-      target: 'src/shared/api/auth/endpoints.ts',
-      fileExtension: '.zod.ts',
-      clean: false,
-      formatter: 'prettier',
     },
   },
 });

@@ -1,9 +1,22 @@
-/**
- * Контракт /settings/model — параметры модели риска (страница «Настройки → Модель»).
- * Пока бэкенда нет, отдаётся MSW (src/app/mocks/settings). Даты — ISO 8601.
- */
+import type {
+  ModelSettings as ModelSettingsDto,
+  ModelSettingsValues as ModelSettingsValuesDto,
+} from '@/shared/api';
 
-/** Признаки, из которых складывается score клиента. */
+/**
+ * Параметры модели риска: GET и PATCH /model/settings (страница «Настройки → Модель»).
+ * DTO — из openapi/openapi.yaml (src/shared/api/generated). В dev отдаётся MSW
+ * (src/app/mocks/settings). Даты — ISO 8601.
+ */
+export type {
+  FinanceSettings,
+  ForecastSettings,
+  ModelSettingsChanges,
+  PatchModelSettingsRequest,
+  RiskThresholds,
+} from '@/shared/api';
+
+/** Признаки, из которых складывается score услуги, — те, что редактируются на экране. */
 export type ScoreFactorId =
   | 'awaitingPayment'
   | 'expiringWithoutAutoRenewal'
@@ -12,59 +25,26 @@ export type ScoreFactorId =
   | 'disabledByClient'
   | 'bonusesExceedMoney';
 
-/** Сколько баллов score даёт признак в полную силу, 0–100. */
+/**
+ * Сколько баллов score даёт признак в полную силу, 0–100. Контракт допускает веса новых
+ * признаков сверх этих — экран их не правит, а PATCH отправляет только изменённые.
+ */
 export type FactorWeights = Record<ScoreFactorId, number>;
 
-/** С какого score начинается уровень. Высокий строго больше среднего. */
-export interface RiskThresholds {
-  medium: number;
-  high: number;
-}
-
-export interface FinanceSettings {
-  /** Считать разблокированные бонусы клиента доступными деньгами. */
-  bonusesAsMoney: boolean;
-  /** Считать реферальный баланс доступными деньгами. */
-  referralBalanceAsMoney: boolean;
-  /** Коэффициент k, 0–1: насколько баланс уменьшает потерю. 0 — при достаточном балансе потерь нет. */
-  balanceLossFactor: number;
-}
-
-export interface ForecastSettings {
-  /** На сколько дней вперёд считать прогноз. */
-  horizonDays: number;
-  /** Как часто пересчитывать прогноз, в минутах. */
-  recalculationIntervalMinutes: number;
-}
-
 /** Все редактируемые параметры. */
-export interface ModelSettingsValues {
+export interface ModelSettingsValues extends Omit<ModelSettingsValuesDto, 'factorWeights'> {
   factorWeights: FactorWeights;
-  riskThresholds: RiskThresholds;
-  finance: FinanceSettings;
-  forecast: ForecastSettings;
 }
 
-export interface ModelSettings {
-  /** Версия растёт с каждым сохранением — по ней сервер ловит одновременную правку. */
-  version: number;
-  updatedAt: string;
-  /** Логин того, кто сохранил версию. */
-  updatedBy: string;
+/**
+ * Версия растёт с каждым сохранением — по ней сервер ловит одновременную правку.
+ * `scoreHistogram` — 101 счётчик клиентов по целым баллам score; по нему считаются клиенты на
+ * шкале уровней.
+ */
+export interface ModelSettings extends Omit<ModelSettingsDto, 'values' | 'defaults'> {
   values: ModelSettingsValues;
   /** Значения по умолчанию — для подсказок и «Сбросить по умолчанию». */
   defaults: ModelSettingsValues;
-  /**
-   * Клиенты с оценкой по целым баллам: элемент i — сколько клиентов со score в [i, i + 1),
-   * последний (100) — со score 100. Ровно 101 элемент. По нему считаются клиенты на шкале уровней.
-   */
-  scoreHistogram: number[];
-}
-
-export interface SaveModelSettingsRequest {
-  /** Версия, от которой редактировали. Не совпала с текущей — 409. */
-  version: number;
-  values: ModelSettingsValues;
 }
 
 /** Тело 409: настройки уже сохранил кто-то другой. */

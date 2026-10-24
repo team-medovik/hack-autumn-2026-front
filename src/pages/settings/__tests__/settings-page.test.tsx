@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { server } from '@/app/mocks/server';
 import { resetSettingsMock } from '@/app/mocks/settings';
 import { resetUsersMock } from '@/app/mocks/users';
+import { useSessionStore } from '@/entities/session';
 
 import { SettingsPage } from '../ui';
 
@@ -52,9 +53,16 @@ describe('SettingsPage', () => {
   beforeEach(() => {
     resetSettingsMock();
     resetUsersMock();
+    useSessionStore.getState().setUser({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      login: 'admin',
+      role: 'ADMIN',
+      createdAt: '2026-10-01T00:00:00Z',
+    });
   });
 
   afterEach(() => {
+    useSessionStore.getState().clearSession();
     window.history.replaceState(null, '', '/');
     server.events.removeAllListeners();
   });
@@ -146,9 +154,11 @@ describe('SettingsPage', () => {
   });
 
   it('сбрасывает сохранённые настройки по умолчанию после подтверждения', async () => {
-    let saves = 0;
-    server.events.on('request:start', ({ request }) => {
-      saves += request.method === 'PUT' ? 1 : 0;
+    const patches: unknown[] = [];
+    server.events.on('request:start', async ({ request }) => {
+      if (request.method === 'PATCH') {
+        patches.push(await request.clone().json());
+      }
     });
     const user = userEvent.setup();
     renderPage();
@@ -163,7 +173,11 @@ describe('SettingsPage', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Сбросить' }));
 
     await waitFor(() => expect(weightField()).toHaveValue('70'));
-    expect(saves).toBe(2);
+    // PATCH отправляет только изменённые поля поверх версии, от которой правили
+    expect(patches).toEqual([
+      { version: 4, changes: { factorWeights: { awaitingPayment: 80 } } },
+      { version: 5, changes: { factorWeights: { awaitingPayment: 70 } } },
+    ]);
     expect(screen.getByRole('button', { name: 'Сбросить по умолчанию' })).toBeDisabled();
   });
 
@@ -232,6 +246,20 @@ describe('SettingsPage', () => {
     expect(await screen.findByText('Главная')).toBeInTheDocument();
   });
 
+  it('сотруднику без роли ADMIN вкладку «Пользователи» не показывает', async () => {
+    useSessionStore.getState().setUser({
+      id: '9d1f0c3e-2b4a-4c55-8e6f-2a7b9c0d1e2f',
+      login: 'analyst',
+      role: 'EMPLOYEE',
+      createdAt: '2026-10-20T09:00:00Z',
+    });
+    renderPage();
+    await waitForSettings();
+
+    expect(screen.getByRole('tab', { name: 'Модель' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Пользователи' })).not.toBeInTheDocument();
+  });
+
   it('на вкладке «Пользователи» показывает учётки без плашки обновления модели', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -260,7 +288,7 @@ describe('SettingsPage', () => {
   it('при ошибке загрузки показывает сообщение и повторяет запрос', async () => {
     let requests = 0;
     server.use(
-      http.get('*/settings/model', () => {
+      http.get('*/api/v1/model/settings', () => {
         requests += 1;
         return HttpResponse.json({ message: 'Service Unavailable' }, { status: 503 });
       }),

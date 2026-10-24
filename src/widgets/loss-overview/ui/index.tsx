@@ -1,4 +1,4 @@
-import type { DashboardData } from '@/entities/dashboard';
+import type { DashboardResponse } from '@/entities/dashboard';
 import { formatMoney } from '@/shared/lib/format';
 import { Card, CardHeader } from '@/shared/ui/card';
 import { CountUp } from '@/shared/ui/count-up';
@@ -12,7 +12,7 @@ import './loss-overview.scss';
 
 interface LossOverviewProps {
   /** `undefined` — данные загружаются, вместо чисел скелетоны. */
-  data?: Pick<DashboardData, 'monthlyLoss' | 'riskBuckets'>;
+  data?: Pick<DashboardResponse, 'monthlyLoss' | 'riskBuckets'>;
 }
 
 /** Сводка потерь: сколько потеряем в месяц и распределение клиентов по уровням риска. */

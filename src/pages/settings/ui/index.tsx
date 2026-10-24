@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { useModelSettings, type ModelSettings } from '@/entities/model-settings';
+import { useIsAdmin } from '@/entities/session';
 import { formatDateTime } from '@/shared/lib/format';
 import { useTimedFlag } from '@/shared/lib/timed-flag';
 import { Button } from '@/shared/ui/button';
@@ -25,13 +26,14 @@ const formatUpdate = ({ updatedAt, updatedBy }: ModelSettings) =>
 /**
  * Настройки по макетам «Настройки — модель / пользователи / другое (…)»: вкладки,
  * на «Модели» — плашка последнего обновления и параметры модели риска (черновик живёт и при
- * переключении вкладок), на «Пользователях» — учётки панели, на «Другом» — тема, дата расчёта
- * и аккаунт.
+ * переключении вкладок), на «Пользователях» — учётки сотрудников (только администратору),
+ * на «Другом» — тема, дата расчёта и аккаунт.
  */
 export const SettingsPage = () => {
   const { data, isError, isFetching, refetch } = useModelSettings();
   const [tab, setTab] = useState<SettingsTab>('model');
   const [isJustSaved, flashSaved] = useTimedFlag(SAVED_BADGE_MS);
+  const isAdmin = useIsAdmin();
 
   if (!data && isError) {
     return (
@@ -55,7 +57,7 @@ export const SettingsPage = () => {
       <div className="settings-page__head">
         <TabList aria-label="Разделы настроек">
           <Tab value="model">Модель</Tab>
-          <Tab value="users">Пользователи</Tab>
+          {isAdmin && <Tab value="users">Пользователи</Tab>}
           <Tab value="other">Другое</Tab>
         </TabList>
         {tab === 'model' && data && (
@@ -70,9 +72,11 @@ export const SettingsPage = () => {
           <ModelSettingsFormSkeleton />
         )}
       </TabPanel>
-      <TabPanel value="users" keepMounted>
-        <UsersSettings />
-      </TabPanel>
+      {isAdmin && (
+        <TabPanel value="users" keepMounted>
+          <UsersSettings />
+        </TabPanel>
+      )}
       <TabPanel value="other">
         <OtherSettings />
       </TabPanel>

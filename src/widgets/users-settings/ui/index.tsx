@@ -29,7 +29,7 @@ export const UsersSettings = () => {
           users={users}
           currentLogin={currentLogin}
           renderActions={(user) =>
-            canDeleteUser(user, currentLogin) && <DeleteUserButton login={user.login} />
+            canDeleteUser(user, currentLogin) && <DeleteUserButton user={user} />
           }
         />
       );

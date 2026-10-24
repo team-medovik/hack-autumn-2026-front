@@ -34,17 +34,21 @@ export const LossExplanation = ({ breakdown, balance }: LossExplanationProps) =>
             label={`Нужно на продления за ${horizonDays}\u00a0дн.`}
             value={formatMoney(balance.required)}
           />
-          <BreakdownRow label="Основной баланс" value={formatMoney(balance.available)} />
+          <BreakdownRow
+            label="Доступно на продления"
+            hint="основной баланс, бонусы и реферальный — по настройкам модели"
+            value={formatMoney(balance.available)}
+          />
           <BreakdownRow
             label="Бонусы"
-            hint={formatMoney(balance.bonus)}
-            value="заблокированы"
+            hint="справочно"
+            value={formatMoney(balance.bonus)}
             mutedValue
           />
           <BreakdownRow
             label="Реферальный баланс"
-            hint={formatMoney(balance.referral)}
-            value="не идёт в продление"
+            hint="справочно"
+            value={formatMoney(balance.referral)}
             mutedValue
           />
           <BreakdownDivider />

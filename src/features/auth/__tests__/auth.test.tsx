@@ -14,6 +14,16 @@ import { GuestOnly, refreshSession, RequireAuth } from '..';
 
 const resetSession = () => useSessionStore.setState(useSessionStore.getInitialState(), true);
 
+const USER = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  login: 'admin',
+  role: 'ADMIN',
+  createdAt: '2026-10-01T00:00:00Z',
+} as const;
+
+/** Ответ /login или /refresh с этим токеном. */
+const session = (accessToken: string) => ({ accessToken, expiresIn: 900, user: USER });
+
 describe('refreshSession', () => {
   beforeEach(resetSession);
 
@@ -51,30 +61,30 @@ describe('401-интерсептор (app/setup-api)', () => {
   beforeEach(resetSession);
 
   it('обновляет токен и повторяет запрос с новым Bearer', async () => {
-    useSessionStore.getState().setSession({ accessToken: 'expired' });
+    useSessionStore.getState().setSession(session('expired'));
     server.use(
       http.post('*/auth/refresh', () => HttpResponse.json({ accessToken: 'fresh' })),
-      http.get('*/clients', ({ request }) =>
+      http.get('*/api/v1/customers', ({ request }) =>
         request.headers.get('Authorization') === 'Bearer fresh'
           ? HttpResponse.json({ ok: true })
           : new HttpResponse(null, { status: 401 }),
       ),
     );
 
-    const { data } = await api.get('/clients');
+    const { data } = await api.get('/api/v1/customers');
 
     expect(data).toEqual({ ok: true });
     expect(useSessionStore.getState().accessToken).toBe('fresh');
   });
 
   it('если /refresh не помог — пробрасывает 401 и сбрасывает сессию', async () => {
-    useSessionStore.getState().setSession({ accessToken: 'expired' });
+    useSessionStore.getState().setSession(session('expired'));
     server.use(
       http.post('*/auth/refresh', () => new HttpResponse(null, { status: 401 })),
-      http.get('*/clients', () => new HttpResponse(null, { status: 401 })),
+      http.get('*/api/v1/customers', () => new HttpResponse(null, { status: 401 })),
     );
 
-    await expect(api.get('/clients')).rejects.toMatchObject({ response: { status: 401 } });
+    await expect(api.get('/api/v1/customers')).rejects.toMatchObject({ response: { status: 401 } });
     expect(useSessionStore.getState().status).toBe('anonymous');
   });
 });

@@ -56,8 +56,9 @@ describe('ClientCardPage', () => {
     const balance = within(card).getByLabelText('Баланс клиента');
     expect(within(balance).getByText(plainText('3,42 €'))).toBeInTheDocument();
     expect(within(balance).getByText(plainText('6,77 €'))).toBeInTheDocument();
-    // Бонусы и реферальный баланс — справочно, рядом с основным
-    expect(within(balance).getByText('Бонусы (заблок.)')).toBeInTheDocument();
+    // Доступно на продления — по настройкам модели; бонусы и реферальный — справочно
+    expect(within(balance).getByText('Доступно')).toBeInTheDocument();
+    expect(within(balance).getByText('Бонусы')).toBeInTheDocument();
     expect(within(balance).getByText(plainText('2,00 €'))).toBeInTheDocument();
     expect(within(balance).getByText('Реф. баланс')).toBeInTheDocument();
 
@@ -132,7 +133,7 @@ describe('ClientCardPage', () => {
   it('при ошибке показывает сообщение и повторяет запрос', async () => {
     let requests = 0;
     server.use(
-      http.get('*/clients/:id', () => {
+      http.get('*/api/v1/customers/:id', () => {
         requests += 1;
         return HttpResponse.json({ message: 'Service Unavailable' }, { status: 503 });
       }),

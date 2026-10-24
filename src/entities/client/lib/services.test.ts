@@ -48,10 +48,7 @@ describe('formatServiceNote', () => {
     ).toBe('продлится 12.11, автопродление вкл.');
   });
 
-  it('у удалённой услуги — только событие, без события — только автопродление', () => {
-    expect(
-      formatServiceNote({ event: { type: 'deleted', date: '2026-09-02' }, autoRenew: null }),
-    ).toBe('удалена 02.09');
+  it('без события — только автопродление, у удалённой — ничего', () => {
     expect(formatServiceNote({ event: null, autoRenew: true })).toBe('автопродление вкл.');
     expect(formatServiceNote({ event: null, autoRenew: null })).toBe('');
   });

@@ -6,6 +6,16 @@ import { api, setAccessTokenGetter } from '@/shared/api';
 
 import { getAccessToken, useSessionStore } from '..';
 
+const USER = {
+  id: '550e8400-e29b-41d4-a716-446655440000',
+  login: 'admin',
+  role: 'ADMIN',
+  createdAt: '2026-10-01T00:00:00Z',
+} as const;
+
+/** Ответ /login или /refresh с этим токеном. */
+const session = (accessToken: string) => ({ accessToken, expiresIn: 900, user: USER });
+
 describe('session store', () => {
   beforeEach(() => {
     useSessionStore.setState(useSessionStore.getInitialState(), true);
@@ -21,7 +31,7 @@ describe('session store', () => {
     useSessionStore.getState().setSession({
       accessToken: 'token-1',
       expiresIn: 60,
-      user: { id: '1', login: 'admin' },
+      user: USER,
     });
 
     const state = useSessionStore.getState();
@@ -32,7 +42,7 @@ describe('session store', () => {
   });
 
   it('clearSession сбрасывает сессию в anonymous', () => {
-    useSessionStore.getState().setSession({ accessToken: 'token-1' });
+    useSessionStore.getState().setSession(session('token-1'));
     useSessionStore.getState().clearSession();
 
     expect(useSessionStore.getState().status).toBe('anonymous');
@@ -48,7 +58,7 @@ describe('session store', () => {
       }),
     );
     setAccessTokenGetter(getAccessToken);
-    useSessionStore.getState().setSession({ accessToken: 'token-2' });
+    useSessionStore.getState().setSession(session('token-2'));
 
     await api.get('/ping');
 

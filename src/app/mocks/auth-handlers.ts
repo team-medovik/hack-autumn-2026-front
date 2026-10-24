@@ -17,7 +17,7 @@ const SESSION_KEY = 'msw:auth-session';
 const ACCESS_TOKEN_TTL_SEC = 15 * 60;
 
 const MOCK_USER: CurrentUserResponse = {
-  id: '1',
+  id: '550e8400-e29b-41d4-a716-446655440000',
   login: MOCK_LOGIN,
   role: 'ADMIN',
   createdAt: '2026-10-01T00:00:00Z',

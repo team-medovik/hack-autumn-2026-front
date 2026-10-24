@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { getSnapshotStatus } from './snapshot-status';
-import type { DashboardData } from './types';
+import type { DashboardResponse } from './types';
 
 const takenAt = '2026-10-23T19:10:00.000Z';
 // Для статуса важен только снимок — остальные поля сводки не нужны
-const withSnapshot = { snapshot: { id: 's1', takenAt } } as DashboardData;
+const withSnapshot = { snapshot: { id: 's1', takenAt } } as DashboardResponse;
+const withoutSnapshot = { snapshot: null } as DashboardResponse;
 
 describe('getSnapshotStatus', () => {
   it('без данных и без ошибки — загрузка', () => {
@@ -17,7 +18,7 @@ describe('getSnapshotStatus', () => {
   });
 
   it('ответ без снимка — данных пока нет', () => {
-    expect(getSnapshotStatus({ data: { snapshot: null }, isError: false })).toEqual({
+    expect(getSnapshotStatus({ data: withoutSnapshot, isError: false })).toEqual({
       kind: 'empty',
     });
   });
