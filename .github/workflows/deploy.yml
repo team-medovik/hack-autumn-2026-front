@@ -38,6 +38,7 @@ env:
 
   # ===== MinIO =====
   MINIO_ARTIFACT_PREFIX: 'front-2026'
+  MINIO_MC_IMAGE: 'chainguard/minio-client:latest-dev@sha256:3f349bd07076e8e4040dc5c32598b632268accba8ac7f460cb077670ee2e3407'
 
   ARTIFACT_ARCHIVE_NAME: 'front-dist.tar.gz'
 
@@ -199,6 +200,16 @@ jobs:
           : "${MINIO_ACCESS_KEY:?Repository secret MINIO_ACCESS_KEY is not configured}"
           : "${MINIO_SECRET_KEY:?Repository secret MINIO_SECRET_KEY is not configured}"
 
+          case "$MINIO_ENDPOINT" in
+            http://*|https://*) ;;
+            *) MINIO_ENDPOINT="http://$MINIO_ENDPOINT" ;;
+          esac
+          MINIO_ENDPOINT="${MINIO_ENDPOINT%/}"
+          if [[ "${MINIO_ENDPOINT#*://}" == */* ]]; then
+            echo "MINIO_ENDPOINT must contain only scheme and host[:port]"
+            exit 1
+          fi
+
           ARTIFACT_KEY="${{ steps.artifact_vars.outputs.artifact_key }}"
 
           docker run --rm \
@@ -211,7 +222,7 @@ jobs:
             -e ARTIFACT_KEY="$ARTIFACT_KEY" \
             -e ARTIFACT_ARCHIVE_NAME="$ARTIFACT_ARCHIVE_NAME" \
             --entrypoint /bin/sh \
-            minio/mc \
+            "$MINIO_MC_IMAGE" \
             -c '
               set -eu
 
@@ -221,8 +232,6 @@ jobs:
                 "$MINIO_SECRET_KEY" \
                 --api S3v4 \
                 --path on
-
-              mc ls "minio/$MINIO_BUCKET" >/dev/null
 
               mc cp "/artifacts/$ARTIFACT_ARCHIVE_NAME" \
                 "minio/$MINIO_BUCKET/$ARTIFACT_KEY"
@@ -243,6 +252,23 @@ jobs:
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         run: |
+          set -euo pipefail
+
+          : "${MINIO_ENDPOINT:?Repository secret MINIO_ENDPOINT is not configured}"
+          : "${MINIO_BUCKET:?Repository secret MINIO_BUCKET is not configured}"
+          : "${MINIO_ACCESS_KEY:?Repository secret MINIO_ACCESS_KEY is not configured}"
+          : "${MINIO_SECRET_KEY:?Repository secret MINIO_SECRET_KEY is not configured}"
+
+          case "$MINIO_ENDPOINT" in
+            http://*|https://*) ;;
+            *) MINIO_ENDPOINT="http://$MINIO_ENDPOINT" ;;
+          esac
+          MINIO_ENDPOINT="${MINIO_ENDPOINT%/}"
+          if [[ "${MINIO_ENDPOINT#*://}" == */* ]]; then
+            echo "MINIO_ENDPOINT must contain only scheme and host[:port]"
+            exit 1
+          fi
+
           docker run --rm \
             --network host \
             -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
@@ -251,7 +277,7 @@ jobs:
             -e MINIO_BUCKET="$MINIO_BUCKET" \
             -e MINIO_ARTIFACT_PREFIX="$MINIO_ARTIFACT_PREFIX" \
             --entrypoint /bin/sh \
-            minio/mc \
+            "$MINIO_MC_IMAGE" \
             -c '
               set -eu
 
@@ -295,15 +321,29 @@ jobs:
           : "${MINIO_ACCESS_KEY:?Repository secret MINIO_ACCESS_KEY is not configured}"
           : "${MINIO_SECRET_KEY:?Repository secret MINIO_SECRET_KEY is not configured}"
 
+          case "$MINIO_ENDPOINT" in
+            http://*|https://*) ;;
+            *) MINIO_ENDPOINT="http://$MINIO_ENDPOINT" ;;
+          esac
+          MINIO_ENDPOINT="${MINIO_ENDPOINT%/}"
+          if [[ "${MINIO_ENDPOINT#*://}" == */* ]]; then
+            echo "MINIO_ENDPOINT must contain only scheme and host[:port]"
+            exit 1
+          fi
+
           ARTIFACT_KEY="${{ needs.build.outputs.artifact_key }}"
 
+          RUNNER_UID="$(id -u)"
+          RUNNER_GID="$(id -g)"
+
           sudo rm -rf "$ARTIFACT_DIR"
-          sudo mkdir -p "$ARTIFACT_DIR"
-          sudo chown -R "$(id -u):$(id -g)" "$ARTIFACT_DIR"
+          sudo install -d -o "$RUNNER_UID" -g "$RUNNER_GID" -m 750 "$ARTIFACT_DIR"
 
           docker run --rm \
             --network host \
+            --user "${RUNNER_UID}:${RUNNER_GID}" \
             -v "$ARTIFACT_DIR:/download" \
+            -e MC_CONFIG_DIR=/tmp/.mc \
             -e MINIO_ENDPOINT="$MINIO_ENDPOINT" \
             -e MINIO_ACCESS_KEY="$MINIO_ACCESS_KEY" \
             -e MINIO_SECRET_KEY="$MINIO_SECRET_KEY" \
@@ -311,7 +351,7 @@ jobs:
             -e ARTIFACT_KEY="$ARTIFACT_KEY" \
             -e ARTIFACT_ARCHIVE_NAME="$ARTIFACT_ARCHIVE_NAME" \
             --entrypoint /bin/sh \
-            minio/mc \
+            "$MINIO_MC_IMAGE" \
             -c '
               set -eu
 
