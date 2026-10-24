@@ -5,10 +5,14 @@
   min-height: 100dvh;
   background: var(--bg-page);
 
+  // Навбар на всю высоту окна; если окно ниже навбара — он прокручивается сам, а не обрезается
   .navbar {
     position: sticky;
     top: 0;
     height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
   }
 
   &__main {
@@ -18,6 +22,16 @@
     margin: 20px 20px 20px 0;
     padding: var(--space-grouped);
     border-radius: var(--radius-xl);
+    animation: motion-fade-in var(--duration-enter) var(--ease-out);
+  }
+
+  // Обёртка страницы: при смене раздела содержимое всплывает
+  &__page {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+    animation: motion-fade-up var(--duration-enter) var(--ease-out);
   }
 
   @include down(desktop-s) {
@@ -26,6 +40,7 @@
     .navbar {
       position: static;
       height: auto;
+      overflow-y: visible;
     }
 
     &__main {

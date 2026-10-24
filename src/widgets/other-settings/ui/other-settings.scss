@@ -1,0 +1,12 @@
+.other-settings {
+  // Макет: заголовок блока и содержимое — через 16px
+  &__card {
+    gap: var(--space-close);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

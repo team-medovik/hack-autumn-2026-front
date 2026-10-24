@@ -1,21 +1,62 @@
 // Макет «Вход» (Figma 22:56): панель 380×528 по центру, padding 24, radius 16.
 .form-widget {
+  position: relative;
   display: flex;
   flex: 1;
   align-items: center;
   justify-content: center;
   min-height: 100%;
   padding: var(--layout-margin);
+  overflow: hidden;
   background: var(--bg-page);
+
+  // Орбиты по центру экрана, под панелью
+  &__orbits {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 800px;
+    max-width: none;
+    height: 800px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    animation: motion-fade-in 1.2s var(--ease-out);
+  }
+
+  &__orbit {
+    transform-origin: 400px 400px;
+
+    circle {
+      stroke: var(--border-divider);
+      stroke-width: 1.5;
+      stroke-dasharray: 6 10;
+    }
+
+    // Обороты за минуты, как у колец aeza: движение видно, но не отвлекает
+    &--outer {
+      animation: form-widget-orbit 150s linear infinite;
+    }
+
+    &--inner {
+      animation: form-widget-orbit 270s linear infinite reverse;
+    }
+  }
+
+  & &__satellite {
+    fill: var(--accent-default);
+    stroke: none;
+  }
 
   &__panel {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     gap: var(--space-grouped);
+    position: relative;
     width: 380px;
     max-width: 100%;
     min-height: 528px;
+    animation: motion-fade-up 0.6s var(--ease-out);
   }
 
   &__body,
@@ -48,5 +89,11 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-related);
+  }
+}
+
+@keyframes form-widget-orbit {
+  to {
+    transform: rotate(360deg);
   }
 }

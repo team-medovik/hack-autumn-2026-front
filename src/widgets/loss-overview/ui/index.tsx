@@ -1,6 +1,7 @@
 import type { DashboardData } from '@/entities/dashboard';
 import { formatMoney } from '@/shared/lib/format';
 import { Card, CardHeader } from '@/shared/ui/card';
+import { CountUp } from '@/shared/ui/count-up';
 import { Highlight } from '@/shared/ui/highlight';
 import { RiskDistribution } from '@/shared/ui/risk-distribution';
 import { RISK_LEVEL_LABELS, RISK_LEVELS, RiskLevel } from '@/shared/ui/risk-level';
@@ -37,7 +38,7 @@ export const LossOverview = ({ data }: LossOverviewProps) => {
         {data ? (
           <>
             <Text variant="heading-1-italic" color="main">
-              {formatMoney(data.monthlyLoss)}
+              <CountUp value={data.monthlyLoss} format={formatMoney} />
             </Text>
             <Text variant="body" color="main">
               {data.monthlyLoss > 0

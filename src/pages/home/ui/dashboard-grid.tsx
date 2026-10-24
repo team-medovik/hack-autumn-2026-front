@@ -1,4 +1,5 @@
 import type { DashboardData } from '@/entities/dashboard';
+import { Reveal } from '@/shared/ui/reveal';
 import { ChurnForecast } from '@/widgets/churn-forecast';
 import { LossOverview } from '@/widgets/loss-overview';
 import { LossReasons } from '@/widgets/loss-reasons';
@@ -17,14 +18,23 @@ export const DashboardGrid = ({ data }: DashboardGridProps) => (
 
     <LossOverview data={data} />
 
+    {/* Карточки ниже сводки оживают, когда до них докрутили, а не сразу при загрузке */}
     <div className="home-page__row home-page__row--focus">
-      <TopRisk data={data?.topRisk} />
-      <RiskQueue data={data?.riskQueue} selectedId={data?.topRisk?.id} />
+      <Reveal className="home-page__card">
+        <TopRisk data={data?.topRisk} />
+      </Reveal>
+      <Reveal className="home-page__card">
+        <RiskQueue data={data?.riskQueue} selectedId={data?.topRisk?.id} />
+      </Reveal>
     </div>
 
     <div className="home-page__row home-page__row--trends">
-      <LossReasons data={data?.lossReasons} />
-      <ChurnForecast data={data?.churn} />
+      <Reveal className="home-page__card">
+        <LossReasons data={data?.lossReasons} />
+      </Reveal>
+      <Reveal className="home-page__card">
+        <ChurnForecast data={data?.churn} />
+      </Reveal>
     </div>
   </div>
 );

@@ -1,0 +1,29 @@
+// Макет «Импорт/экспорт снимка»: блоки друг под другом через 24px
+.snapshot-manager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-grouped);
+
+  // Текущий снимок: подпись с именем файла слева, «Скачать JSON» справа, через 16px
+  &__current {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-close);
+  }
+
+  &__current-text {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: var(--space-compressed);
+    min-width: 0;
+  }
+
+  &__history {
+    gap: var(--space-close);
+  }
+
+  &__skeleton {
+    border-radius: var(--radius-xl);
+  }
+}

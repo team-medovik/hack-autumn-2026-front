@@ -20,5 +20,12 @@
     margin: 0;
     padding: 0;
     list-style: none;
+
+    // Шкалы причин заполняются лесенкой (--motion-delay читает ProgressBar)
+    @for $i from 2 through 6 {
+      > :nth-child(#{$i}) {
+        --motion-delay: calc(var(--motion-stagger) * #{$i - 1});
+      }
+    }
   }
 }

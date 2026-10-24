@@ -3,6 +3,29 @@ import { afterAll, afterEach, beforeAll } from 'vitest';
 
 import { server } from '@/app/mocks/server';
 
+// В jsdom нет ResizeObserver, а Radix Slider меряет им ручку — размеры в тестах не важны
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// В jsdom нет matchMedia, а тема «как в системе» спрашивает его — считаем систему светлой
+window.matchMedia ??= (query: string) =>
+  ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  }) satisfies MediaQueryList;
+
+// jsdom не прокручивает окно и ругается «Not implemented» — прокрутка в тестах не важна
+window.scrollTo = () => {};
+
 // Запускаем MSW-сервер перед всеми тестами
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 

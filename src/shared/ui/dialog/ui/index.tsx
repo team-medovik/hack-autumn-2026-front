@@ -20,13 +20,15 @@ import './dialog.scss';
 /** Тип из Figma: default — Обычный, danger — Опасный, info — Информация (одна кнопка). */
 export type DialogVariant = 'default' | 'danger' | 'info';
 
-/** Ширина: m — 480px (подтверждения), l — 560px (пояснения с формулами). */
+/** Ширина: m — 480px (подтверждения), l — 560px (пояснения с блоками расчёта, `children`). */
 export type DialogSize = 'm' | 'l';
 
 interface DialogProps {
   title: ReactNode;
   /** Строка или несколько абзацев (`<p>`) — обёртка блочная. */
   description?: ReactNode;
+  /** Содержимое под текстом, перед кнопками: блоки расчёта, списки. */
+  children?: ReactNode;
   variant?: DialogVariant;
   size?: DialogSize;
   open?: boolean;
@@ -37,6 +39,11 @@ interface DialogProps {
   confirmLabel?: ReactNode;
   cancelLabel?: ReactNode;
   onConfirm?: () => void;
+  /**
+   * Действие второй кнопки, если она не просто закрывает диалог («Сохранить поверх»).
+   * Esc и клик мимо окна его не вызывают — только `onOpenChange(false)`.
+   */
+  onCancel?: () => void;
   className?: string;
 }
 
@@ -55,6 +62,7 @@ interface DialogProps {
 export const Dialog = ({
   title,
   description,
+  children,
   variant = 'default',
   size = 'm',
   open,
@@ -63,6 +71,7 @@ export const Dialog = ({
   confirmLabel = variant === 'info' ? 'Понятно' : 'Подтвердить',
   cancelLabel = 'Отмена',
   onConfirm,
+  onCancel,
   className,
 }: DialogProps) => (
   <Root open={open} onOpenChange={onOpenChange}>
@@ -85,10 +94,14 @@ export const Dialog = ({
           )}
         </div>
 
+        {children}
+
         <div className="dialog__actions">
           {variant !== 'info' && (
             <Cancel asChild>
-              <Button variant="secondary">{cancelLabel}</Button>
+              <Button variant="secondary" onClick={onCancel}>
+                {cancelLabel}
+              </Button>
             </Cancel>
           )}
           <Action asChild>

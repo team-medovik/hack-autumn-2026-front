@@ -75,6 +75,10 @@
     color: var(--text-tertiary);
   }
 
+  &--color-accent {
+    color: var(--accent-default);
+  }
+
   &--color-disabled {
     color: var(--text-disabled);
   }

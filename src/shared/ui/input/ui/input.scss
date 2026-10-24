@@ -5,23 +5,36 @@
   width: 100%;
   font-family: var(--font-family);
 
+  // Значение 24px под поднятым лейблом 16px, вместе — по центру поля
+  --input-offset: calc(
+    (var(--touch-target-xl) - var(--caption-3-line-height) - var(--body-line-height)) / 2
+  );
+
   &__field {
     position: relative;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    align-items: center;
     min-height: var(--touch-target-xl);
-    padding: var(--space-bonded) var(--space-close);
     overflow: hidden;
     border-radius: var(--radius-l);
     background: var(--control-default);
+    transition: background-color var(--duration-fast);
   }
 
-  // Поле всегда под местом для поднятого лейбла: лейбл 16px + значение 24px
+  &:not(.input--disabled) &__field:hover {
+    background: var(--control-active);
+  }
+
+  // Инпут занимает всё поле — кликается по всей высоте, а не только по строке значения.
+  // Сверху место под поднятый лейбл.
   &__control {
+    flex: 1 1 auto;
+    align-self: stretch;
     width: 100%;
-    margin-top: var(--caption-3-line-height);
-    padding: 0;
+    min-width: 0;
+    margin: 0;
+    padding: calc(var(--input-offset) + var(--caption-3-line-height)) var(--space-close)
+      var(--input-offset);
     border: 0;
     background: transparent;
     color: var(--text-main);
@@ -72,22 +85,58 @@
   // Фокус и Заполненное: лейбл уменьшается и уходит наверх
   &__control:focus + &__label,
   &__control:not(:placeholder-shown) + &__label {
-    top: calc(
-      (var(--touch-target-xl) - var(--caption-3-line-height) - var(--body-line-height)) / 2
-    );
+    top: var(--input-offset);
     font-size: var(--caption-3-font-size);
     font-weight: var(--caption-3-font-weight);
     line-height: var(--caption-3-line-height);
     transform: none;
   }
 
+  // «Глаз» пароля справа: инпут и лейбл не заезжают под кнопку
+  &--with-action &__control {
+    padding-right: 0;
+  }
+
+  &--with-action &__label {
+    right: calc(8px + var(--touch-target-m));
+  }
+
+  &__action {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target-m);
+    height: var(--touch-target-m);
+    margin-right: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-m);
+    background: transparent;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color var(--duration-fast);
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+      color: var(--text-main);
+    }
+
+    &:disabled {
+      color: var(--text-disabled);
+      cursor: not-allowed;
+    }
+  }
+
   // Ошибка: рамка без сдвига вёрстки
   &--error &__field {
     box-shadow: inset 0 0 0 var(--border-weight) var(--danger-default);
+    animation: input-shake 0.35s var(--ease-standard);
   }
 
   &__helper {
     margin: 0;
+    animation: motion-fade-in var(--duration-fast) ease-out;
     padding-inline: var(--space-close);
     color: var(--danger-default);
     font-size: var(--caption-3-font-size);
@@ -97,5 +146,17 @@
 
   &--disabled &__label {
     color: var(--text-disabled);
+  }
+}
+
+@keyframes input-shake {
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(4px);
   }
 }

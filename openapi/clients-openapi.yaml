@@ -330,14 +330,29 @@ components:
 
     ClientCardBalance:
       type: object
-      description: «Не хватает» фронт считает сам — `max(0, required − available)`.
-      required: [available, required, monthlyLoss]
+      description: |
+        «Не хватает» фронт считает сам — `max(0, required − available)`.
+        В продления идёт только основной баланс: бонусы и реферальный баланс показываются
+        справочно и в непокрытую долю не входят.
+      required: [available, bonus, referral, required, monthlyLoss]
       properties:
         available:
           type: number
           format: double
-          description: Сейчас на счёте.
+          description: Основной баланс — сейчас на счёте.
           example: 6.48
+        bonus:
+          type: number
+          format: double
+          minimum: 0
+          description: Бонусный баланс. Заблокирован — в продления не идёт.
+          example: 2
+        referral:
+          type: number
+          format: double
+          minimum: 0
+          description: Реферальный баланс. В продления не идёт.
+          example: 0
         required:
           type: [number, 'null']
           format: double
@@ -411,7 +426,7 @@ components:
       description: |
         Потеря услуги = цена в месяц × риск × (k + (1 − k) × непокрытая доля).
         Сумма `items[].loss` — `balance.monthlyLoss` (с точностью до округления).
-      required: [k, uncoveredShare, items]
+      required: [k, uncoveredShare, horizonDays, items]
       properties:
         k:
           type: number
@@ -427,6 +442,11 @@ components:
           maximum: 1
           description: Какую часть `balance.required` не покрывает `balance.available`.
           example: 0.35
+        horizonDays:
+          type: integer
+          minimum: 1
+          description: За сколько дней вперёд считается `balance.required` (горизонт прогноза).
+          example: 5
         items:
           type: array
           description: По живым услугам. Пусто — потери нет.
@@ -550,7 +570,7 @@ components:
           - id: shortage
             label: Услуга service-0017 ожидает оплаты, а средств на счёте не хватает
             points: 10.4
-        balance: { available: 6.48, required: 9.9, monthlyLoss: 6.77 }
+        balance: { available: 6.48, bonus: 2, referral: 0, required: 9.9, monthlyLoss: 6.77 }
         services:
           - id: service-0017
             name: service-0017
@@ -571,6 +591,7 @@ components:
         lossBreakdown:
           k: 0.5
           uncoveredShare: 0.35
+          horizonDays: 5
           items:
             - serviceId: service-0017
               serviceName: service-0017
@@ -591,7 +612,7 @@ components:
         score: null
         level: none
         factors: []
-        balance: { available: 3.2, required: null, monthlyLoss: 0 }
+        balance: { available: 3.2, bonus: 0, referral: 0, required: null, monthlyLoss: 0 }
         services:
           - id: service-4421
             name: service-4421
@@ -601,4 +622,4 @@ components:
             monthlyPrice: null
             event: { type: deleted, date: '2026-09-02' }
             autoRenew: null
-        lossBreakdown: { k: 0.5, uncoveredShare: 0, items: [] }
+        lossBreakdown: { k: 0.5, uncoveredShare: 0, horizonDays: 5, items: [] }

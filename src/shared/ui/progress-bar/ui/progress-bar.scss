@@ -23,10 +23,24 @@
     --progress-color: var(--text-tertiary);
   }
 
+  &--accent {
+    --progress-color: var(--accent-default);
+  }
+
   &__indicator {
     height: 100%;
     border-radius: var(--radius-max);
     background: var(--progress-color);
-    transition: width 0.2s;
+    transform-origin: left;
+    transition: width 0.2s var(--ease-standard);
+    // При появлении шкала набегает от нуля; --motion-delay задаёт «лесенку» снаружи
+    animation: progress-bar-grow var(--duration-draw) var(--ease-out) var(--motion-delay, 0s)
+      backwards;
+  }
+}
+
+@keyframes progress-bar-grow {
+  from {
+    transform: scaleX(0);
   }
 }

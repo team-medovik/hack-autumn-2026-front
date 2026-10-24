@@ -1,0 +1,77 @@
+// Слой «Загрузка»: пунктир 1.5px внутрь, штрих 8 через 8, скругление 24, поля 56px сверху и снизу.
+.dropzone {
+  --dropzone-border: var(--text-secondary);
+
+  position: relative;
+  display: grid;
+  padding: 56px var(--space-grouped);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+
+  &--over {
+    --dropzone-border: var(--accent-default);
+
+    background: var(--accent-default);
+  }
+
+  &--invalid {
+    --dropzone-border: var(--status-danger);
+  }
+
+  &--disabled {
+    cursor: default;
+  }
+
+  // Рамка — SVG: у CSS dashed нельзя задать длину штриха
+  &__border {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+
+    rect {
+      x: 0.75px;
+      y: 0.75px;
+      width: calc(100% - 1.5px);
+      height: calc(100% - 1.5px);
+      rx: calc(var(--radius-xl) - 0.75px);
+      fill: none;
+      stroke: var(--dropzone-border);
+      stroke-width: 1.5px;
+      stroke-dasharray: 8 8;
+      transition: stroke var(--duration-fast);
+    }
+  }
+
+  // Наведение мышью — пунктир темнеет, зона откликается
+  &:hover:not(.dropzone--disabled, .dropzone--over, .dropzone--invalid) {
+    --dropzone-border: var(--text-main);
+  }
+
+  // Файл над зоной — пунктир «бежит» по кругу
+  &--over &__border rect {
+    animation: dropzone-march 0.6s linear infinite;
+  }
+
+  // Слои в одной ячейке сетки: высоту задаёт приглашение, остальное — поверх него по центру
+  &__layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    grid-area: 1 / 1;
+
+    &--sizer {
+      visibility: hidden;
+    }
+  }
+}
+
+@keyframes dropzone-march {
+  to {
+    stroke-dashoffset: -16;
+  }
+}

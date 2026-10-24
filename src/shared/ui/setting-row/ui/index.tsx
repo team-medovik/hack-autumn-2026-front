@@ -1,104 +1,72 @@
 import { clsx } from 'clsx';
-import { useId, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
-import { NumberField } from '../../number-field';
-import { Slider } from '../../slider';
+import { HintTooltip } from '../../hint-tooltip';
 import { Text } from '../../text';
 
 import './setting-row.scss';
 
+/** Подписи строки для контрола: `aria-labelledby={titleId}`, `aria-describedby={describedBy}`. */
+export interface SettingRowIds {
+  titleId: string;
+  /** id пометки и подсказки через пробел. Нет ни того ни другого — `undefined`. */
+  describedBy?: string;
+}
+
 interface SettingRowProps {
   title: ReactNode;
-  /** Подсказка под названием, например «всегда в полную силу · по умолчанию 70». */
-  hint?: ReactNode;
-  value: number;
-  onValueChange: (value: number) => void;
-  /** Сохранённое значение: если текущее отличается — поле в состоянии «Изменено». */
-  savedValue?: number;
-  min?: number;
-  max?: number;
+  /** Текст подсказки «?» рядом с названием. */
+  help?: ReactNode;
+  /** Пометка под названием Caption 2 цвета accent: «было 70» у изменённого значения. */
+  note?: ReactNode;
+  /** Контрол справа: `SliderField`, `Switch`… Получает id подписей строки. */
+  children: (ids: SettingRowIds) => ReactNode;
   className?: string;
 }
 
 /**
- * Строка настройки признака (Настройки / признак): описание, слайдер и числовое поле,
- * синхронизированные между собой. Некорректный ввод подсвечивает поле ошибкой и не уходит наружу.
+ * Строка настройки (Настройки / признак): название с «?», под ним пометка; контрол справа.
+ * Текст подсказки лежит и скрытым в DOM — контрол описан им и без открытой подсказки.
  *
  * @example
- * <SettingRow
- *   title="Ожидает оплаты"
- *   hint="всегда в полную силу · по умолчанию 70"
- *   value={weight}
- *   savedValue={70}
- *   onValueChange={setWeight}
- * />
+ * <SettingRow title="Ожидает оплаты" help="Срок услуги истёк…" note={changed && 'было 70'}>
+ *   {({ titleId, describedBy }) => (
+ *     <SliderField value={weight} onValueChange={setWeight} aria-labelledby={titleId} aria-describedby={describedBy} />
+ *   )}
+ * </SettingRow>
  */
-export const SettingRow = ({
-  title,
-  hint,
-  value,
-  onValueChange,
-  savedValue,
-  min = 0,
-  max = 100,
-  className,
-}: SettingRowProps) => {
-  const titleId = useId();
-  // Черновик ввода живёт, пока пользователь печатает; иначе поле показывает value
-  const [draft, setDraft] = useState<string | null>(null);
-
-  /** Целое число в диапазоне [min, max] или null. */
-  const parse = (text: string) => {
-    const next = Number(text.trim());
-    return text.trim() !== '' && Number.isInteger(next) && next >= min && next <= max ? next : null;
-  };
-
-  const isValid = draft === null || parse(draft) !== null;
-
-  const handleInput = (event: ChangeEvent<HTMLInputElement>) => {
-    setDraft(event.target.value);
-
-    const next = parse(event.target.value);
-    if (next !== null) {
-      onValueChange(next);
-    }
-  };
-
-  const handleSlider = (next: number) => {
-    setDraft(null);
-    onValueChange(next);
-  };
+export const SettingRow = ({ title, help, note, children, className }: SettingRowProps) => {
+  const id = useId();
+  const titleId = `${id}-title`;
+  const noteId = `${id}-note`;
+  const helpId = `${id}-help`;
+  const describedBy =
+    [note ? noteId : null, help ? helpId : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={clsx('setting-row', className)}>
       <div className="setting-row__description">
-        <Text id={titleId} variant="body" color="main">
-          {title}
-        </Text>
-        {hint && (
-          <Text variant="caption-2" color="tertiary">
-            {hint}
+        <div className="setting-row__title">
+          <Text id={titleId} variant="body" color="main">
+            {title}
+          </Text>
+          {help && (
+            <>
+              <HintTooltip label="Подсказка">{help}</HintTooltip>
+              <span id={helpId} hidden>
+                {help}
+              </span>
+            </>
+          )}
+        </div>
+        {note && (
+          <Text id={noteId} variant="caption-2" color="accent">
+            {note}
           </Text>
         )}
       </div>
 
-      <Slider
-        className="setting-row__slider"
-        value={value}
-        onValueChange={handleSlider}
-        min={min}
-        max={max}
-        aria-label={typeof title === 'string' ? title : undefined}
-      />
-
-      <NumberField
-        value={draft ?? String(value)}
-        onChange={handleInput}
-        onBlur={() => isValid && setDraft(null)}
-        error={!isValid}
-        changed={savedValue !== undefined && value !== savedValue}
-        aria-labelledby={titleId}
-      />
+      {children({ titleId, describedBy })}
     </div>
   );
 };

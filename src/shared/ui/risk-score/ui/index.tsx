@@ -1,6 +1,9 @@
 import { clsx } from 'clsx';
+import type { CSSProperties } from 'react';
 
+import { useCountUp } from '@/shared/lib/count-up';
 import { formatNumber } from '@/shared/lib/format';
+import { useRevealed } from '@/shared/lib/reveal';
 
 import { Text } from '../../text';
 
@@ -38,8 +41,11 @@ export const RiskScore = ({ score, level, size = 's', className }: RiskScoreProp
   const value = score === null ? 0 : Math.min(100, Math.max(0, score));
   const arc = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`;
   const hasValue = level !== 'none' && value > 0;
+  // Крупный score досчитывает вместе с дугой; в таблицах — сразу итог
+  const revealed = useRevealed();
+  const shown = useCountUp(value, { enabled: size === 'l', paused: !revealed });
   // Score бывает дробным: 94,2
-  const label = score === null ? '—' : formatNumber(value);
+  const label = score === null ? '—' : formatNumber(shown === value ? value : Math.round(shown));
 
   return (
     <div
@@ -68,6 +74,7 @@ export const RiskScore = ({ score, level, size = 's', className }: RiskScoreProp
             pathLength={100}
             // Для 100 dash не нужен — иначе на концах видно стык
             strokeDasharray={value < 100 ? `${value} 200` : undefined}
+            style={{ '--arc-value': value } as CSSProperties}
           />
         )}
       </svg>

@@ -1,0 +1,37 @@
+// Колонки из макетов «Настройки — …»: основная тянется, справа — 320px, через 24px.
+.aside-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-grouped);
+
+  &__main {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: var(--space-grouped);
+    min-width: 0;
+  }
+
+  &__aside {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: var(--space-grouped);
+    width: 320px;
+
+    &--sticky {
+      position: sticky;
+      top: 20px;
+    }
+  }
+
+  @include down(desktop-s) {
+    flex-direction: column;
+    align-items: stretch;
+
+    &__aside {
+      position: static;
+      width: auto;
+    }
+  }
+}

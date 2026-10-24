@@ -99,7 +99,12 @@ export const ColumnChart = ({
                 )}
                 <span
                   className={clsx('column-chart__bar', `column-chart__bar--${bar.variant}`)}
-                  style={{ '--bar-ratio': ratio(bar.value, scale.max) } as CSSProperties}
+                  style={
+                    {
+                      '--bar-ratio': ratio(bar.value, scale.max),
+                      '--bar-index': index,
+                    } as CSSProperties
+                  }
                 />
               </div>
               <Text as="span" variant="caption-3" color="tertiary" className="column-chart__label">

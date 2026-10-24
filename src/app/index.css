@@ -385,6 +385,21 @@
   --caption-3-line-height: 16px;
   --caption-3-font-weight: 400;
 
+  /* ─── Движение (по мотивам aeza.net): быстрые микро-ховеры, мягкий выход ─── */
+  --ease-standard: cubic-bezier(0.65, 0, 0.35, 1); /* in-out, как у aeza */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* появления: быстро стартуем, плавно садимся */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* лёгкий перелёт для «щелчков» */
+  --duration-fast: 150ms; /* ховеры, нажатия, цвета */
+  --duration-popover: 160ms; /* подсказки */
+  --duration-dialog: 220ms; /* окна и затемнение */
+  --duration-enter: 450ms; /* появление блоков и страниц */
+  --duration-draw: 800ms; /* шкалы, дуги и столбцы графиков */
+  --motion-stagger: 60ms; /* шаг задержки соседних элементов */
+  --motion-lift: -1px; /* подъём кнопки при наведении */
+
+  /* Блик скелетона: доля белого поверх control/default */
+  --skeleton-shine: 55%;
+
   /* Глобальные токены шаблона берут фон и текст из дизайн-системы */
   --color-bg: var(--bg-page);
   --color-text: var(--text-main);
@@ -434,6 +449,8 @@
   --status-danger: var(--palette-red-400);
   --status-success: var(--palette-green-400);
   --status-success-bg: #54d06724;
+
+  --skeleton-shine: 6%;
 }
 
 /* ─── Слои (Layer): контролы на панели/карточке светлее/темнее, чем на странице ───
@@ -469,15 +486,19 @@
 }
 
 html,
-body,
-#root {
+body {
   height: 100%;
   width: 100%;
 }
 
+/* Не меньше окна, но растёт с содержимым: на низких экранах форма входа и экраны статуса
+   прокручиваются, а не обрезаются. Ширина 100%, а не 100dvw — иначе при вертикальном
+   скроллбаре появляется горизонтальный. */
 #root {
-  width: 100dvw;
-  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100dvh;
 }
 
 html {
@@ -551,11 +572,62 @@ ol[role='list'] {
 
 /* Уменьшение анимаций при системной настройке */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* =========================
+   Общие keyframes. Компоненты подключают их через свои токены длительности и easing,
+   задержку для «лесенки» — через --motion-delay.
+   ========================= */
+@keyframes motion-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Всплытие снизу: страницы, карточки, строки */
+@keyframes motion-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Подсказки и поповеры: --popover-shift — сдвиг со стороны якоря */
+@keyframes motion-popover-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--popover-shift, 0, 0)) scale(0.97);
+  }
+}
+
+/* Окна по центру экрана: позиционируются через translate(-50%, -50%) */
+@keyframes motion-dialog-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 16px)) scale(0.98);
+  }
+}
+
+@keyframes motion-dialog-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
   }
 }
 

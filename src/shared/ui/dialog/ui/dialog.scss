@@ -15,13 +15,21 @@
   box-shadow: var(--shadow-dialog);
   color: var(--text-main);
   transform: translate(-50%, -50%);
+  animation: motion-dialog-in var(--duration-dialog) var(--ease-out);
+
+  &[data-state='closed'] {
+    animation: motion-dialog-out var(--duration-fast) ease-in forwards;
+  }
 
   &--m {
     --dialog-width: 480px;
   }
 
+  // Окно-пояснение с блоками расчёта: блоки через 20px
   &--l {
     --dialog-width: 560px;
+
+    gap: var(--space-adjacent);
   }
 
   &:focus-visible {
@@ -33,6 +41,11 @@
     inset: 0;
     z-index: 1000;
     background: var(--overlay);
+    animation: motion-fade-in var(--duration-dialog) ease-out;
+
+    &[data-state='closed'] {
+      animation: motion-fade-out var(--duration-fast) ease-in forwards;
+    }
   }
 
   &__text {
@@ -47,4 +60,11 @@
     justify-content: flex-end;
     gap: 8px;
   }
+}
+
+// Диалог с формой: текст, поля и кнопки — через 16px (макет «Сменить пароль»)
+.dialog__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
 }

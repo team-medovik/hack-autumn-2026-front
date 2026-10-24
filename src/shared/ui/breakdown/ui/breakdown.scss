@@ -1,0 +1,43 @@
+// Плашка control/on-card внутри окна: подпись и строки через 12px
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-related);
+  padding: var(--space-adjacent);
+  border-radius: var(--radius-m);
+  background: var(--control-default);
+  overflow-wrap: break-word;
+
+  @include down(tablet) {
+    padding: var(--space-close);
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-related);
+  }
+
+  &__name {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  // Числа не переносятся (неразрывные пробелы), пояснения на узком экране — переносятся.
+  // Не шире половины — названию слева остаётся место под слово целиком
+  &__value {
+    max-width: 50%;
+  }
+
+  &__divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+    border: 0;
+    background: var(--border-divider);
+  }
+}

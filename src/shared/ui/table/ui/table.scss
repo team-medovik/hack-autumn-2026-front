@@ -21,7 +21,15 @@
     &--body {
       height: 56px;
       padding-block: var(--space-close);
-      transition: background-color 0.15s;
+      transition: background-color var(--duration-fast);
+      animation: motion-fade-up var(--duration-enter) var(--ease-out) backwards;
+
+      // Новые строки (страница, фильтр) всплывают лесенкой сверху вниз; первая — шапка
+      @for $i from 3 through 21 {
+        &:nth-child(#{$i}) {
+          animation-delay: calc(20ms * #{$i - 2});
+        }
+      }
 
       &.table__row--selected {
         background: var(--control-default);
@@ -92,5 +100,43 @@
 
   &__cell--right &__sort {
     flex-direction: row-reverse;
+  }
+
+  // Список через разделители: шапка 16px + 12px снизу, строки с линией сверху и полями 12px.
+  // Высота строки — по содержимому (кнопка 56px, дата в две строки, одна строка текста).
+  &--divided &__row {
+    padding-inline: 0;
+    border-radius: 0;
+
+    &--header {
+      box-sizing: border-box;
+      height: auto;
+      padding-bottom: var(--space-related);
+      border-bottom: 0;
+    }
+
+    &--body {
+      height: auto;
+      padding-block: var(--space-related);
+      border-top: 1px solid var(--border-divider);
+    }
+  }
+
+  &--divided.table--gap-close {
+    gap: var(--space-close);
+
+    .table__row--header {
+      padding-bottom: 0;
+    }
+  }
+}
+
+// Горизонтальная прокрутка таблицы на узком экране (TableScroll)
+.table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+
+  > .table {
+    min-width: var(--table-min-width);
   }
 }

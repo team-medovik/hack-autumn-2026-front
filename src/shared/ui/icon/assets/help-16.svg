@@ -1,0 +1,6 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="help">
+<path id="Circle" d="M13.25 8C13.25 10.8995 10.8995 13.25 8 13.25C5.10051 13.25 2.75 10.8995 2.75 8C2.75 5.10051 5.10051 2.75 8 2.75C10.8995 2.75 13.25 5.10051 13.25 8Z" stroke-width="1.5" stroke="white"/>
+<path id="Mark" d="M6.55914 6.78208C6.55914 6.06165 7.18351 5.53333 8 5.53333C8.81649 5.53333 9.44086 6.06165 9.44086 6.78208C9.44086 7.64659 8 7.74265 8 8.70323M8 9.95197V10" stroke-width="1.08063" stroke-linecap="round" stroke-linejoin="round" stroke="white"/>
+</g>
+</svg>

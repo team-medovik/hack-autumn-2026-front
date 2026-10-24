@@ -11,6 +11,7 @@ import { ClientCardHeader } from './client-card-header';
 import { ClientCardSkeleton } from './client-card-skeleton';
 import { ClientRiskFactors } from './client-risk-factors';
 import { ClientServices } from './client-services';
+import { LossExplanationButton } from './loss-explanation-button';
 
 import './client-card.scss';
 
@@ -32,16 +33,19 @@ interface ClientCardProps {
 }
 
 const CardContent = ({ card }: { card: ClientCardData }) => (
-  <div className="client-card__content">
-    <div className="client-card__column">
-      <ClientRiskFactors card={card} />
-      <ClientBalance card={card} />
+  <>
+    <ClientBalance card={card} />
+    <div className="client-card__content">
+      <div className="client-card__column">
+        <ClientRiskFactors card={card} />
+        <LossExplanationButton card={card} />
+      </div>
+      <div className="client-card__column">
+        {/* key — у нового клиента группы раскрываются заново */}
+        <ClientServices key={card.id} services={card.services} />
+      </div>
     </div>
-    <div className="client-card__column">
-      {/* key — у нового клиента группы раскрываются заново */}
-      <ClientServices key={card.id} services={card.services} />
-    </div>
-  </div>
+  </>
 );
 
 /**

@@ -6,7 +6,7 @@
   line-height: var(--caption-line-height);
   text-decoration: underline;
   text-underline-position: from-font;
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 
   &:hover:not(:disabled) {
     color: var(--text-main);

@@ -5,9 +5,16 @@ import './progress-bar.scss';
 
 /**
  * Цвет заполнения: danger — danger/default, danger-soft — status/danger,
- * risk-medium / risk-low — цвета уровней риска (оранжевый / бирюзовый), muted — text/tertiary.
+ * risk-medium / risk-low — цвета уровней риска (оранжевый / бирюзовый), muted — text/tertiary,
+ * accent — accent/default (ход загрузки файла).
  */
-export type ProgressBarTone = 'danger' | 'danger-soft' | 'risk-medium' | 'risk-low' | 'muted';
+export type ProgressBarTone =
+  | 'danger'
+  | 'danger-soft'
+  | 'risk-medium'
+  | 'risk-low'
+  | 'muted'
+  | 'accent';
 
 interface ProgressBarProps {
   /** Заполнение в процентах 0–100. */

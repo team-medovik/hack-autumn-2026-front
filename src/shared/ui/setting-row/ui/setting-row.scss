@@ -13,8 +13,19 @@
     min-width: 0;
   }
 
-  &__slider {
-    flex-shrink: 0;
-    width: 200px;
+  // Название и «?» через 4px
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-compressed);
+  }
+
+  // Контрол не помещается рядом — уходит под описание
+  @include down(tablet) {
+    flex-wrap: wrap;
+
+    &__description {
+      flex-basis: 100%;
+    }
   }
 }

@@ -71,7 +71,10 @@ export const RiskQueue = ({ data, selectedId, className }: RiskQueueProps) => {
             color="secondary"
             className="risk-queue__all"
           >
-            Все клиенты →
+            Все клиенты{' '}
+            <span className="risk-queue__arrow" aria-hidden>
+              →
+            </span>
           </Text>
         }
       />

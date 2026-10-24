@@ -11,8 +11,22 @@
   font-weight: var(--body-weight-accent);
   line-height: var(--body-line-height);
   transition:
-    background-color 0.15s,
-    color 0.15s;
+    background-color var(--duration-fast),
+    color var(--duration-fast),
+    transform var(--duration-fast) var(--ease-standard);
+
+  .icon {
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  // Иконка подаётся к тексту, пункт слегка проседает при нажатии
+  &:hover .icon {
+    transform: translateX(-2px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 
   &:hover,
   &--active {

@@ -34,6 +34,11 @@ interface ClientsTableProps {
   isError: boolean;
   /** Идёт запрос: кнопка «Повторить» показывает загрузку. */
   isFetching: boolean;
+  /**
+   * Фильтр, поиск, сортировка или страница сменились, а на экране ещё старые данные:
+   * вместо строк — скелетоны, шапка и пагинация остаются.
+   */
+  isUpdating?: boolean;
   onRetry: () => void;
   onSortChange: (sort: ClientSortField, order: SortOrder) => void;
   onPageChange: (page: number) => void;
@@ -50,6 +55,7 @@ export const ClientsTable = ({
   data,
   isError,
   isFetching,
+  isUpdating = false,
   onRetry,
   onSortChange,
   onPageChange,
@@ -61,6 +67,9 @@ export const ClientsTable = ({
   const { search } = useLocation();
   // До первого ответа шапка как в макете загрузки — с выбранной сортировкой
   const hasClients = !data || countClients(data.levelCounts) > 0;
+
+  const renderSkeletons = (rows: number) =>
+    Array.from({ length: rows }, (_, index) => <ClientTableSkeletonRow key={index} />);
 
   const renderBody = (): ReactNode => {
     if (!data) {
@@ -79,8 +88,13 @@ export const ClientsTable = ({
           />
         </TableMessageRow>
       ) : (
-        Array.from({ length: SKELETON_ROWS }, (_, index) => <ClientTableSkeletonRow key={index} />)
+        renderSkeletons(SKELETON_ROWS)
       );
+    }
+
+    // Столько же строк, сколько было, — таблица не прыгает по высоте
+    if (isUpdating) {
+      return renderSkeletons(data.items.length || SKELETON_ROWS);
     }
 
     const totalClients = countClients(data.levelCounts);

@@ -4,8 +4,15 @@
   width: var(--skeleton-width, 100%);
   height: var(--skeleton-height, 16px);
   border-radius: var(--radius-s);
-  background: var(--control-default);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
+  // Блик проезжает слева направо, как у скелетонов aeza
+  background: linear-gradient(
+      110deg,
+      var(--control-default) 8%,
+      color-mix(in oklab, var(--control-default), white var(--skeleton-shine)) 18%,
+      var(--control-default) 33%
+    )
+    0 0 / 200% 100%;
+  animation: skeleton-shimmer 1.5s linear infinite;
 }
 
 .skeleton-text {
@@ -20,8 +27,8 @@
   }
 }
 
-@keyframes skeleton-pulse {
-  50% {
-    opacity: 0.5;
+@keyframes skeleton-shimmer {
+  to {
+    background-position-x: -200%;
   }
 }

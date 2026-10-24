@@ -2,15 +2,17 @@ import { delay, http, HttpResponse } from 'msw';
 
 import type { AuthenticationResponse, CurrentUserResponse } from '@/shared/api';
 
+import { getMockPassword } from './account';
+
 // Фейковый бэк авторизации с состоянием — работает, когда включены моки (по умолчанию в dev).
 // Сгенерированные orval моки отдают случайные данные (refresh всегда «успешен»),
 // поэтому вход/выход/восстановление сессии на них не проверить.
 //
 // Учётка: логин `admin`, пароль `Admin123` (под правила формы: заглавная, строчная, цифра, 8+).
+// Пароль меняется в «Настройки → Другое» — общий с ./account.
 // HttpOnly-cookie refresh_token имитируется ключом в localStorage — сессия переживает F5.
 
 const MOCK_LOGIN = 'admin';
-const MOCK_PASSWORD = 'Admin123';
 const SESSION_KEY = 'msw:auth-session';
 const ACCESS_TOKEN_TTL_SEC = 15 * 60;
 
@@ -55,7 +57,7 @@ export const authHandlers = [
     await delay(600); // чтобы увидеть состояние «вход выполняется»
     const body = (await request.json()) as { email?: string; password?: string };
 
-    if (body.email !== MOCK_LOGIN || body.password !== MOCK_PASSWORD) {
+    if (body.email !== MOCK_LOGIN || body.password !== getMockPassword()) {
       return unauthorized('Неверный логин или пароль');
     }
 

@@ -1,0 +1,7 @@
+// Блок-заглушка на месте секции формы: те же отступы, что у FormSection.
+.model-settings-form-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
+  padding: var(--space-grouped);
+}

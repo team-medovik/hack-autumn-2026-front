@@ -15,8 +15,20 @@ import { CLIENTS } from './fixtures';
 /** Доля потери, не зависящая от баланса (k в формуле потери). */
 const K = 0.5;
 
+/** Горизонт прогноза из настроек модели — за столько дней считается «нужно на продления». */
+const HORIZON_DAYS = 5;
+
 const round2 = (value: number) => Math.round(value * 100) / 100;
 const round1 = (value: number) => Math.round(value * 10) / 10;
+
+/**
+ * Бонусы и реферальный баланс — у части клиентов, детерминированно по месту в списке.
+ * На потерю не влияют: в продления идёт только основной баланс.
+ */
+const sideBalances = (index: number) => ({
+  bonus: index % 3 === 0 ? 0 : round2(1 + (index % 5) * 1.5),
+  referral: index % 4 === 0 ? round2(0.5 + (index % 7) * 0.75) : 0,
+});
 
 /** Даты событий услуг — от «сегодня» снимка в макетах. */
 const addDays = (days: number) => {
@@ -42,7 +54,7 @@ const CLIENT_17: ClientCard = {
       points: 10.4,
     },
   ],
-  balance: { available: 6.48, required: 9.9, monthlyLoss: 6.77 },
+  balance: { available: 6.48, bonus: 2, referral: 0, required: 9.9, monthlyLoss: 6.77 },
   services: [
     {
       id: 'service-0017',
@@ -68,6 +80,7 @@ const CLIENT_17: ClientCard = {
   lossBreakdown: {
     k: K,
     uncoveredShare: 0.35,
+    horizonDays: HORIZON_DAYS,
     items: [
       {
         serviceId: 'service-0017',
@@ -139,7 +152,12 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
     score: client.score,
     level: client.level,
     factors,
-    balance: { available: client.balance, required: price, monthlyLoss: client.monthlyLoss },
+    balance: {
+      available: client.balance,
+      ...sideBalances(index),
+      required: price,
+      monthlyLoss: client.monthlyLoss,
+    },
     services: [
       {
         id: serviceId,
@@ -155,6 +173,7 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
     lossBreakdown: {
       k: K,
       uncoveredShare,
+      horizonDays: HORIZON_DAYS,
       items: [
         { serviceId, serviceName: serviceId, monthlyPrice: price, risk, loss: client.monthlyLoss },
       ],
@@ -163,7 +182,7 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
 };
 
 /** Без оценки: живых услуг нет — все удалены или заблокированы, продлевать нечего. */
-const buildUnscoredCard = (client: ClientListItem): ClientCard => {
+const buildUnscoredCard = (client: ClientListItem, index: number): ClientCard => {
   const deadService = (suffix: string, status: 'deleted' | 'blocked', days: number) =>
     ({
       id: `service-${client.id.slice(-3)}${suffix}`,
@@ -182,13 +201,18 @@ const buildUnscoredCard = (client: ClientListItem): ClientCard => {
     score: null,
     level: 'none',
     factors: [],
-    balance: { available: client.balance, required: null, monthlyLoss: 0 },
+    balance: {
+      available: client.balance,
+      ...sideBalances(index),
+      required: null,
+      monthlyLoss: 0,
+    },
     services: [
       deadService('1', 'deleted', 49),
       deadService('2', 'deleted', 21),
       deadService('3', 'blocked', 12),
     ],
-    lossBreakdown: { k: K, uncoveredShare: 0, items: [] },
+    lossBreakdown: { k: K, uncoveredShare: 0, horizonDays: HORIZON_DAYS, items: [] },
   };
 };
 
@@ -199,7 +223,7 @@ export const CLIENT_CARDS: ReadonlyMap<string, ClientCard> = new Map(
     }
     return [
       client.id,
-      client.score === null ? buildUnscoredCard(client) : buildScoredCard(client, index),
+      client.score === null ? buildUnscoredCard(client, index) : buildScoredCard(client, index),
     ];
   }),
 );

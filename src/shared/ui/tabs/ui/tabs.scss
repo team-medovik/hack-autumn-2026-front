@@ -1,0 +1,39 @@
+.tabs {
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-compressed);
+  }
+
+  // Выбранная вкладка — «Активное» состояние вторичной кнопки (см. button.scss)
+  &__tab[data-state='active'] {
+    --button-bg: var(--control-default);
+    --button-color: var(--text-main);
+  }
+
+  &__panel {
+    min-width: 0;
+
+    // Выбранная панель въезжает на 5px и проявляется — как слайды в карусели aeza.
+    // Анимация перезапускается и у keepMounted-панели: она выходит из display: none.
+    &[data-state='active'] {
+      animation: tabs-panel-in var(--duration-enter) var(--ease-out);
+    }
+
+    // Смонтированная, но не выбранная панель (keepMounted)
+    &[data-state='inactive'] {
+      display: none;
+    }
+
+    &:focus-visible {
+      border-radius: var(--radius-l);
+    }
+  }
+}
+
+@keyframes tabs-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(5px);
+  }
+}
