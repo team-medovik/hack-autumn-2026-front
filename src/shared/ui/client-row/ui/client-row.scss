@@ -8,7 +8,7 @@
   border-radius: var(--radius-l);
   color: inherit;
   text-align: left;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-fast);
 
   &:hover,
   &--selected {

@@ -53,11 +53,11 @@
     overflow: hidden;
 
     &[data-state='open'] {
-      animation: accordion-open 0.2s ease-out;
+      animation: accordion-open 0.3s var(--ease-standard);
     }
 
     &[data-state='closed'] {
-      animation: accordion-close 0.2s ease-out;
+      animation: accordion-close 0.2s var(--ease-standard);
     }
   }
 
@@ -69,6 +69,7 @@
 @keyframes accordion-open {
   from {
     height: 0;
+    opacity: 0;
   }
 
   to {
@@ -83,5 +84,6 @@
 
   to {
     height: 0;
+    opacity: 0;
   }
 }

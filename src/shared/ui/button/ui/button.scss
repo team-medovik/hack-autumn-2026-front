@@ -24,11 +24,17 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
   line-height: var(--body-line-height);
   text-align: center;
   transition:
-    background-color 0.15s,
-    color 0.15s;
+    background-color var(--duration-fast),
+    color var(--duration-fast),
+    transform var(--duration-fast) var(--ease-standard);
 
   &:focus-visible {
     border-radius: var(--radius-l);
+  }
+
+  // Нажатие — кнопка чуть «проседает»
+  &:active:not(#{$disabled}) {
+    transform: scale(0.98);
   }
 
   &#{$disabled} {
@@ -53,6 +59,12 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
   &__icon {
     display: inline-flex;
     flex-shrink: 0;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  // Стрелка справа подаётся вперёд, как у ссылок-карточек aeza
+  &:hover:not(#{$disabled}) &__icon {
+    transform: translateX(2px);
   }
 
   // Иконка справа — текст прижимается к левому краю
@@ -136,6 +148,15 @@ $disabled: ':is(:disabled, [aria-disabled="true"])';
     &.button--loading {
       --button-bg: var(--danger-loading);
       --button-color: var(--fixed-text);
+    }
+  }
+
+  // Заливные кнопки при наведении приподнимаются на пиксель
+  &--accent,
+  &--primary,
+  &--danger {
+    &:hover:not(#{$disabled}):not(:active) {
+      transform: translateY(var(--motion-lift));
     }
   }
 

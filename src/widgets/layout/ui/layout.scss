@@ -18,6 +18,16 @@
     margin: 20px 20px 20px 0;
     padding: var(--space-grouped);
     border-radius: var(--radius-xl);
+    animation: motion-fade-in var(--duration-enter) var(--ease-out);
+  }
+
+  // Обёртка страницы: при смене раздела содержимое всплывает
+  &__page {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+    animation: motion-fade-up var(--duration-enter) var(--ease-out);
   }
 
   @include down(desktop-s) {

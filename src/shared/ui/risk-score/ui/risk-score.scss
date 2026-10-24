@@ -33,8 +33,10 @@
     stroke: var(--control-default);
   }
 
+  // Дуга прорисовывается от нуля до значения; после анимации — снова dash из атрибута
   &__value {
     stroke: var(--risk-color);
+    animation: risk-score-draw var(--duration-draw) var(--ease-out) backwards;
   }
 
   &__label {
@@ -59,5 +61,15 @@
       display: inline-flex;
       align-items: baseline;
     }
+  }
+}
+
+@keyframes risk-score-draw {
+  from {
+    stroke-dasharray: 0 200;
+  }
+
+  to {
+    stroke-dasharray: var(--arc-value) 200;
   }
 }
