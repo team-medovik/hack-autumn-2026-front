@@ -1,21 +1,61 @@
-// Слой «Загрузка»: пунктир 1.5px, отступ 56px сверху и снизу, содержимое по центру.
+// Слой «Загрузка»: пунктир 1.5px внутрь, штрих 8 через 8, скругление 24, поля 56px сверху и снизу.
 .dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  --dropzone-border: var(--text-secondary);
+
+  position: relative;
+  display: grid;
   padding: 56px var(--space-grouped);
-  border: 1.5px dashed var(--text-secondary);
   border-radius: var(--radius-xl);
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
+  cursor: pointer;
+  transition: background-color 0.15s;
 
   &--over {
-    border-color: var(--accent-default);
+    --dropzone-border: var(--accent-default);
+
     background: var(--accent-default);
   }
 
   &--invalid {
-    border-color: var(--status-danger);
+    --dropzone-border: var(--status-danger);
+  }
+
+  &--disabled {
+    cursor: default;
+  }
+
+  // Рамка — SVG: у CSS dashed нельзя задать длину штриха
+  &__border {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+
+    rect {
+      x: 0.75px;
+      y: 0.75px;
+      width: calc(100% - 1.5px);
+      height: calc(100% - 1.5px);
+      rx: calc(var(--radius-xl) - 0.75px);
+      fill: none;
+      stroke: var(--dropzone-border);
+      stroke-width: 1.5px;
+      stroke-dasharray: 8 8;
+      transition: stroke 0.15s;
+    }
+  }
+
+  // Слои в одной ячейке сетки: высоту задаёт приглашение, остальное — поверх него по центру
+  &__layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    grid-area: 1 / 1;
+
+    &--sizer {
+      visibility: hidden;
+    }
   }
 }

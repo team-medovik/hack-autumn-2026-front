@@ -1,11 +1,13 @@
 .field {
   display: flex;
 
+  // «Средний от», «?» и поле — через 12px
   &--inline {
     align-items: center;
     gap: var(--space-related);
   }
 
+  // «Горизонт, дней» и «?» через 4px, поле — ниже через 8px
   &--stacked {
     flex-direction: column;
     align-items: flex-start;
@@ -13,6 +15,16 @@
   }
 
   &__label {
+    display: flex;
+    align-items: center;
     white-space: nowrap;
+  }
+
+  &--inline &__label {
+    gap: var(--space-related);
+  }
+
+  &--stacked &__label {
+    gap: var(--space-compressed);
   }
 }

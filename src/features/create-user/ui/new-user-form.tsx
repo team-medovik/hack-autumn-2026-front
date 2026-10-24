@@ -17,7 +17,7 @@ interface NewUserFormProps {
  * паролем кнопки нет. Сгенерированный пароль скрыт, его покажут после создания.
  */
 export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
-  const { values, loginError } = form;
+  const { values, loginError, passwordError } = form;
   const loginInput = useRef<HTMLInputElement>(null);
   const createButton = useRef<HTMLButtonElement>(null);
 
@@ -49,6 +49,7 @@ export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
         value={values.login}
         error={loginError}
         onChange={(event) => form.setLogin(event.target.value)}
+        onBlur={() => form.touch('login')}
       />
       <Input
         label="Пароль"
@@ -56,7 +57,9 @@ export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
         type="password"
         autoComplete="new-password"
         value={values.password}
+        error={passwordError}
         onChange={(event) => form.setPassword(event.target.value)}
+        onBlur={() => form.touch('password')}
       />
       {values.password === '' && (
         <Button variant="secondary" active fullWidth onClick={generatePassword}>

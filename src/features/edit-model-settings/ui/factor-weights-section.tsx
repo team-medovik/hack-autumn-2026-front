@@ -7,7 +7,7 @@ import { FormSection } from '@/shared/ui/form-section';
 import { SettingRow } from '@/shared/ui/setting-row';
 import { SliderField } from '@/shared/ui/slider-field';
 
-import { factorHint } from '../lib/factor-hint';
+import { wasNote, withDefault } from '../lib/setting-texts';
 
 interface FactorWeightsSectionProps {
   weights: FactorWeights;
@@ -16,7 +16,7 @@ interface FactorWeightsSectionProps {
   onChange: (patch: Partial<FactorWeights>) => void;
 }
 
-/** Веса признаков score: слайдер и поле на каждый признак. */
+/** Веса признаков score: слайдер и поле на каждый признак, у названия — «?». */
 export const FactorWeightsSection = ({
   weights,
   saved,
@@ -28,25 +28,21 @@ export const FactorWeightsSection = ({
     hint="Сколько баллов score даёт признак в полную силу. Score клиента — сумма вкладов признаков, но не больше 100"
   >
     <div>
-      {SCORE_FACTORS.map(({ id, label, behavior }) => (
+      {SCORE_FACTORS.map(({ id, label, description }) => (
         <SettingRow
           key={id}
           title={label}
-          hint={factorHint({
-            behavior,
-            value: weights[id],
-            saved: saved[id],
-            byDefault: defaults[id],
-          })}
+          help={withDefault(description, defaults[id])}
+          note={wasNote(weights[id], saved[id])}
         >
-          {({ titleId, hintId }) => (
+          {({ titleId, describedBy }) => (
             <SliderField
               {...MODEL_SETTINGS_LIMITS.factorWeight}
               value={weights[id]}
               savedValue={saved[id]}
               onValueChange={(weight) => onChange({ [id]: weight })}
               aria-labelledby={titleId}
-              aria-describedby={hintId}
+              aria-describedby={describedBy}
             />
           )}
         </SettingRow>

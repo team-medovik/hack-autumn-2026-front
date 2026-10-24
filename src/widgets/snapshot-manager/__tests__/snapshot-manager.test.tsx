@@ -170,6 +170,35 @@ describe('SnapshotManager', () => {
     ).toBeInTheDocument();
   });
 
+  it('открывает выбор файла по клику в любом месте зоны, по кнопке — один раз', async () => {
+    const pick = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+    const user = userEvent.setup();
+    renderWidget();
+    await waitForHistory();
+
+    await user.click(
+      screen.getByText('Текущие данные полностью заменятся, риски и потери пересчитаются сами'),
+    );
+    expect(pick).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: 'Выбрать файл' }));
+    expect(pick).toHaveBeenCalledTimes(2);
+  });
+
+  it('при перетаскивании и загрузке оставляет приглашение на месте — высота зоны не меняется', async () => {
+    renderWidget();
+    await waitForHistory();
+
+    const zone = screen.getByRole('region', { name: 'Загрузка снимка' });
+    fireEvent.dragEnter(zone, { dataTransfer: { types: ['Files'] } });
+
+    expect(screen.getByText('Отпустите, чтобы загрузить файл')).toBeVisible();
+    // Приглашение в разметке, но невидимо: держит высоту
+    expect(zone.querySelector('.dropzone__layer--sizer')).toHaveTextContent(
+      'Перетащите JSON-файл сюда или выберите на компьютере',
+    );
+  });
+
   it('скачивает текущий снимок под его именем', async () => {
     const createObjectURL = vi.fn(() => 'blob:snapshot');
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() }));

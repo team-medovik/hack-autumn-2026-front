@@ -6,6 +6,7 @@ import chevronLeft from '../assets/chevron-left.svg';
 import chevronRight16 from '../assets/chevron-right-16.svg';
 import chevronRight from '../assets/chevron-right.svg';
 import close from '../assets/close.svg';
+import help16 from '../assets/help-16.svg';
 import home from '../assets/home.svg';
 import info32 from '../assets/info-32.svg';
 import info from '../assets/info.svg';
@@ -36,6 +37,7 @@ export const ICONS = {
   'chevron-right': chevronRight,
   'chevron-right-16': chevronRight16,
   close,
+  'help-16': help16,
   home,
   info,
   'info-32': info32,

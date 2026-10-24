@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse } from 'msw';
 
-import type { CreateUserRequest, User } from '@/entities/user';
+import { getLoginError, type CreateUserRequest, type User } from '@/entities/user';
+import { getPasswordError } from '@/shared/lib/password';
 
 import { INITIAL_USERS } from './fixtures';
 import { readMockScenario } from '../scenario';
@@ -62,8 +63,9 @@ export const usersHandlers = [
 
     const { login, password } = (await request.json()) as CreateUserRequest;
 
-    if (!login.trim() || !password) {
-      return HttpResponse.json({ message: 'Укажите логин и пароль' }, { status: 422 });
+    const ruleError = getLoginError(login) ?? getPasswordError(password);
+    if (ruleError) {
+      return HttpResponse.json({ message: ruleError }, { status: 422 });
     }
     if (findUser(login)) {
       return HttpResponse.json({ message: `Логин ${login} уже занят` }, { status: 409 });

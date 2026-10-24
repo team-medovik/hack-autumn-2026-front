@@ -13,11 +13,14 @@ import { RISK_LEVEL_LABELS } from '@/shared/ui/risk-level';
 import { RiskScale } from '@/shared/ui/risk-scale';
 import { Text } from '@/shared/ui/text';
 
+import { SETTING_HELP, withDefault } from '../lib/setting-texts';
+
 import './risk-thresholds-section.scss';
 
 interface RiskThresholdsSectionProps {
   thresholds: RiskThresholds;
   saved: RiskThresholds;
+  defaults: RiskThresholds;
   /** Распределение клиентов по баллам — для счётчиков на шкале. */
   scoreHistogram: readonly number[];
   /** Высокий порог не больше среднего — ошибка под полями, шкала — по сохранённым порогам. */
@@ -29,6 +32,7 @@ interface RiskThresholdsSectionProps {
 export const RiskThresholdsSection = ({
   thresholds,
   saved,
+  defaults,
   scoreHistogram,
   isValid,
   onChange,
@@ -43,23 +47,30 @@ export const RiskThresholdsSection = ({
       description="Пороги уровней риска. Высокий должен быть больше среднего"
     >
       <div className="risk-thresholds__fields">
-        <Field label="Средний от">
-          <NumberInput
-            {...MODEL_SETTINGS_LIMITS.riskThreshold}
-            value={thresholds.medium}
-            changed={thresholds.medium !== saved.medium}
-            onValueChange={(medium) => onChange({ medium })}
-          />
+        <Field label="Средний от" help={withDefault(SETTING_HELP.medium, defaults.medium)}>
+          {({ id, describedBy }) => (
+            <NumberInput
+              {...MODEL_SETTINGS_LIMITS.riskThreshold}
+              id={id}
+              aria-describedby={describedBy}
+              value={thresholds.medium}
+              changed={thresholds.medium !== saved.medium}
+              onValueChange={(medium) => onChange({ medium })}
+            />
+          )}
         </Field>
-        <Field label="Высокий от">
-          <NumberInput
-            {...MODEL_SETTINGS_LIMITS.riskThreshold}
-            value={thresholds.high}
-            changed={thresholds.high !== saved.high}
-            error={!isValid}
-            aria-describedby={isValid ? undefined : errorId}
-            onValueChange={(high) => onChange({ high })}
-          />
+        <Field label="Высокий от" help={withDefault(SETTING_HELP.high, defaults.high)}>
+          {({ id, describedBy }) => (
+            <NumberInput
+              {...MODEL_SETTINGS_LIMITS.riskThreshold}
+              id={id}
+              aria-describedby={isValid ? describedBy : `${errorId} ${describedBy}`}
+              value={thresholds.high}
+              changed={thresholds.high !== saved.high}
+              error={!isValid}
+              onValueChange={(high) => onChange({ high })}
+            />
+          )}
         </Field>
       </div>
 

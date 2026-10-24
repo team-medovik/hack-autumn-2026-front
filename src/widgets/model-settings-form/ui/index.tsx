@@ -53,6 +53,7 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
         <RiskThresholdsSection
           thresholds={draft.riskThresholds}
           saved={saved.riskThresholds}
+          defaults={defaults.riskThresholds}
           scoreHistogram={settings.scoreHistogram}
           isValid={editor.isThresholdsValid}
           onChange={(patch) => update('riskThresholds', patch)}
@@ -60,11 +61,13 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
         <FinanceSection
           finance={draft.finance}
           saved={saved.finance}
+          defaults={defaults.finance}
           onChange={(patch) => update('finance', patch)}
         />
         <ForecastSection
           forecast={draft.forecast}
           saved={saved.forecast}
+          defaults={defaults.forecast}
           onChange={(patch) => update('forecast', patch)}
         />
       </AsideLayout>

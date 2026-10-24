@@ -19,12 +19,13 @@ export type TextVariant =
   | 'caption-2'
   | 'caption-3';
 
-/** Цвета текста из Figma: text/*, status/*. `inherit` — цвет родителя. */
+/** Цвета текста из Figma: text/*, status/*, accent/default. `inherit` — цвет родителя. */
 export type TextColor =
   | 'inherit'
   | 'main'
   | 'secondary'
   | 'tertiary'
+  | 'accent'
   | 'disabled'
   | 'link'
   | 'danger'

@@ -106,6 +106,29 @@ describe('UsersSettings', () => {
     expect(passwordField()).toHaveValue('');
   });
 
+  it('не даёт создать с коротким логином или слабым паролем', async () => {
+    const user = userEvent.setup();
+    renderWidget();
+    await waitForUsers();
+
+    await user.type(loginField(), 'ab');
+    await user.type(passwordField(), 'secret12');
+    await user.tab();
+
+    expect(screen.getByText('Логин — от 3 символов')).toBeInTheDocument();
+    expect(
+      screen.getByText('От 8 символов: строчная и заглавная буквы и цифра'),
+    ).toBeInTheDocument();
+    expect(createButton()).toBeDisabled();
+
+    await user.type(loginField(), 'c');
+    await user.clear(passwordField());
+    await user.type(passwordField(), 'Secret12');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(createButton()).toBeEnabled();
+  });
+
   it('подсвечивает занятый логин, пока его не поменяют', async () => {
     const user = userEvent.setup();
     renderWidget();
