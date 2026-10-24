@@ -1,5 +1,5 @@
+import { Button } from '@/shared/ui/button';
 import { Dropzone } from '@/shared/ui/dropzone';
-import { FilePickerButton } from '@/shared/ui/file-picker-button';
 import { Icon } from '@/shared/ui/icon';
 import { StateMessage } from '@/shared/ui/state-message';
 
@@ -13,7 +13,11 @@ interface SnapshotDropzoneProps {
   onPick: (file: File) => void;
 }
 
-/** Зона загрузки JSON во всех состояниях: ожидание, перетаскивание, загрузка, ошибка. */
+/**
+ * Зона загрузки JSON во всех состояниях: ожидание, перетаскивание, загрузка, ошибка.
+ * Кнопки внутри без своих обработчиков — клик по ним, как и по любому месту зоны, открывает
+ * выбор файла.
+ */
 export const SnapshotDropzone = ({ state, onPick }: SnapshotDropzoneProps) => {
   const renderContent = () => {
     switch (state.step) {
@@ -27,36 +31,22 @@ export const SnapshotDropzone = ({ state, onPick }: SnapshotDropzoneProps) => {
             icon={<Icon name="info-32" size={32} />}
             title="Файл не загружен"
             description={state.message}
-            action={
-              <FilePickerButton variant="primary" accept={ACCEPT} onPick={onPick}>
-                Выбрать другой файл
-              </FilePickerButton>
-            }
+            action={<Button variant="primary">Выбрать другой файл</Button>}
           />
         );
       default:
-        return (
-          <StateMessage
-            variant="roomy"
-            icon={<Icon name="upload-32" size={32} />}
-            title="Перетащите JSON-файл сюда или выберите на компьютере"
-            description="Текущие данные полностью заменятся, риски и потери пересчитаются сами"
-            action={
-              <FilePickerButton variant="primary" accept={ACCEPT} onPick={onPick}>
-                Выбрать файл
-              </FilePickerButton>
-            }
-          />
-        );
+        return undefined;
     }
   };
 
   return (
     <Dropzone
       aria-label="Загрузка снимка"
+      accept={ACCEPT}
       invalid={state.step === 'invalid'}
       disabled={state.step === 'uploading'}
-      onDrop={onPick}
+      onFile={onPick}
+      content={renderContent()}
       dropHint={
         <StateMessage
           variant="roomy"
@@ -65,7 +55,13 @@ export const SnapshotDropzone = ({ state, onPick }: SnapshotDropzoneProps) => {
         />
       }
     >
-      {renderContent()}
+      <StateMessage
+        variant="roomy"
+        icon={<Icon name="upload-32" size={32} />}
+        title="Перетащите JSON-файл сюда или выберите на компьютере"
+        description="Текущие данные полностью заменятся, риски и потери пересчитаются сами"
+        action={<Button variant="primary">Выбрать файл</Button>}
+      />
     </Dropzone>
   );
 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { generatePassword } from './generate-password';
-import { isStrongPassword } from './password-rules';
+import { getPasswordError, isStrongPassword, PASSWORD_RULES } from './password-rules';
 
 describe('isStrongPassword', () => {
   it('требует 8 символов, строчную, заглавную и цифру', () => {
@@ -14,5 +14,16 @@ describe('isStrongPassword', () => {
 
   it('принимает сгенерированный пароль', () => {
     expect(isStrongPassword(generatePassword())).toBe(true);
+  });
+});
+
+describe('getPasswordError', () => {
+  it('при переборе длины говорит только про длину', () => {
+    expect(getPasswordError(`Aa1${'a'.repeat(253)}`)).toBe('Пароль — до 255 символов');
+  });
+
+  it('иначе — правила пароля', () => {
+    expect(getPasswordError('short')).toBe(PASSWORD_RULES);
+    expect(getPasswordError('Admin123')).toBeNull();
   });
 });

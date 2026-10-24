@@ -99,7 +99,7 @@ paths:
                 message: Логин analyst уже занят
                 path: /api/v1/users
         '422':
-          description: Пустой логин или пароль, недопустимые символы.
+          description: Логин не 3–255 символов или пароль не по правилам; текст — в `message`.
           content:
             application/json:
               schema:
@@ -197,15 +197,17 @@ components:
       properties:
         login:
           type: string
-          minLength: 1
+          minLength: 3
+          maxLength: 255
           description: Пробелы по краям фронт обрезает.
           example: manager2
         password:
           type: string
-          minLength: 1
+          minLength: 8
+          maxLength: 255
           description: |
-            Сгенерированный фронтом пароль — 11 символов в трёх группах через дефис, со строчной,
-            заглавной и цифрой: «Kq7-vT2m-9xLp».
+            Строчная и заглавная буквы и цифра обязательны. Введённый вручную или сгенерированный
+            фронтом — 11 символов в трёх группах через дефис: «Kq7-vT2m-9xLp».
           example: Kq7-vT2m-9xLp
 
     ApiErrorResponse:

@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { generatePassword, isStrongPassword, PASSWORD_RULES } from '@/shared/lib/password';
+import { generatePassword, getPasswordError } from '@/shared/lib/password';
 
 import { changePassword, isInvalidCurrentPassword } from '../api/change-password.api';
 
@@ -56,7 +56,8 @@ export const useChangePasswordForm = ({ onChanged }: FormOptions) => {
     },
   });
 
-  const isNextValid = isStrongPassword(values.next);
+  const nextRuleError = getPasswordError(values.next);
+  const isNextValid = nextRuleError === null;
   const isRepeatValid = values.repeat === values.next;
 
   const change = (field: Field) => (value: string) => {
@@ -75,7 +76,7 @@ export const useChangePasswordForm = ({ onChanged }: FormOptions) => {
 
     errors: {
       current: isWrongCurrent ? 'Неверный текущий пароль' : undefined,
-      next: touched.next && values.next && !isNextValid ? PASSWORD_RULES : undefined,
+      next: touched.next && values.next ? (nextRuleError ?? undefined) : undefined,
       repeat: touched.repeat && values.repeat && !isRepeatValid ? 'Пароли не совпадают' : undefined,
     },
 

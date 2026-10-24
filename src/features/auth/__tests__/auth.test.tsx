@@ -112,48 +112,28 @@ describe('вход', () => {
     expect(screen.getByText('вход в админ-панéль')).toBeInTheDocument();
   });
 
-  // При входе проверяется только длина: правила сложности пароля — забота регистрации
+  // Форма входа ничего не проверяет сама: любые логин и пароль уходят на сервер, ответ — его
   it.each([
-    ['ab', 'Admin123', 'Минимальный размер логина - 3 символа!'],
-    ['admin', 'Abc1', 'Минимальный размер пароля - 8 символов!'],
-  ])(
-    'логин «%s» и пароль «%s» не проходят проверку и запрос не уходит',
-    async (login, password, message) => {
-      let requested = false;
-      server.use(
-        http.post('*/auth/login', () => {
-          requested = true;
-          return HttpResponse.json({});
-        }),
-      );
-      const user = userEvent.setup();
-      renderApp('/login');
-
-      await user.type(screen.getByLabelText('Логин'), login);
-      await user.type(screen.getByLabelText('Пароль'), password);
-      await user.click(screen.getByRole('button', { name: 'Продолжить' }));
-
-      expect(await screen.findByText(message)).toBeInTheDocument();
-      expect(requested).toBe(false);
-    },
-  );
-
-  it('пароль без заглавных и цифр при входе не отсекается — запрос уходит', async () => {
-    let requested = false;
+    ['ab', 'Admin123'],
+    ['admin', 'Abc1'],
+    ['admin', 'abcdefgh'],
+  ])('логин «%s» и пароль «%s» уходят на сервер без проверки', async (login, password) => {
+    let body: unknown;
     server.use(
-      http.post('*/auth/login', () => {
-        requested = true;
+      http.post('*/auth/login', async ({ request }) => {
+        body = await request.json();
         return new HttpResponse(null, { status: 401 });
       }),
     );
     const user = userEvent.setup();
     renderApp('/login');
 
-    await user.type(screen.getByLabelText('Логин'), 'admin');
-    await user.type(screen.getByLabelText('Пароль'), 'abcdefgh');
+    await user.type(screen.getByLabelText('Логин'), login);
+    await user.type(screen.getByLabelText('Пароль'), password);
     await user.click(screen.getByRole('button', { name: 'Продолжить' }));
 
-    await waitFor(() => expect(requested).toBe(true));
+    expect(await screen.findByText('Неверный логин или пароль')).toBeInTheDocument();
+    expect(body).toEqual({ email: login, password });
   });
 
   it('при 401 показывает ошибку под паролем и очищает его, логин остаётся', async () => {

@@ -1,18 +1,33 @@
 import { clsx } from 'clsx';
-import { useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type ReactNode,
+} from 'react';
 
 import './dropzone.scss';
 
 interface DropzoneProps {
-  /** Файл бросили в зону. Из нескольких берётся первый. */
-  onDrop: (file: File) => void;
+  /** Файл бросили в зону или выбрали в системном диалоге. Из нескольких берётся первый. */
+  onFile: (file: File) => void;
+  /** Фильтр системного диалога, как у `<input accept>`: «.json,application/json». */
+  accept?: string;
+  /**
+   * Приглашение в обычном состоянии. Оно же задаёт высоту зоны: другие состояния рисуются
+   * поверх, и зона не скачет. Кнопка внутри — для клавиатуры: её клик открывает диалог.
+   */
+  children: ReactNode;
+  /** Что показать вместо приглашения той же высоты: загрузку, ошибку. */
+  content?: ReactNode;
   /** Содержимое, пока над зоной держат файл: «Отпустите, чтобы загрузить файл». */
   dropHint: ReactNode;
-  /** Ошибка: красная пунктирная рамка. */
+  /** Ошибка: красный пунктир. */
   invalid?: boolean;
-  /** Зона не принимает файлы (идёт загрузка). */
+  /** Зона не принимает файлы и не открывает диалог (идёт загрузка). */
   disabled?: boolean;
-  children: ReactNode;
   'aria-label'?: string;
   className?: string;
 }
@@ -38,32 +53,34 @@ const useBlockWindowFileDrop = () => {
 };
 
 /**
- * Зона перетаскивания файла (слой «Загрузка» в Figma): пунктирная рамка, при наведении файла —
- * заливка accent и `dropHint`. Выбор с клавиатуры — кнопкой внутри (`FilePickerButton`).
+ * Зона загрузки файла (слой «Загрузка» в Figma): пунктир 8/8, при наведении файла — заливка
+ * accent и `dropHint`. Клик в любом месте зоны открывает системный выбор файла.
  *
  * @example
- * <Dropzone onDrop={upload} dropHint={<StateMessage title="Отпустите…" />}>
- *   <StateMessage title="Перетащите файл" action={<FilePickerButton onPick={upload}>…} />
+ * <Dropzone accept=".json" onFile={upload} dropHint={<StateMessage title="Отпустите…" />}
+ *   content={isUploading ? <UploadProgress … /> : undefined}>
+ *   <StateMessage title="Перетащите файл" action={<Button>Выбрать файл</Button>} />
  * </Dropzone>
  */
 export const Dropzone = ({
-  onDrop,
+  onFile,
+  accept,
+  children,
+  content,
   dropHint,
   invalid = false,
   disabled = false,
-  children,
   'aria-label': ariaLabel,
   className,
 }: DropzoneProps) => {
   useBlockWindowFileDrop();
+  const input = useRef<HTMLInputElement>(null);
   const [isOver, setIsOver] = useState(false);
   // dragenter/dragleave приходят и от вложенных элементов — считаем глубину
   const depth = useRef(0);
 
-  const reset = () => {
-    depth.current = 0;
-    setIsOver(false);
-  };
+  const isActive = isOver && !disabled;
+  const overlay = isActive ? dropHint : content;
 
   const handleDragEnter = (event: DragEvent) => {
     if (disabled || !hasFiles(event)) {
@@ -91,14 +108,22 @@ export const Dropzone = ({
 
   const handleDrop = (event: DragEvent) => {
     event.preventDefault();
-    reset();
+    depth.current = 0;
+    setIsOver(false);
     const file = event.dataTransfer.files.item(0);
     if (!disabled && file) {
-      onDrop(file);
+      onFile(file);
     }
   };
 
-  const isActive = isOver && !disabled;
+  const handlePick = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.item(0);
+    // Сбрасываем, чтобы повторный выбор того же файла снова вызвал change
+    event.target.value = '';
+    if (file) {
+      onFile(file);
+    }
+  };
 
   return (
     <section
@@ -106,15 +131,39 @@ export const Dropzone = ({
       aria-disabled={disabled || undefined}
       className={clsx(
         'dropzone',
-        { 'dropzone--over': isActive, 'dropzone--invalid': invalid && !isActive },
+        {
+          'dropzone--over': isActive,
+          'dropzone--invalid': invalid && !isActive,
+          'dropzone--disabled': disabled,
+        },
         className,
       )}
+      // Клик по кнопке внутри всплывает сюда же — диалог открывается один раз
+      onClick={() => !disabled && input.current?.click()}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      {isActive ? dropHint : children}
+      <svg className="dropzone__border" aria-hidden>
+        <rect />
+      </svg>
+      <input
+        ref={input}
+        type="file"
+        accept={accept}
+        disabled={disabled}
+        hidden
+        tabIndex={-1}
+        onChange={handlePick}
+        // Клик, который мы сами вызвали, не должен снова всплыть в зону
+        onClick={(event) => event.stopPropagation()}
+      />
+      {/* Под другим состоянием приглашение невидимо и недоступно, но держит высоту */}
+      <div className={clsx('dropzone__layer', { 'dropzone__layer--sizer': overlay !== undefined })}>
+        {children}
+      </div>
+      {overlay !== undefined && <div className="dropzone__layer">{overlay}</div>}
     </section>
   );
 };

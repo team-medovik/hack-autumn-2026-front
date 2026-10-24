@@ -65,7 +65,12 @@ describe('SettingsPage', () => {
 
     expect(screen.getByRole('tab', { name: 'Модель' })).toHaveAttribute('aria-selected', 'true');
     expect(weightField()).toHaveValue('70');
-    expect(screen.getByText('всегда в полную силу / по умолчанию 70')).toBeInTheDocument();
+    // Описание — в подсказке «?» и описывает поле; «было» не показываем, пока не меняли
+    expect(weightField()).toHaveAccessibleDescription(
+      'Срок услуги истёк, платформа ждёт оплату 5 дней и потом удаляет услугу. По умолчанию 70',
+    );
+    expect(screen.queryByText(/^было /)).not.toBeInTheDocument();
+    expect(screen.queryByText('Пересчёт прогноза, мин')).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Учёт баланса в потере, k' })).toHaveValue('0,5');
     expect(
       screen.getByRole('switch', { name: 'Считать бонусы доступными деньгами' }),
@@ -92,15 +97,13 @@ describe('SettingsPage', () => {
       'aria-valuenow',
       '80',
     );
-    expect(
-      screen.getByText('всегда в полную силу / было 70 / по умолчанию 70'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('было 70')).toBeInTheDocument();
 
     await user.click(saveButton());
 
     expect(await screen.findByText('Сохранено, пересчёт выполнен')).toBeInTheDocument();
     expect(weightField()).toHaveValue('80');
-    expect(screen.getByText('всегда в полную силу / по умолчанию 70')).toBeInTheDocument();
+    expect(screen.queryByText('было 70')).not.toBeInTheDocument();
     expect(saveButton()).toBeDisabled();
   });
 
@@ -240,6 +243,18 @@ describe('SettingsPage', () => {
     expect(screen.getByText('analyst')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Новый пользователь' })).toBeInTheDocument();
     expect(screen.queryByText('23.10.2026, 18:00, analyst')).not.toBeInTheDocument();
+  });
+
+  it('по наведению на «?» показывает подсказку параметра', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await waitForSettings();
+
+    await user.hover(screen.getAllByRole('button', { name: 'Подсказка' })[0]);
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Срок услуги истёк, платформа ждёт оплату 5 дней и потом удаляет услугу. По умолчанию 70',
+    );
   });
 
   it('при ошибке загрузки показывает сообщение и повторяет запрос', async () => {

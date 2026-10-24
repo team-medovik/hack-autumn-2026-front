@@ -1,26 +1,15 @@
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { z } from 'zod';
 
 import { useLoginAction } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { FormWidget } from '@/widgets/form-widget';
 
-const loginSchema = z.object({
-  login: z
-    .string()
-    .trim()
-    .min(3, 'Минимальный размер логина - 3 символа!')
-    .max(255, 'Максимальный размер логина - 255 символов!'),
-  password: z
-    .string()
-    .min(8, 'Минимальный размер пароля - 8 символов!')
-    .max(255, 'Максимальный размер пароля - 255 символов!'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+type LoginFormValues = {
+  login: string;
+  password: string;
+};
 
 export const AuthPage = () => {
   const {
@@ -30,8 +19,7 @@ export const AuthPage = () => {
     resetField,
     watch,
     formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  } = useForm({
     mode: 'onTouched',
     defaultValues: { login: '', password: '' },
   });
