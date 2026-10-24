@@ -1,0 +1,48 @@
+.client-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-related);
+  width: 100%;
+  padding: var(--space-close);
+  overflow: hidden;
+  border-radius: var(--radius-l);
+  text-align: left;
+  transition: background-color 0.15s;
+
+  &:hover,
+  &--selected {
+    background: var(--control-default);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-l);
+  }
+
+  &__client {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 131px;
+  }
+
+  &__reason {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  &__loss {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    align-items: flex-end;
+    white-space: nowrap;
+  }
+
+  &__amount {
+    border-radius: var(--radius-xs);
+
+    &--highlight {
+      background: var(--accent-highlight);
+    }
+  }
+}

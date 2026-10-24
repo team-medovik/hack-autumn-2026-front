@@ -1,0 +1,19 @@
+.update-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 var(--space-close) 0 var(--space-related);
+  border-radius: var(--radius-max);
+  white-space: nowrap;
+
+  &--updated {
+    background: var(--control-default);
+    color: var(--text-secondary);
+  }
+
+  &--saved {
+    background: var(--status-success-bg);
+    color: var(--status-success);
+  }
+}

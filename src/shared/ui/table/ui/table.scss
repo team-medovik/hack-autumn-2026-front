@@ -1,0 +1,76 @@
+.table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-related);
+    padding-inline: var(--space-related);
+    border-radius: var(--radius-m);
+
+    &--header {
+      height: 40px;
+    }
+
+    &--body {
+      height: 56px;
+      padding-block: var(--space-close);
+      transition: background-color 0.15s;
+
+      &:hover,
+      &.table__row--selected {
+        background: var(--control-default);
+      }
+    }
+
+    &--interactive {
+      cursor: pointer;
+
+      &:focus-visible {
+        border-radius: var(--radius-m);
+      }
+    }
+  }
+
+  &__cell {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    width: var(--cell-width, auto);
+    min-width: 0;
+
+    &--right {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    &--grow {
+      flex: 1 0 0;
+    }
+  }
+
+  &__text {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  // Заголовок колонки: подпись + иконка 16px через 4px.
+  // Справа иконка идёт перед подписью — row-reverse.
+  &__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+
+    &--active {
+      color: var(--text-main);
+    }
+  }
+
+  &__cell--right &__sort {
+    flex-direction: row-reverse;
+  }
+}

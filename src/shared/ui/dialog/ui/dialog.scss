@@ -1,0 +1,42 @@
+// Фон bg/card и control/* для кнопок задаёт [data-layer='card'] в src/app/index.css
+.dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-grouped);
+  width: min(480px, calc(100vw - 2 * var(--space-close)));
+  max-height: calc(100dvh - 2 * var(--space-close));
+  padding: var(--space-grouped);
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-dialog);
+  color: var(--text-main);
+  transform: translate(-50%, -50%);
+
+  &:focus-visible {
+    border-radius: var(--radius-xl);
+  }
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgb(0 0 0 / 50%);
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}

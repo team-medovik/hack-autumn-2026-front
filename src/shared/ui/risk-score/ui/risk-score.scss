@@ -1,0 +1,63 @@
+.risk-score {
+  --risk-color: var(--risk-none);
+
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+
+  &--high {
+    --risk-color: var(--risk-high);
+  }
+
+  &--medium {
+    --risk-color: var(--risk-medium);
+  }
+
+  &--low {
+    --risk-color: var(--risk-low);
+  }
+
+  &__arc {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+
+  &__track,
+  &__value {
+    stroke-linecap: round;
+  }
+
+  &__track {
+    stroke: var(--control-default);
+  }
+
+  &__value {
+    stroke: var(--risk-color);
+  }
+
+  &__label {
+    position: relative;
+    white-space: nowrap;
+  }
+
+  // S: 52×32, число по центру под дугой
+  &--s {
+    width: 52px;
+    height: 32px;
+    padding-top: 14px;
+  }
+
+  // L: 124×66, «100/100» — число Heading 3 + «/100» Caption 2 по базовой линии
+  &--l {
+    width: 124px;
+    height: 66px;
+    padding-top: 34px;
+
+    .risk-score__label {
+      display: inline-flex;
+      align-items: baseline;
+    }
+  }
+}

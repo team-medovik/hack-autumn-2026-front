@@ -172,13 +172,14 @@ export default [
                 '@/pages/*/*',
                 '@/shared/*/*',
                 '!@/shared/lib/*',
+                '!@/shared/ui/*',
               ],
               message:
                 'FSD: импортируйте слайс через его public API (index.ts), без глубоких путей.',
             },
             {
-              group: ['@/shared/lib/*/*'],
-              message: 'FSD: импортируйте модуль shared/lib через его index.ts.',
+              group: ['@/shared/lib/*/*', '@/shared/ui/*/*'],
+              message: 'FSD: импортируйте модуль shared/lib и shared/ui через его index.ts.',
             },
           ],
         },
@@ -211,6 +212,8 @@ export default [
       '@typescript-eslint/no-floating-promises': 'off',
       // console.log допустим в тестах
       'no-console': 'off',
+      // Тесты используют общую инфраструктуру (MSW-сервер из app/mocks) из любого слоя
+      'import/no-restricted-paths': 'off',
     },
   },
 
@@ -224,7 +227,7 @@ export default [
       'test-results',
       'node_modules',
       'public/mockServiceWorker.js',
-      'src/shared/api/auth'
+      'src/shared/api/auth',
     ],
   },
 ];

@@ -137,6 +137,329 @@
   --color-focus: color-mix(in oklab, var(--orange-400) 45%, transparent);
 }
 
+/* =========================
+   Дизайн-система ХАК ОСЕНЬ 2026 (Figma)
+   Имена повторяют переменные Figma: accent/default → --accent-default,
+   примитивы Cyan/500 → --palette-cyan-500.
+   Темы — коллекция Colors (Light Theme / Dark Theme) → [data-theme].
+   Слои — коллекция Layer (Page / Panel / Card) → [data-layer], влияет на control/*.
+   Используются компонентами из src/shared/ui.
+   ========================= */
+:root {
+  /* ─── Примитивы (Primitives) ─── */
+  --palette-neutral-50: #ffffff;
+  --palette-neutral-100: #f4f4f4;
+  --palette-neutral-150: #e8e8e8;
+  --palette-neutral-200: #e1e1e1;
+  --palette-neutral-250: #d4d4d4;
+  --palette-neutral-300: #b0b0b0;
+  --palette-neutral-350: #a6a6a6;
+  --palette-neutral-400: #8e8e8e;
+  --palette-neutral-500: #666666;
+  --palette-neutral-600: #4a4a4a;
+  --palette-neutral-700: #383838;
+  --palette-neutral-750: #2f2f2f;
+  --palette-neutral-800: #2b2b2b;
+  --palette-neutral-850: #1f1f1f;
+  --palette-neutral-900: #131313;
+  --palette-neutral-950: #0a0a0a;
+  --palette-neutral-1000: #000000;
+
+  --palette-cyan-50: #eef9fb;
+  --palette-cyan-100: #daf4f9;
+  --palette-cyan-200: #b3eaf5;
+  --palette-cyan-300: #84e1f1;
+  --palette-cyan-400: #4cd6ec;
+  --palette-cyan-500: #18c9e1;
+  --palette-cyan-600: #00a1b5;
+  --palette-cyan-700: #007f8f;
+  --palette-cyan-800: #005a66;
+  --palette-cyan-900: #00353d;
+  --palette-cyan-950: #00242a;
+
+  --palette-red-50: #fff4f3;
+  --palette-red-100: #ffe0de;
+  --palette-red-200: #ffbdba;
+  --palette-red-300: #ff9593;
+  --palette-red-400: #ff656a;
+  --palette-red-500: #ff003d;
+  --palette-red-600: #d20030;
+  --palette-red-700: #aa0025;
+  --palette-red-800: #81001a;
+  --palette-red-900: #56000e;
+  --palette-red-950: #420008;
+
+  --palette-blue-50: #eafaff;
+  --palette-blue-100: #d0f1ff;
+  --palette-blue-200: #9ddffa;
+  --palette-blue-300: #4cc6f1;
+  --palette-blue-400: #149aea;
+  --palette-blue-500: #2867e4;
+  --palette-blue-600: #0e4ec8;
+  --palette-blue-700: #033ba6;
+  --palette-blue-800: #012b80;
+  --palette-blue-900: #031e58;
+  --palette-blue-950: #021643;
+
+  --palette-orange-50: #fff4ef;
+  --palette-orange-100: #ffe7d9;
+  --palette-orange-200: #ffcfb4;
+  --palette-orange-300: #ffb48a;
+  --palette-orange-400: #ff985a;
+  --palette-orange-500: #ff7a00;
+  --palette-orange-600: #ce6100;
+  --palette-orange-700: #a44c00;
+  --palette-orange-800: #783600;
+  --palette-orange-900: #4a1e00;
+  --palette-orange-950: #361400;
+
+  --palette-yellow-50: #fbf7eb;
+  --palette-yellow-100: #faf1d6;
+  --palette-yellow-200: #f9e7ae;
+  --palette-yellow-300: #fadb7d;
+  --palette-yellow-400: #f9d043;
+  --palette-yellow-500: #f2c50e;
+  --palette-yellow-600: #c19d00;
+  --palette-yellow-700: #967900;
+  --palette-yellow-800: #6a5400;
+  --palette-yellow-900: #3c2f00;
+  --palette-yellow-950: #281e00;
+
+  --palette-green-50: #effbef;
+  --palette-green-100: #daf4db;
+  --palette-green-200: #b3e9b7;
+  --palette-green-300: #86de8e;
+  --palette-green-400: #54d067;
+  --palette-green-500: #2cc04d;
+  --palette-green-600: #0e9c37;
+  --palette-green-700: #087c2a;
+  --palette-green-800: #005a1a;
+  --palette-green-900: #00370d;
+  --palette-green-950: #002807;
+
+  --palette-purple-50: #f8f5ff;
+  --palette-purple-100: #eae1ff;
+  --palette-purple-200: #d3bdff;
+  --palette-purple-300: #bd97fd;
+  --palette-purple-400: #a770f6;
+  --palette-purple-500: #9051e1;
+  --palette-purple-600: #783fbe;
+  --palette-purple-700: #61349b;
+  --palette-purple-800: #4a2677;
+  --palette-purple-900: #311951;
+  --palette-purple-950: #261241;
+
+  /* ─── Цвета: Light Theme ─── */
+  --text-main: var(--palette-neutral-950);
+  --text-secondary: var(--palette-neutral-500);
+  --text-tertiary: var(--palette-neutral-400);
+  --text-disabled: var(--palette-neutral-300);
+  --text-link: var(--palette-orange-700);
+  --text-on-accent: var(--palette-neutral-1000);
+  --text-on-inverse: var(--palette-neutral-50);
+  --text-on-danger: var(--fixed-main);
+
+  --placeholder-default: var(--palette-neutral-400);
+  --placeholder-disabled: var(--palette-neutral-300);
+
+  --bg-page: var(--palette-neutral-100);
+  --bg-panel: var(--palette-neutral-50);
+  --bg-card: var(--palette-neutral-100);
+  --bg-elevated: var(--palette-neutral-50);
+  --bg-disabled: var(--palette-neutral-150);
+  --bg-camera: var(--palette-neutral-1000);
+  --bg-info: var(--palette-blue-100);
+
+  --accent-default: var(--palette-cyan-500);
+  --accent-active: var(--palette-cyan-600);
+  --accent-loading: var(--palette-cyan-400);
+  --accent-disabled: var(--palette-neutral-300);
+  --accent-muted: var(--palette-cyan-50);
+  --accent-highlight: var(--palette-cyan-200);
+
+  --danger-default: var(--palette-red-500);
+  --danger-active: var(--palette-red-400);
+  --danger-loading: var(--palette-red-300);
+
+  --inverse-default: var(--palette-neutral-950);
+  --inverse-active: var(--palette-neutral-700);
+  --inverse-loading: var(--palette-neutral-600);
+  --inverse-disabled: var(--palette-neutral-300);
+
+  --fixed-main: var(--palette-neutral-50);
+  --fixed-text: var(--palette-neutral-1000);
+  --fixed-active: var(--palette-orange-100);
+  --fixed-disabled: var(--palette-neutral-350);
+
+  --control-on-page: var(--palette-neutral-50);
+  --control-on-page-active: var(--palette-neutral-150);
+  --control-on-panel: var(--palette-neutral-100);
+  --control-on-panel-active: var(--palette-neutral-150);
+  --control-on-card: var(--palette-neutral-150);
+  --control-on-card-active: var(--palette-neutral-200);
+
+  --border-divider: var(--palette-neutral-200);
+  --focus-ring: var(--palette-orange-500);
+
+  --status-info: var(--palette-cyan-700);
+  --status-warning: var(--palette-yellow-700);
+  --status-danger: var(--palette-red-600);
+  --status-success: var(--palette-green-700);
+  --status-success-bg: #087c2a1f;
+
+  /* Уровни риска (Риск / S, Уровень риска) — одинаковые в обеих темах */
+  --risk-high: var(--palette-red-500);
+  --risk-medium: var(--palette-orange-500);
+  --risk-low: var(--palette-cyan-500);
+  --risk-none: var(--text-tertiary);
+
+  --shadow-dialog: 0 24px 32px rgb(0 0 0 / 50%);
+  --shadow-thumb: 0 1px 3px rgb(0 0 0 / 40%);
+
+  /* ─── Слой по умолчанию: Page ─── */
+  --layer-bg: var(--bg-page);
+  --control-default: var(--control-on-page);
+  --control-active: var(--control-on-page-active);
+
+  /* ─── Размеры (Dimension) ─── */
+  --space-compressed: 4px;
+  --space-bonded: 6px;
+  --space-related: 12px;
+  --space-close: 16px;
+  --space-adjacent: 20px;
+  --space-grouped: 24px;
+  --space-lil-distant: 32px;
+  --space-distant: 40px;
+  --space-unrelated: 96px;
+
+  --radius-xs: 4px;
+  --radius-s: 8px;
+  --radius-m: 12px;
+  --radius-l: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-max: 999px;
+
+  --touch-target-s: 32px;
+  --touch-target-m: 40px;
+  --touch-target-l: 48px;
+  --touch-target-xl: 56px;
+  --touch-target-xxl: 64px;
+
+  --border-weight: 2px;
+
+  /* ─── Типографика (Fonts) ─── */
+  --font-family: 'Inter', var(--font-sans);
+
+  --heading-1-font-size: 48px;
+  --heading-1-line-height: 52px;
+  --heading-1-font-weight: 700;
+  --heading-1-letter-spacing: -0.02em; /* -2% в Figma */
+  --heading-2-font-size: 32px;
+  --heading-2-line-height: 40px;
+  --heading-2-font-weight: 700;
+  --heading-2-letter-spacing: -0.02em; /* -2% в Figma */
+  --heading-3-font-size: 24px;
+  --heading-3-line-height: 32px;
+  --heading-3-font-weight: 500;
+  --heading-3-letter-spacing: -0.01em; /* -1% в Figma */
+
+  --label-font-size: 18px;
+  --label-line-height: 24px;
+  --label-font-weight: 500;
+
+  --body-font-size: 16px;
+  --body-line-height: 24px;
+  --body-weight-default: 400;
+  --body-weight-accent: 500;
+
+  --caption-font-size: 14px;
+  --caption-line-height: 20px;
+  --caption-font-weight: 400;
+  --caption-2-font-size: 12px;
+  --caption-2-line-height: 16px;
+  --caption-2-font-weight: 500;
+  --caption-3-font-size: 12px;
+  --caption-3-line-height: 16px;
+  --caption-3-font-weight: 400;
+
+  /* Глобальные токены шаблона берут фон и текст из дизайн-системы */
+  --color-bg: var(--bg-page);
+  --color-text: var(--text-main);
+}
+
+/* ─── Цвета: Dark Theme ─── */
+[data-theme='dark'] {
+  --text-main: var(--palette-neutral-50);
+  --text-secondary: var(--palette-neutral-350);
+  --text-tertiary: var(--palette-neutral-500);
+  --text-disabled: var(--palette-neutral-600);
+  --text-link: var(--palette-orange-400);
+  --text-on-inverse: var(--palette-neutral-1000);
+
+  --placeholder-default: var(--palette-neutral-500);
+  --placeholder-disabled: var(--palette-neutral-600);
+
+  --bg-page: var(--palette-neutral-1000);
+  --bg-panel: var(--palette-neutral-900);
+  --bg-card: var(--palette-neutral-850);
+  --bg-elevated: var(--palette-neutral-850);
+  --bg-disabled: var(--palette-neutral-800);
+  --bg-info: var(--palette-blue-900);
+
+  --accent-active: var(--palette-cyan-400);
+  --accent-loading: var(--palette-cyan-300);
+  --accent-disabled: var(--palette-neutral-350);
+  --accent-muted: var(--palette-cyan-900);
+  --accent-highlight: var(--palette-cyan-800);
+
+  --inverse-default: var(--palette-neutral-50);
+  --inverse-active: var(--palette-neutral-250);
+  --inverse-loading: var(--palette-neutral-300);
+  --inverse-disabled: var(--palette-neutral-350);
+
+  --control-on-page: var(--palette-neutral-900);
+  --control-on-page-active: var(--palette-neutral-850);
+  --control-on-panel: var(--palette-neutral-850);
+  --control-on-panel-active: var(--palette-neutral-800);
+  --control-on-card: var(--palette-neutral-800);
+  --control-on-card-active: var(--palette-neutral-700);
+
+  --border-divider: var(--palette-neutral-750);
+
+  --status-info: var(--palette-cyan-400);
+  --status-warning: var(--palette-yellow-400);
+  --status-danger: var(--palette-red-400);
+  --status-success: var(--palette-green-400);
+  --status-success-bg: #54d06724;
+}
+
+/* ─── Слои (Layer): контролы на панели/карточке светлее/темнее, чем на странице ───
+   <section data-layer="panel">…</section> — фон панели + control/* для панели. */
+[data-layer='page'],
+[data-layer='panel'],
+[data-layer='card'] {
+  background: var(--layer-bg);
+}
+
+[data-layer='page'] {
+  --layer-bg: var(--bg-page);
+  --control-default: var(--control-on-page);
+  --control-active: var(--control-on-page-active);
+}
+
+[data-layer='panel'] {
+  --layer-bg: var(--bg-panel);
+  --control-default: var(--control-on-panel);
+  --control-active: var(--control-on-panel-active);
+}
+
+[data-layer='card'] {
+  --layer-bg: var(--bg-card);
+  --control-default: var(--control-on-card);
+  --control-active: var(--control-on-card-active);
+}
+
 *,
 *::before,
 *::after {

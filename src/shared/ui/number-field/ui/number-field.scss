@@ -1,0 +1,33 @@
+.number-field {
+  flex-shrink: 0;
+  width: 72px;
+  height: 40px;
+  padding: 0 var(--space-related);
+  border: 0;
+  border-radius: var(--radius-m);
+  background: var(--control-default);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: var(--body-font-size);
+  font-weight: var(--body-weight-default);
+  line-height: var(--body-line-height);
+  caret-color: var(--text-main);
+
+  // Рамка 1px через inset-тень — без сдвига вёрстки
+  &--changed {
+    box-shadow: inset 0 0 0 1px var(--accent-default);
+  }
+
+  &--error {
+    box-shadow: inset 0 0 0 1px var(--danger-default);
+  }
+
+  &:focus-visible {
+    border-radius: var(--radius-m);
+  }
+
+  &:disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+}
