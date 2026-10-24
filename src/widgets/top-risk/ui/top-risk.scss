@@ -1,0 +1,24 @@
+.top-risk {
+  // В Figma клиент стоит под заголовком через 20px, остальные блоки — через 32px карточки
+  &__client {
+    display: flex;
+    align-items: center;
+    gap: var(--space-grouped);
+    margin-top: calc(var(--space-adjacent) - var(--space-lil-distant));
+  }
+
+  &__identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__factors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-close);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}

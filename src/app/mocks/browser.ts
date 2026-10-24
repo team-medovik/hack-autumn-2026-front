@@ -1,18 +1,11 @@
 import { setupWorker } from 'msw/browser';
 
+import { authHandlers } from './auth-handlers';
 import { handlers } from './handlers';
 
 /**
- * MSW Service Worker — для браузерного мокирования во время разработки.
- *
- * Использование в main.tsx (опционально, для полностью офлайн-режима):
- * ```ts
- * if (import.meta.env.DEV) {
- *   const { worker } = await import('@/app/mocks/browser');
- *   await worker.start({ onUnhandledRequest: 'bypass' });
- * }
- * ```
- *
- * Требует предварительной инициализации: npx msw init public/ --save
+ * MSW Service Worker для браузера. Запускается в main.tsx, если включён env.enableMocks
+ * (по умолчанию — в dev). Файл воркера: public/mockServiceWorker.js (`npx msw init public`).
+ * Auth-моки с состоянием — только в браузере: тесты подменяют ответы через server.use.
  */
-export const worker = setupWorker(...handlers);
+export const worker = setupWorker(...authHandlers, ...handlers);

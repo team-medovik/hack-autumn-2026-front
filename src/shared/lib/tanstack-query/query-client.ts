@@ -1,5 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
 
+import { isClientError } from '@/shared/api';
+
+const MAX_RETRIES = 2;
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -17,9 +21,9 @@ export const queryClient = new QueryClient({
 
       /**
        * Повторять неудачные запросы до 2 раз с экспоненциальной задержкой.
-       * Установите false для мутаций или заведомо 4xx-эндпоинтов.
+       * Ошибки 4xx (нет доступа, не найдено) не повторяем — ответ не изменится.
        */
-      retry: 2,
+      retry: (failureCount, error) => !isClientError(error) && failureCount < MAX_RETRIES,
 
       /**
        * Не перезапрашивать данные при фокусе вкладки — снижает шум в дашбордах.

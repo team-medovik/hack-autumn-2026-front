@@ -1,0 +1,26 @@
+.risk-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+
+  &__marker {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-max);
+    background: var(--risk-none);
+  }
+
+  &--high &__marker {
+    background: var(--risk-high);
+  }
+
+  &--medium &__marker {
+    background: var(--risk-medium);
+  }
+
+  &--low &__marker {
+    background: var(--risk-low);
+  }
+}

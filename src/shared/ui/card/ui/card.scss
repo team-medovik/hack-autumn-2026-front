@@ -1,0 +1,38 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lil-distant);
+  min-width: 0;
+  padding: var(--space-grouped);
+  border-radius: var(--radius-xl);
+  color: var(--text-main);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-related);
+  width: 100%;
+
+  &__titles {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    gap: var(--space-compressed);
+    min-width: 0;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-bonded);
+  }
+
+  &__aside {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-compressed);
+  }
+}

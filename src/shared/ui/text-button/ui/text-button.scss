@@ -1,0 +1,19 @@
+.text-button {
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: var(--caption-font-size);
+  font-weight: var(--caption-font-weight);
+  line-height: var(--caption-line-height);
+  text-decoration: underline;
+  text-underline-position: from-font;
+  transition: color 0.15s;
+
+  &:hover:not(:disabled) {
+    color: var(--text-main);
+  }
+
+  &:disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+}

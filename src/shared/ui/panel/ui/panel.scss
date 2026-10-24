@@ -1,0 +1,7 @@
+// Фон задаёт [data-layer='panel'] в src/app/index.css (bg/panel),
+// там же переопределяются control/* для контролов внутри панели.
+.panel {
+  padding: var(--space-grouped);
+  border-radius: var(--radius-l);
+  color: var(--text-main);
+}

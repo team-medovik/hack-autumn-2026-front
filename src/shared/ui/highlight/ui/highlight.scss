@@ -1,0 +1,9 @@
+// inline-flex: строка внутри берёт line-height своего текста, а не родителя
+.highlight {
+  display: inline-flex;
+  border-radius: var(--radius-xs);
+
+  &--active {
+    background: var(--accent-highlight);
+  }
+}

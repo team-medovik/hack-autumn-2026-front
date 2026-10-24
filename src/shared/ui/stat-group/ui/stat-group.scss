@@ -1,0 +1,26 @@
+.stat-group {
+  display: flex;
+  gap: var(--space-compressed);
+  width: 100%;
+  margin: 0;
+  padding: var(--space-close);
+  border-radius: var(--radius-l);
+  background: var(--control-default);
+
+  &__item {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-compressed);
+    min-width: 0;
+  }
+
+  &__item > * {
+    max-width: 100%;
+  }
+
+  &__value {
+    margin: 0;
+  }
+}

@@ -1,0 +1,52 @@
+// Макет «Вход» (Figma 22:56): панель 380×528 по центру, padding 24, radius 16.
+.form-widget {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: var(--layout-margin);
+  background: var(--bg-page);
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-grouped);
+    width: 380px;
+    max-width: 100%;
+    min-height: 528px;
+  }
+
+  &__body,
+  &__head,
+  &__fields,
+  &__actions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__body {
+    gap: var(--space-close);
+  }
+
+  &__head,
+  &__fields,
+  &__actions {
+    gap: var(--space-related);
+  }
+
+  // В макете заголовок в одну строку; на узких экранах переносим, а не вылезаем за панель
+  &__title {
+    @include up(tablet) {
+      white-space: nowrap;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-related);
+  }
+}

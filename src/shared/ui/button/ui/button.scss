@@ -1,0 +1,168 @@
+// Недоступность: у <button> — :disabled, у asChild-ссылки — aria-disabled
+$disabled: ':is(:disabled, [aria-disabled="true"])';
+
+// Состояния из Figma: Обычное → базовые стили, Активное → :hover / :active / .button--active,
+// Загрузка → .button--loading, Недоступное → :disabled / aria-disabled.
+.button {
+  --button-bg: transparent;
+  --button-color: var(--text-main);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-bonded);
+  min-height: var(--touch-target-xl);
+  max-width: 100%;
+  padding: var(--space-related) var(--space-grouped);
+  overflow: hidden;
+  border-radius: var(--radius-l);
+  background: var(--button-bg);
+  color: var(--button-color);
+  font-family: var(--font-family);
+  font-size: var(--body-font-size);
+  font-weight: var(--body-weight-accent);
+  line-height: var(--body-line-height);
+  text-align: center;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:focus-visible {
+    border-radius: var(--radius-l);
+  }
+
+  &#{$disabled} {
+    cursor: not-allowed;
+  }
+
+  &[aria-disabled='true'] {
+    pointer-events: none;
+  }
+
+  &--loading#{$disabled} {
+    cursor: progress;
+  }
+
+  &__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  // Иконка справа — текст прижимается к левому краю
+  &--with-icon {
+    justify-content: space-between;
+    padding-inline: var(--space-grouped);
+
+    .button__text {
+      flex: 1 0 0;
+      text-align: left;
+    }
+  }
+
+  &--full-width {
+    width: 100%;
+  }
+
+  // ─── Акцентная ─────────────────────────────────────────────────────────────
+  &--accent {
+    --button-bg: var(--accent-default);
+    --button-color: var(--text-on-accent);
+
+    &.button--active,
+    &:hover:not(#{$disabled}),
+    &:active:not(#{$disabled}) {
+      --button-bg: var(--accent-active);
+    }
+
+    &.button--loading {
+      --button-bg: var(--accent-loading);
+    }
+  }
+
+  // ─── Первичная ─────────────────────────────────────────────────────────────
+  &--primary {
+    --button-bg: var(--inverse-default);
+    --button-color: var(--text-on-inverse);
+
+    &.button--active,
+    &:hover:not(#{$disabled}),
+    &:active:not(#{$disabled}) {
+      --button-bg: var(--inverse-active);
+    }
+
+    &.button--loading {
+      --button-bg: var(--inverse-loading);
+    }
+
+    &#{$disabled}:not(.button--loading) {
+      --button-bg: var(--inverse-disabled);
+    }
+  }
+
+  // ─── Вторичная ─────────────────────────────────────────────────────────────
+  &--secondary {
+    --button-color: var(--text-secondary);
+
+    &.button--active,
+    &:hover:not(#{$disabled}),
+    &:active:not(#{$disabled}) {
+      --button-bg: var(--control-default);
+      --button-color: var(--text-main);
+    }
+
+    &#{$disabled}:not(.button--loading) {
+      --button-color: var(--text-disabled);
+    }
+  }
+
+  // ─── Опасность ─────────────────────────────────────────────────────────────
+  &--danger {
+    --button-bg: var(--danger-default);
+    --button-color: var(--text-on-danger);
+
+    &.button--active,
+    &:hover:not(#{$disabled}),
+    &:active:not(#{$disabled}) {
+      --button-bg: var(--danger-active);
+    }
+
+    &.button--loading {
+      --button-bg: var(--danger-loading);
+      --button-color: var(--fixed-text);
+    }
+  }
+
+  // Недоступное для accent и danger (у danger в Figma своего нет — берём серый accent)
+  &--accent,
+  &--danger {
+    &#{$disabled}:not(.button--loading) {
+      --button-bg: var(--accent-disabled);
+      --button-color: var(--text-on-accent);
+    }
+  }
+
+  // ─── Только иконка ─────────────────────────────────────────────────────────
+  &--icon {
+    --button-bg: var(--control-default);
+
+    min-width: var(--touch-target-xl);
+    padding: var(--space-bonded);
+
+    &.button--active,
+    &:hover:not(#{$disabled}),
+    &:active:not(#{$disabled}) {
+      --button-bg: var(--control-active);
+    }
+
+    &#{$disabled}:not(.button--loading) {
+      --button-color: var(--text-disabled);
+    }
+  }
+}

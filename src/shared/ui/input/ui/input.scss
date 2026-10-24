@@ -1,0 +1,101 @@
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compressed);
+  width: 100%;
+  font-family: var(--font-family);
+
+  &__field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: var(--touch-target-xl);
+    padding: var(--space-bonded) var(--space-close);
+    overflow: hidden;
+    border-radius: var(--radius-l);
+    background: var(--control-default);
+  }
+
+  // Поле всегда под местом для поднятого лейбла: лейбл 16px + значение 24px
+  &__control {
+    width: 100%;
+    margin-top: var(--caption-3-line-height);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-main);
+    font-size: var(--body-font-size);
+    font-weight: var(--body-weight-default);
+    line-height: var(--body-line-height);
+    caret-color: var(--text-main);
+
+    // Фокус показывает поднятый лейбл и каретка, отдельной обводки в дизайне нет
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
+
+    &:disabled {
+      color: var(--text-disabled);
+      cursor: not-allowed;
+    }
+
+    // У type="search" в макете нет крестика — очистка по Esc остаётся
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+
+  // Пустое: лейбл по центру как плейсхолдер
+  &__label {
+    position: absolute;
+    top: 50%;
+    left: var(--space-close);
+    right: var(--space-close);
+    overflow: hidden;
+    color: var(--placeholder-default);
+    font-size: var(--body-font-size);
+    line-height: var(--body-line-height);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition:
+      top 0.15s,
+      transform 0.15s,
+      font-size 0.15s,
+      line-height 0.15s;
+  }
+
+  // Фокус и Заполненное: лейбл уменьшается и уходит наверх
+  &__control:focus + &__label,
+  &__control:not(:placeholder-shown) + &__label {
+    top: calc(
+      (var(--touch-target-xl) - var(--caption-3-line-height) - var(--body-line-height)) / 2
+    );
+    font-size: var(--caption-3-font-size);
+    font-weight: var(--caption-3-font-weight);
+    line-height: var(--caption-3-line-height);
+    transform: none;
+  }
+
+  // Ошибка: рамка без сдвига вёрстки
+  &--error &__field {
+    box-shadow: inset 0 0 0 var(--border-weight) var(--danger-default);
+  }
+
+  &__helper {
+    margin: 0;
+    padding-inline: var(--space-close);
+    color: var(--danger-default);
+    font-size: var(--caption-3-font-size);
+    font-weight: var(--caption-3-font-weight);
+    line-height: var(--caption-3-line-height);
+  }
+
+  &--disabled &__label {
+    color: var(--text-disabled);
+  }
+}

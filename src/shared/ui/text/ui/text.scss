@@ -1,0 +1,120 @@
+// Текстовые стили Figma → токены типографики из src/app/index.css
+@mixin text-style($size, $line-height, $weight) {
+  font-size: var(#{$size});
+  line-height: var(#{$line-height});
+  font-weight: var(#{$weight});
+}
+
+.text {
+  margin: 0;
+  font-family: var(--font-family);
+  letter-spacing: 0;
+
+  // ─── Стили ───────────────────────────────────────────────────────────────
+  &--heading-1,
+  &--heading-1-italic {
+    @include text-style(--heading-1-font-size, --heading-1-line-height, --heading-1-font-weight);
+
+    letter-spacing: var(--heading-1-letter-spacing);
+  }
+
+  &--heading-1-italic {
+    font-style: italic;
+  }
+
+  &--heading-2 {
+    @include text-style(--heading-2-font-size, --heading-2-line-height, --heading-2-font-weight);
+
+    letter-spacing: var(--heading-2-letter-spacing);
+  }
+
+  &--heading-3 {
+    @include text-style(--heading-3-font-size, --heading-3-line-height, --heading-3-font-weight);
+
+    letter-spacing: var(--heading-3-letter-spacing);
+  }
+
+  &--label {
+    @include text-style(--label-font-size, --label-line-height, --label-font-weight);
+  }
+
+  &--body {
+    @include text-style(--body-font-size, --body-line-height, --body-weight-default);
+  }
+
+  &--body-accent {
+    @include text-style(--body-font-size, --body-line-height, --body-weight-accent);
+  }
+
+  &--caption {
+    @include text-style(--caption-font-size, --caption-line-height, --caption-font-weight);
+  }
+
+  &--caption-2 {
+    @include text-style(--caption-2-font-size, --caption-2-line-height, --caption-2-font-weight);
+  }
+
+  &--caption-3 {
+    @include text-style(--caption-3-font-size, --caption-3-line-height, --caption-3-font-weight);
+  }
+
+  // ─── Цвета ───────────────────────────────────────────────────────────────
+  &--color-inherit {
+    color: inherit;
+  }
+
+  &--color-main {
+    color: var(--text-main);
+  }
+
+  &--color-secondary {
+    color: var(--text-secondary);
+  }
+
+  &--color-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  &--color-disabled {
+    color: var(--text-disabled);
+  }
+
+  &--color-link {
+    color: var(--text-link);
+  }
+
+  &--color-danger {
+    color: var(--status-danger);
+  }
+
+  &--color-success {
+    color: var(--status-success);
+  }
+
+  &--color-warning {
+    color: var(--status-warning);
+  }
+
+  &--color-info {
+    color: var(--status-info);
+  }
+
+  // ─── Модификаторы ────────────────────────────────────────────────────────
+  &--align-left {
+    text-align: left;
+  }
+
+  &--align-center {
+    text-align: center;
+  }
+
+  &--align-right {
+    text-align: right;
+  }
+
+  &--truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,35 @@
+// Фон — bg/panel, а control/* — со слоя card: так в Figma у «Карточки клиента».
+// Специфичность выше, чем у [data-layer='card'] из src/app/index.css.
+.modal[data-layer] {
+  --layer-bg: var(--bg-panel);
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 901;
+  width: min(1132px, calc(100vw - 2 * var(--space-close)));
+  max-height: calc(100dvh - 2 * var(--space-close));
+  padding: var(--space-distant);
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+  color: var(--text-main);
+  transform: translate(-50%, -50%);
+
+  &:focus-visible {
+    border-radius: var(--radius-xl);
+  }
+
+  &__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    background: var(--overlay);
+  }
+
+  @include down(desktop-s) {
+    padding: var(--space-grouped);
+  }
+}

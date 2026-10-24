@@ -1,12 +1,36 @@
+// Десктоп по макету: навбар 330px, контент — панель с отступом 20 от краёв окна.
 .layout {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
   min-height: 100dvh;
+  background: var(--bg-page);
+
+  .navbar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
 
   &__main {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-x: clip;
+    min-width: 0;
+    margin: 20px 20px 20px 0;
+    padding: var(--space-grouped);
+    border-radius: var(--radius-xl);
+  }
+
+  @include down(desktop-s) {
+    grid-template-columns: minmax(0, 1fr);
+
+    .navbar {
+      position: static;
+      height: auto;
+    }
+
+    &__main {
+      margin: 0 var(--space-related) var(--space-related);
+      padding: var(--space-close);
+    }
   }
 }
