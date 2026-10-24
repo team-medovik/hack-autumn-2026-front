@@ -8,7 +8,7 @@ import { handlers } from './handlers';
  * Использование в main.tsx (опционально, для полностью офлайн-режима):
  * ```ts
  * if (import.meta.env.DEV) {
- *   const { worker } = await import('@/shared/api/mocks/browser');
+ *   const { worker } = await import('@/app/mocks/browser');
  *   await worker.start({ onUnhandledRequest: 'bypass' });
  * }
  * ```
