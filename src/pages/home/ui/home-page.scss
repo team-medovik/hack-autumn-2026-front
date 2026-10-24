@@ -4,6 +4,28 @@
   flex-direction: column;
   gap: var(--space-distant);
 
+  // Сводка, затем пары карточек — каждая чуть позже предыдущей
+  > :not(.home-page__row),
+  &__row > * {
+    animation: motion-fade-up var(--duration-enter) var(--ease-out) backwards;
+  }
+
+  &__row--focus > :nth-child(1) {
+    animation-delay: calc(var(--motion-stagger) * 1);
+  }
+
+  &__row--focus > :nth-child(2) {
+    animation-delay: calc(var(--motion-stagger) * 2);
+  }
+
+  &__row--trends > :nth-child(1) {
+    animation-delay: calc(var(--motion-stagger) * 3);
+  }
+
+  &__row--trends > :nth-child(2) {
+    animation-delay: calc(var(--motion-stagger) * 4);
+  }
+
   &__row {
     display: grid;
     gap: var(--space-related);

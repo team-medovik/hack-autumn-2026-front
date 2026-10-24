@@ -17,6 +17,11 @@
   box-shadow: var(--shadow-modal);
   color: var(--text-main);
   transform: translate(-50%, -50%);
+  animation: motion-dialog-in var(--duration-dialog) var(--ease-out);
+
+  &[data-state='closed'] {
+    animation: motion-dialog-out var(--duration-fast) ease-in forwards;
+  }
 
   &:focus-visible {
     border-radius: var(--radius-xl);
@@ -27,6 +32,11 @@
     inset: 0;
     z-index: 900;
     background: var(--overlay);
+    animation: motion-fade-in var(--duration-dialog) ease-out;
+
+    &[data-state='closed'] {
+      animation: motion-fade-out var(--duration-fast) ease-in forwards;
+    }
   }
 
   @include down(desktop-s) {

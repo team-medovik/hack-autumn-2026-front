@@ -21,7 +21,15 @@
     &--body {
       height: 56px;
       padding-block: var(--space-close);
-      transition: background-color 0.15s;
+      transition: background-color var(--duration-fast);
+      animation: motion-fade-up var(--duration-enter) var(--ease-out) backwards;
+
+      // Новые строки (страница, фильтр) всплывают лесенкой сверху вниз; первая — шапка
+      @for $i from 3 through 21 {
+        &:nth-child(#{$i}) {
+          animation-delay: calc(20ms * #{$i - 2});
+        }
+      }
 
       &.table__row--selected {
         background: var(--control-default);

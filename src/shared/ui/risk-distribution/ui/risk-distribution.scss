@@ -9,6 +9,15 @@
     // Узкие сегменты не исчезают совсем — минимальная ширина как у точки
     min-width: 10px;
     border-radius: var(--radius-max);
+    transform-origin: left;
+    animation: risk-distribution-grow var(--duration-draw) var(--ease-out) backwards;
+
+    // Сегменты вырастают по очереди слева направо
+    @for $i from 2 through 4 {
+      &:nth-child(#{$i}) {
+        animation-delay: calc(var(--motion-stagger) * #{$i - 1});
+      }
+    }
 
     &--high {
       background: var(--risk-high);
@@ -25,5 +34,12 @@
     &--none {
       border: 1px dashed var(--accent-disabled);
     }
+  }
+}
+
+@keyframes risk-distribution-grow {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
   }
 }

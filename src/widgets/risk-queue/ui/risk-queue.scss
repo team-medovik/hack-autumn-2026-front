@@ -1,11 +1,20 @@
 .risk-queue {
   &__all {
     white-space: nowrap;
-    transition: color 0.15s;
+    transition: color var(--duration-fast);
 
     &:hover {
       color: var(--text-main);
     }
+  }
+
+  &__arrow {
+    display: inline-block;
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  &__all:hover &__arrow {
+    transform: translateX(3px);
   }
 
   &__list {
@@ -15,5 +24,15 @@
     margin: 0;
     padding: 0;
     list-style: none;
+
+    > li {
+      animation: motion-fade-up var(--duration-enter) var(--ease-out) backwards;
+    }
+
+    @for $i from 2 through 10 {
+      > li:nth-child(#{$i}) {
+        animation-delay: calc(40ms * #{$i - 1});
+      }
+    }
   }
 }

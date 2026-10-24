@@ -7,6 +7,9 @@
   border-radius: var(--radius-max);
   white-space: nowrap;
 
+  // Смена состояния: плашка мягко проявляется, иконка отыгрывает своё
+  animation: motion-fade-in var(--duration-enter) var(--ease-out);
+
   &--updated {
     background: var(--control-default);
     color: var(--text-secondary);
@@ -15,5 +18,28 @@
   &--saved {
     background: var(--status-success-bg);
     color: var(--status-success);
+  }
+}
+
+// «Обновлено» — стрелки делают один оборот
+.update-badge--updated .update-badge__icon {
+  animation: update-badge-spin 0.9s var(--ease-standard);
+}
+
+// «Сохранено» — галочка выпрыгивает
+.update-badge--saved .update-badge__icon {
+  animation: update-badge-pop 0.45s var(--ease-spring);
+}
+
+@keyframes update-badge-spin {
+  from {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes update-badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
   }
 }

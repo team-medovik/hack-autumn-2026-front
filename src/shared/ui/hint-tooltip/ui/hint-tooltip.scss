@@ -2,7 +2,7 @@
   display: inline-flex;
   flex-shrink: 0;
   color: var(--text-secondary);
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 
   &:hover,
   &[data-state='delayed-open'],
@@ -22,5 +22,29 @@
     border-radius: var(--radius-m);
     background: var(--control-on-card);
     box-shadow: 0 8px 12px rgb(0 0 0 / 25%);
+
+    // Появление от иконки: сдвиг 4px со стороны якоря + проявление (160ms, как поповеры aeza)
+    transform-origin: var(--radix-tooltip-content-transform-origin);
+    animation: motion-popover-in var(--duration-popover) var(--ease-out);
+
+    &[data-side='top'] {
+      --popover-shift: 0, 4px;
+    }
+
+    &[data-side='bottom'] {
+      --popover-shift: 0, -4px;
+    }
+
+    &[data-side='left'] {
+      --popover-shift: 4px, 0;
+    }
+
+    &[data-side='right'] {
+      --popover-shift: -4px, 0;
+    }
+
+    &[data-state='closed'] {
+      animation: motion-fade-out var(--duration-fast) ease-in forwards;
+    }
   }
 }

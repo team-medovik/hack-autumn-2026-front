@@ -15,6 +15,11 @@
   box-shadow: var(--shadow-dialog);
   color: var(--text-main);
   transform: translate(-50%, -50%);
+  animation: motion-dialog-in var(--duration-dialog) var(--ease-out);
+
+  &[data-state='closed'] {
+    animation: motion-dialog-out var(--duration-fast) ease-in forwards;
+  }
 
   &--m {
     --dialog-width: 480px;
@@ -33,6 +38,11 @@
     inset: 0;
     z-index: 1000;
     background: var(--overlay);
+    animation: motion-fade-in var(--duration-dialog) ease-out;
+
+    &[data-state='closed'] {
+      animation: motion-fade-out var(--duration-fast) ease-in forwards;
+    }
   }
 
   &__text {

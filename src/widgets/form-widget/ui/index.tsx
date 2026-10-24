@@ -18,6 +18,22 @@ interface FormWidgetProps extends Omit<ComponentProps<'form'>, 'title' | 'childr
 }
 
 /**
+ * Фоновый декор: две пунктирные орбиты вокруг панели медленно вращаются навстречу друг другу,
+ * по внешней ползёт точка-спутник — как кольца вокруг глобуса на aeza.net.
+ */
+const FormWidgetOrbits = () => (
+  <svg className="form-widget__orbits" viewBox="0 0 800 800" fill="none" aria-hidden>
+    <g className="form-widget__orbit form-widget__orbit--outer">
+      <circle cx="400" cy="400" r="380" />
+      <circle className="form-widget__satellite" cx="400" cy="20" r="6" />
+    </g>
+    <g className="form-widget__orbit form-widget__orbit--inner">
+      <circle cx="400" cy="400" r="300" />
+    </g>
+  </svg>
+);
+
+/**
  * Экран-форма по макету «Вход»: панель по центру страницы,
  * сверху заголовок, поля и кнопки, снизу логотип и подпись команды.
  * Сам является `<form>` — `onSubmit` и прочие атрибуты формы передаются напрямую.
@@ -43,6 +59,7 @@ export const FormWidget = ({
 
   return (
     <div className="form-widget">
+      <FormWidgetOrbits />
       <Panel asChild className="form-widget__panel">
         <form noValidate aria-labelledby={titleId} {...formProps}>
           <div className="form-widget__body">

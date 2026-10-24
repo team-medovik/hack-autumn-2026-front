@@ -3,7 +3,15 @@
   display: inline-flex;
   border-radius: var(--radius-xs);
 
+  // Значение изменилось — подсветка вспыхивает ярче и успокаивается
   &--active {
     background: var(--accent-highlight);
+    animation: highlight-flash 1.2s var(--ease-out);
+  }
+}
+
+@keyframes highlight-flash {
+  from {
+    background: var(--accent-default);
   }
 }

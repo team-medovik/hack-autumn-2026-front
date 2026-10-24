@@ -67,6 +67,10 @@
     width: 100%;
     height: calc(var(--bar-ratio) * var(--plot-height));
     border-radius: 4px 4px 0 0;
+    transform-origin: bottom;
+    // Столбцы поднимаются волной слева направо
+    animation: column-chart-grow var(--duration-draw) var(--ease-out)
+      calc(var(--bar-index, 0) * 30ms) backwards;
   }
 
   &__label {
@@ -122,5 +126,11 @@
     width: 10px;
     height: 10px;
     border-radius: 2px;
+  }
+}
+
+@keyframes column-chart-grow {
+  from {
+    transform: scaleY(0);
   }
 }

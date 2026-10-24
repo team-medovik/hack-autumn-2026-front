@@ -7,7 +7,7 @@
   padding: 56px var(--space-grouped);
   border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-fast);
 
   &--over {
     --dropzone-border: var(--accent-default);
@@ -42,8 +42,18 @@
       stroke: var(--dropzone-border);
       stroke-width: 1.5px;
       stroke-dasharray: 8 8;
-      transition: stroke 0.15s;
+      transition: stroke var(--duration-fast);
     }
+  }
+
+  // Наведение мышью — пунктир темнеет, зона откликается
+  &:hover:not(.dropzone--disabled, .dropzone--over, .dropzone--invalid) {
+    --dropzone-border: var(--text-main);
+  }
+
+  // Файл над зоной — пунктир «бежит» по кругу
+  &--over &__border rect {
+    animation: dropzone-march 0.6s linear infinite;
   }
 
   // Слои в одной ячейке сетки: высоту задаёт приглашение, остальное — поверх него по центру
@@ -57,5 +67,11 @@
     &--sizer {
       visibility: hidden;
     }
+  }
+}
+
+@keyframes dropzone-march {
+  to {
+    stroke-dashoffset: -16;
   }
 }
