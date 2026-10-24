@@ -19,7 +19,7 @@ env:
   SERVICE_DIR_NAME: 'front'
 
   TARGET_BASE_DIR: '/home/kinoko/'
-  TARGET_DIR: '/home/kinoko/teamup/front'
+  TARGET_DIR: '/home/kinoko/hack-autumn-2026/front'
 
   ARTIFACT_BASE_DIR: '/tmp/hack-autumn-2026'
   ARTIFACT_DIR: '/tmp/hack-autumn-2026/front'
