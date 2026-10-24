@@ -1,1 +1,1 @@
-export { SettingRow } from './ui';
+export { SettingRow, type SettingRowIds } from './ui';

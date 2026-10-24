@@ -23,6 +23,10 @@
     --progress-color: var(--text-tertiary);
   }
 
+  &--accent {
+    --progress-color: var(--accent-default);
+  }
+
   &__indicator {
     height: 100%;
     border-radius: var(--radius-max);

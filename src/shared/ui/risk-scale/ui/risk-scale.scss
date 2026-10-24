@@ -1,0 +1,40 @@
+.risk-scale {
+  display: flex;
+  gap: var(--space-compressed);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &__segment {
+    display: flex;
+    flex: var(--segment-grow) 1 0;
+    flex-direction: column;
+    gap: 8px;
+    // Узкий диапазон (пороги 69 / 70) не схлопывается: подпись не наезжает на соседа
+    min-width: min-content;
+  }
+
+  &__bar {
+    height: 10px;
+    border-radius: var(--radius-max);
+
+    &--high {
+      background: var(--risk-high);
+    }
+
+    &--medium {
+      background: var(--risk-medium);
+    }
+
+    &--low {
+      background: var(--risk-low);
+    }
+  }
+
+  &__caption {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 8px;
+  }
+}

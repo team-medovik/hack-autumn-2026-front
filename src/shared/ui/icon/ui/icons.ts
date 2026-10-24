@@ -19,12 +19,13 @@ import sortDesc from '../assets/sort-desc.svg';
 import sort from '../assets/sort.svg';
 import table from '../assets/table.svg';
 import trash from '../assets/trash.svg';
+import upload32 from '../assets/upload-32.svg';
 import upload from '../assets/upload.svg';
 
 /**
  * Иконки дизайн-системы. Ключ — имя слоя в Figma.
  * Нативный размер — 24×24; `sort*` и `*-16` — 16×16 (Icon / сортировка, группы услуг),
- * `*-20` — 20×20 (Плашка обновления), `*-32` — 32×32 (сообщения в таблице).
+ * `*-20` — 20×20 (Плашка обновления), `*-32` — 32×32 (сообщения в таблице, зона загрузки файла).
  */
 export const ICONS = {
   check,
@@ -49,6 +50,7 @@ export const ICONS = {
   table,
   trash,
   upload,
+  'upload-32': upload32,
 } as const;
 
 export type IconName = keyof typeof ICONS;

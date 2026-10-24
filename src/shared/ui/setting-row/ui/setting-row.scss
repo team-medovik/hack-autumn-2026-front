@@ -13,8 +13,12 @@
     min-width: 0;
   }
 
-  &__slider {
-    flex-shrink: 0;
-    width: 200px;
+  // Контрол не помещается рядом — уходит под описание
+  @include down(tablet) {
+    flex-wrap: wrap;
+
+    &__description {
+      flex-basis: 100%;
+    }
   }
 }

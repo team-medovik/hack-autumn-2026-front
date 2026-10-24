@@ -12,7 +12,10 @@ interface SliderProps {
   max?: number;
   step?: number;
   disabled?: boolean;
+  /** Подпись ручки для скринридера: `aria-label` или id подписи в `aria-labelledby`. */
   'aria-label'?: string;
+  'aria-labelledby'?: string;
+  'aria-describedby'?: string;
   className?: string;
 }
 
@@ -31,6 +34,8 @@ export const Slider = ({
   step = 1,
   disabled,
   'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+  'aria-describedby': ariaDescribedBy,
   className,
 }: SliderProps) => (
   <Root
@@ -46,6 +51,11 @@ export const Slider = ({
     <Track className="slider__track">
       <Range className="slider__range" />
     </Track>
-    <Thumb className="slider__thumb" aria-label={ariaLabel} />
+    <Thumb
+      className="slider__thumb"
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
+    />
   </Root>
 );

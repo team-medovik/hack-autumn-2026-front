@@ -1,0 +1,10 @@
+.slider-field {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-grouped);
+
+  &__slider {
+    width: 200px;
+  }
+}

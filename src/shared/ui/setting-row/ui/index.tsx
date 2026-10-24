@@ -1,104 +1,54 @@
 import { clsx } from 'clsx';
-import { useId, useState, type ChangeEvent, type ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
-import { NumberField } from '../../number-field';
-import { Slider } from '../../slider';
 import { Text } from '../../text';
 
 import './setting-row.scss';
 
+/** id подписей строки — для `aria-labelledby` / `aria-describedby` контрола. */
+export interface SettingRowIds {
+  titleId: string;
+  /** Есть, только если передана подсказка. */
+  hintId?: string;
+}
+
 interface SettingRowProps {
   title: ReactNode;
-  /** Подсказка под названием, например «всегда в полную силу · по умолчанию 70». */
+  /** Подсказка под названием Caption 2: «всегда в полную силу / по умолчанию 70». */
   hint?: ReactNode;
-  value: number;
-  onValueChange: (value: number) => void;
-  /** Сохранённое значение: если текущее отличается — поле в состоянии «Изменено». */
-  savedValue?: number;
-  min?: number;
-  max?: number;
+  /** Контрол справа: `SliderField`, `Switch`… Получает id подписей строки. */
+  children: (ids: SettingRowIds) => ReactNode;
   className?: string;
 }
 
 /**
- * Строка настройки признака (Настройки / признак): описание, слайдер и числовое поле,
- * синхронизированные между собой. Некорректный ввод подсвечивает поле ошибкой и не уходит наружу.
+ * Строка настройки (Настройки / признак): название с подсказкой слева, контрол справа.
  *
  * @example
- * <SettingRow
- *   title="Ожидает оплаты"
- *   hint="всегда в полную силу · по умолчанию 70"
- *   value={weight}
- *   savedValue={70}
- *   onValueChange={setWeight}
- * />
+ * <SettingRow title="Ожидает оплаты" hint="по умолчанию 70">
+ *   {({ titleId, hintId }) => (
+ *     <SliderField value={weight} onValueChange={setWeight} aria-labelledby={titleId} aria-describedby={hintId} />
+ *   )}
+ * </SettingRow>
  */
-export const SettingRow = ({
-  title,
-  hint,
-  value,
-  onValueChange,
-  savedValue,
-  min = 0,
-  max = 100,
-  className,
-}: SettingRowProps) => {
-  const titleId = useId();
-  // Черновик ввода живёт, пока пользователь печатает; иначе поле показывает value
-  const [draft, setDraft] = useState<string | null>(null);
-
-  /** Целое число в диапазоне [min, max] или null. */
-  const parse = (text: string) => {
-    const next = Number(text.trim());
-    return text.trim() !== '' && Number.isInteger(next) && next >= min && next <= max ? next : null;
-  };
-
-  const isValid = draft === null || parse(draft) !== null;
-
-  const handleInput = (event: ChangeEvent<HTMLInputElement>) => {
-    setDraft(event.target.value);
-
-    const next = parse(event.target.value);
-    if (next !== null) {
-      onValueChange(next);
-    }
-  };
-
-  const handleSlider = (next: number) => {
-    setDraft(null);
-    onValueChange(next);
-  };
+export const SettingRow = ({ title, hint, children, className }: SettingRowProps) => {
+  const id = useId();
+  const ids: SettingRowIds = { titleId: `${id}-title`, hintId: hint ? `${id}-hint` : undefined };
 
   return (
     <div className={clsx('setting-row', className)}>
       <div className="setting-row__description">
-        <Text id={titleId} variant="body" color="main">
+        <Text id={ids.titleId} variant="body" color="main">
           {title}
         </Text>
         {hint && (
-          <Text variant="caption-2" color="tertiary">
+          <Text id={ids.hintId} variant="caption-2" color="tertiary">
             {hint}
           </Text>
         )}
       </div>
 
-      <Slider
-        className="setting-row__slider"
-        value={value}
-        onValueChange={handleSlider}
-        min={min}
-        max={max}
-        aria-label={typeof title === 'string' ? title : undefined}
-      />
-
-      <NumberField
-        value={draft ?? String(value)}
-        onChange={handleInput}
-        onBlur={() => isValid && setDraft(null)}
-        error={!isValid}
-        changed={savedValue !== undefined && value !== savedValue}
-        aria-labelledby={titleId}
-      />
+      {children(ids)}
     </div>
   );
 };

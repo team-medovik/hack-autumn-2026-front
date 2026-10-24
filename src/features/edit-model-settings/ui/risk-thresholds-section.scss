@@ -1,0 +1,8 @@
+.risk-thresholds {
+  &__fields {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-grouped);
+  }
+}

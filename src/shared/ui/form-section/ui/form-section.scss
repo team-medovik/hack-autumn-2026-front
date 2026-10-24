@@ -1,0 +1,12 @@
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-close);
+  min-width: 0;
+  padding: var(--space-grouped);
+  border-radius: var(--radius-xl);
+
+  @include down(desktop-s) {
+    padding-inline: 0;
+  }
+}

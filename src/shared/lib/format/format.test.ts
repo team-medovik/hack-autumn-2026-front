@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 
 import {
   formatCount,
+  formatDate,
+  formatDateTime,
+  formatDateTimeUtc,
   formatDayMonth,
   formatMoney,
   formatNumber,
   formatPercent,
+  parseDateTimeUtc,
+  parseDecimal,
   pluralize,
   type PluralForms,
 } from './format';
@@ -42,6 +47,27 @@ describe('formatPercent', () => {
   });
 });
 
+describe('formatDateTime', () => {
+  it('показывает дату и время в часовом поясе пользователя', () => {
+    expect(formatDateTime(new Date(2026, 9, 23, 18, 0).toISOString())).toBe('23.10.2026, 18:00');
+  });
+});
+
+describe('parseDecimal', () => {
+  it('понимает и запятую, и точку', () => {
+    expect(parseDecimal('0,5')).toBe(0.5);
+    expect(parseDecimal(' 0.25 ')).toBe(0.25);
+    expect(parseDecimal('70')).toBe(70);
+  });
+
+  it('не принимает пустой и мусорный ввод', () => {
+    expect(parseDecimal('')).toBeNull();
+    expect(parseDecimal('12abc')).toBeNull();
+    expect(parseDecimal('1e3')).toBeNull();
+    expect(parseDecimal(',5')).toBeNull();
+  });
+});
+
 describe('pluralize', () => {
   it.each([
     [1, 'клиент'],
@@ -65,5 +91,29 @@ describe('formatDayMonth', () => {
 
   it('принимает и дату-время', () => {
     expect(formatDayMonth(new Date(2026, 9, 26, 12).toISOString())).toBe('26.10');
+  });
+});
+
+describe('formatDate', () => {
+  it('показывает день, месяц и год', () => {
+    expect(formatDate('2026-10-20')).toBe('20.10.2026');
+    expect(formatDate(new Date(2026, 9, 22, 23, 30).toISOString())).toBe('22.10.2026');
+  });
+});
+
+describe('formatDateTimeUtc / parseDateTimeUtc', () => {
+  it('показывает время по UTC', () => {
+    expect(formatDateTimeUtc('2026-10-19T15:00:00.000Z')).toBe('19.10.2026, 15:00');
+  });
+
+  it('разбирает ввод в ISO по UTC', () => {
+    expect(parseDateTimeUtc('19.10.2026, 15:00')).toBe('2026-10-19T15:00:00.000Z');
+    expect(parseDateTimeUtc(' 1.2.2026 9:05 ')).toBe('2026-02-01T09:05:00.000Z');
+  });
+
+  it('отклоняет несуществующую дату и чужой формат', () => {
+    expect(parseDateTimeUtc('31.02.2026, 15:00')).toBeNull();
+    expect(parseDateTimeUtc('19.10.2026, 25:00')).toBeNull();
+    expect(parseDateTimeUtc('2026-10-19 15:00')).toBeNull();
   });
 });

@@ -1,0 +1,26 @@
+.tabs {
+  &__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-compressed);
+  }
+
+  // Выбранная вкладка — «Активное» состояние вторичной кнопки (см. button.scss)
+  &__tab[data-state='active'] {
+    --button-bg: var(--control-default);
+    --button-color: var(--text-main);
+  }
+
+  &__panel {
+    min-width: 0;
+
+    // Смонтированная, но не выбранная панель (keepMounted)
+    &[data-state='inactive'] {
+      display: none;
+    }
+
+    &:focus-visible {
+      border-radius: var(--radius-l);
+    }
+  }
+}

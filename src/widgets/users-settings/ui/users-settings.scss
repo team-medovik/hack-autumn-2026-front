@@ -1,0 +1,10 @@
+.users-settings {
+  // Макет: заголовок списка и шапка таблицы — через 16px
+  &__list {
+    gap: var(--space-close);
+  }
+
+  &__message {
+    padding-block: var(--space-lil-distant);
+  }
+}

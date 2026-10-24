@@ -8,6 +8,14 @@
     gap: var(--space-related);
   }
 
+  &--roomy {
+    gap: var(--space-close);
+
+    .state-message__description {
+      max-width: 440px;
+    }
+  }
+
   &--hero {
     gap: var(--space-grouped);
 
