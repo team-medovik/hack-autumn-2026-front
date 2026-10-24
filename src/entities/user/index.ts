@@ -1,5 +1,5 @@
 export { usersApi } from './api/users.api';
-export { addUserToList, removeUserFromList, usersKeys, useUsers } from './api/users.queries';
+export { removeUserFromList, usersKeys, useUsers } from './api/users.queries';
 export {
   canDeleteUser,
   isSameLogin,
@@ -7,5 +7,11 @@ export {
   isValidLogin,
   USER_ROLE_LABEL,
 } from './lib/user-rules';
-export type { CreateUserRequest, User, UserRole, UserSource } from './model/types';
+export type {
+  CreatedUserResponse,
+  CreateUserRequest,
+  User,
+  UserRole,
+  UserStatus,
+} from './model/types';
 export { UsersTable } from './ui/users-table';

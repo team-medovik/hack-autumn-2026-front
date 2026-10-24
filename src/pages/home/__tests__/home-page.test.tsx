@@ -5,7 +5,7 @@ import { http, HttpResponse } from 'msw';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
-import { MAIN_DASHBOARD } from '@/app/mocks/dashboard';
+import { MAIN_DASHBOARD, NO_SNAPSHOT_DASHBOARD } from '@/app/mocks/dashboard';
 import { server } from '@/app/mocks/server';
 
 import { HomePage } from '../ui';
@@ -43,7 +43,9 @@ describe('HomePage', () => {
   });
 
   it('без снимков предлагает загрузить снимок', async () => {
-    server.use(http.get('*/dashboard', () => HttpResponse.json({ snapshot: null })));
+    server.use(
+      http.get('*/api/v1/analytics/summary', () => HttpResponse.json(NO_SNAPSHOT_DASHBOARD)),
+    );
     renderHomePage();
 
     expect(await screen.findByRole('heading', { name: 'Данных пока нет' })).toBeInTheDocument();
@@ -56,7 +58,7 @@ describe('HomePage', () => {
   it('при ошибке показывает экран ошибки и повторяет запрос', async () => {
     let requests = 0;
     server.use(
-      http.get('*/dashboard', () => {
+      http.get('*/api/v1/analytics/summary', () => {
         requests += 1;
         return requests === 1
           ? HttpResponse.json({ message: 'Service Unavailable' }, { status: 503 })

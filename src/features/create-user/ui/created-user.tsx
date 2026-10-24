@@ -1,19 +1,20 @@
 import { toast } from 'sonner';
 
-import type { CreateUserRequest } from '@/entities/user';
 import { useCopyToClipboard } from '@/shared/lib/clipboard';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+
+import type { CreatedCredentials } from '../model/use-create-user-form';
 
 /** Сколько висит «Скопировано» на кнопке. */
 const COPIED_MS = 2000;
 
 interface CreatedUserProps {
-  credentials: CreateUserRequest;
+  credentials: CreatedCredentials;
   onDone: () => void;
 }
 
-const toClipboardText = ({ login, password }: CreateUserRequest) =>
+const toClipboardText = ({ login, password }: CreatedCredentials) =>
   `Логин: ${login}\nПароль: ${password}`;
 
 /** Макет «… (пароль создан)»: данные для передачи коллеге, копирование и «Готово». */
@@ -30,7 +31,7 @@ export const CreatedUser = ({ credentials, onDone }: CreatedUserProps) => {
   return (
     <div className="create-user-card__body">
       <Input label="Логин" value={credentials.login} readOnly />
-      <Input label="Пароль" value={credentials.password} readOnly spellCheck={false} />
+      <Input label="Временный пароль" value={credentials.password} readOnly spellCheck={false} />
       <Button
         variant="secondary"
         active

@@ -8,7 +8,6 @@ export type {
   ChurnWeek,
   ChurnWeekKind,
   ClientBalance,
-  DashboardData,
   DashboardResponse,
   LossReason,
   RiskBucket,

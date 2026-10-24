@@ -1,17 +1,13 @@
-import { api } from '@/shared/api';
+import { createAdminUser, deleteAdminUser, listAdminUsers } from '@/shared/api';
 
-import type { CreateUserRequest, User } from '../model/types';
-
-const URL = '/api/v1/users';
+import type { CreatedUserResponse, CreateUserRequest, User } from '../model/types';
 
 export const usersApi = {
-  list: (): Promise<User[]> => api.get<User[]>(URL).then((response) => response.data),
+  list: (): Promise<User[]> => listAdminUsers(),
 
-  /** 409 — логин уже занят. */
-  create: (request: CreateUserRequest): Promise<User> =>
-    api.post<User>(URL, request).then((response) => response.data),
+  /** Ответ — учётка и временный пароль, который больше не покажут. 409 — логин уже занят. */
+  create: (request: CreateUserRequest): Promise<CreatedUserResponse> => createAdminUser(request),
 
   /** 404 — пользователя уже нет (удалили в другой вкладке). */
-  remove: (login: string): Promise<void> =>
-    api.delete(`${URL}/${encodeURIComponent(login)}`).then(() => undefined),
+  remove: (id: string): Promise<void> => deleteAdminUser(encodeURIComponent(id)),
 };

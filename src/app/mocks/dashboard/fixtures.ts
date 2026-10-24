@@ -1,4 +1,4 @@
-import type { ChurnWeek, DashboardData, RiskBucket } from '@/entities/dashboard';
+import type { ChurnWeek, DashboardResponse, RiskBucket } from '@/entities/dashboard';
 
 // Данные повторяют макеты Figma «Дом» (основной экран) и «Дом (оптимистично)».
 
@@ -40,7 +40,7 @@ const buckets = (
   { level: 'none', clients: none, monthlyLoss: null, changed: false },
 ];
 
-export const MAIN_DASHBOARD: DashboardData = {
+export const MAIN_DASHBOARD: DashboardResponse = {
   snapshot: SNAPSHOT,
   monthlyLoss: 1296.9,
   riskBuckets: buckets([13, 854.5], [14, 356.2], [9, 86.2], 6, ['high']),
@@ -138,7 +138,7 @@ export const MAIN_DASHBOARD: DashboardData = {
   },
 };
 
-export const OPTIMISTIC_DASHBOARD: DashboardData = {
+export const OPTIMISTIC_DASHBOARD: DashboardResponse = {
   snapshot: SNAPSHOT,
   monthlyLoss: 18.4,
   riskBuckets: buckets([0, 0], [2, 6.52], [34, 11.88], 6),
@@ -234,7 +234,7 @@ export const OPTIMISTIC_DASHBOARD: DashboardData = {
 };
 
 /** «Дом (пустые виджеты)»: снимок есть, но рисковать некем. */
-export const QUIET_DASHBOARD: DashboardData = {
+export const QUIET_DASHBOARD: DashboardResponse = {
   snapshot: SNAPSHOT,
   monthlyLoss: 0,
   riskBuckets: buckets([0, 0], [0, 0], [42, 0], 0),
@@ -250,4 +250,4 @@ export const NO_SNAPSHOT_DASHBOARD = {
   snapshot: null,
   riskBuckets: buckets([0, 0], [0, 0], [0, 0], 0),
   riskQueue: { total: 0, items: [] },
-} satisfies Omit<DashboardData, 'snapshot'> & { snapshot: null };
+} satisfies DashboardResponse;

@@ -24,6 +24,9 @@ export const SNAPSHOTS_SCENARIOS = [
   'snapshot-rejected',
 ] as const;
 
+/** Имя в истории, если загрузили без `fileName` — по контракту. */
+const DEFAULT_FILE_NAME = 'snapshot.json';
+
 /** Кто загружает с этой панели — логин из моков авторизации. */
 const CURRENT_USER = 'admin';
 
@@ -79,7 +82,7 @@ export const snapshotsHandlers = [
     });
   }),
 
-  http.post('*/api/v1/snapshots', async ({ request }) => {
+  http.put('*/api/v1/source/snapshot', async ({ request }) => {
     await delay(RECALCULATION_MS);
 
     if (scenario() === 'snapshot-upload-error') {
@@ -89,10 +92,7 @@ export const snapshotsHandlers = [
       return unprocessable(WRONG_FORMAT_MESSAGE);
     }
 
-    const fileName = new URL(request.url).searchParams.get('fileName');
-    if (!fileName) {
-      return unprocessable('Не указано имя файла');
-    }
+    const fileName = new URL(request.url).searchParams.get('fileName') ?? DEFAULT_FILE_NAME;
     const volume = readSnapshotVolume(await readJson(request));
     if (!volume || volume.clients === 0) {
       return unprocessable(WRONG_FORMAT_MESSAGE);
@@ -106,6 +106,6 @@ export const snapshotsHandlers = [
       ...volume,
     };
     snapshots = [snapshot, ...snapshots];
-    return HttpResponse.json(snapshot, { status: 201 });
+    return HttpResponse.json(snapshot);
   }),
 ];

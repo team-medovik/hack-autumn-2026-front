@@ -1,5 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
+import { LIVE_REFETCH_INTERVAL_MS } from '@/shared/config';
+
 import { clientApi } from './client.api';
 import { shiftPosition } from '../lib/shift-position';
 import type { ClientsListQuery } from '../model/card-types';
@@ -14,7 +16,8 @@ export const clientKeys = {
 } as const;
 
 /**
- * Страница сводной таблицы. При смене фильтра, поиска, сортировки или страницы
+ * Страница сводной таблицы — перезапрашивается в фоне, score и потери пересчитывают на сервере.
+ * При смене фильтра, поиска, сортировки или страницы
  * старые строки остаются на экране, пока не придут новые (`isPlaceholderData`).
  */
 export const useClients = (query: ClientsQuery) =>
@@ -22,6 +25,7 @@ export const useClients = (query: ClientsQuery) =>
     queryKey: clientKeys.list(query),
     queryFn: () => clientApi.list(query),
     placeholderData: keepPreviousData,
+    refetchInterval: LIVE_REFETCH_INTERVAL_MS,
   });
 
 /** Карточка клиента. При переходе к соседу — скелетон, а не данные прошлого клиента. */
@@ -29,6 +33,7 @@ export const useClientCard = (id: string) =>
   useQuery({
     queryKey: clientKeys.card(id),
     queryFn: () => clientApi.card(id),
+    refetchInterval: LIVE_REFETCH_INTERVAL_MS,
   });
 
 /**

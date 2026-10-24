@@ -13,22 +13,41 @@ export const NO_CLIENTS_MESSAGE = 'В файле нет ни одного кли
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-/**
- * Клиенты и услуги выгрузки. Фронт проверяет только каркас `{ clients: [{ services: [] }] }`,
- * остальное — сервер при загрузке. `null` — каркас не тот.
- */
-export const readSnapshotVolume = (data: unknown): SnapshotVolume | null => {
-  if (!isObject(data) || !Array.isArray(data.clients)) {
+/** Таблица выгрузки — массив записей-объектов. */
+const isTable = (value: unknown): value is Record<string, unknown>[] =>
+  Array.isArray(value) && value.every(isObject);
+
+/** `transactions` необязательны в обоих форматах, но если есть — это таблица. */
+const hasValidTransactions = ({ transactions }: Record<string, unknown>) =>
+  transactions === undefined || isTable(transactions);
+
+/** Основной формат кейса: `{ accounts: [...], services: [...], transactions?: [...] }`. */
+const readFlatVolume = (data: Record<string, unknown>): SnapshotVolume | null => {
+  const { accounts, services } = data;
+  return isTable(accounts) && isTable(services)
+    ? { clients: accounts.length, services: services.length }
+    : null;
+};
+
+/** Вложенный формат: `{ clients: [{ ...аккаунт, services: [...] }], transactions?: [...] }`. */
+const readNestedVolume = ({ clients }: Record<string, unknown>): SnapshotVolume | null => {
+  if (!isTable(clients) || !clients.every((client) => isTable(client.services))) {
     return null;
   }
-  let services = 0;
-  for (const client of data.clients) {
-    if (!isObject(client) || !Array.isArray(client.services)) {
-      return null;
-    }
-    services += client.services.length;
+  const services = clients.reduce((sum, client) => sum + (client.services as unknown[]).length, 0);
+  return { clients: clients.length, services };
+};
+
+/**
+ * Клиенты и услуги выгрузки в одном из форматов PUT /source/snapshot (SourceSnapshot в
+ * контракте); клиент — это аккаунт. Фронт проверяет только каркас, поля и связи — сервер
+ * при загрузке. `null` — каркас не тот.
+ */
+export const readSnapshotVolume = (data: unknown): SnapshotVolume | null => {
+  if (!isObject(data) || !hasValidTransactions(data)) {
+    return null;
   }
-  return { clients: data.clients.length, services };
+  return 'accounts' in data ? readFlatVolume(data) : readNestedVolume(data);
 };
 
 const parseJson = (text: string): unknown => {

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
 import { formatDate } from '@/shared/lib/format';
-import { StackedText } from '@/shared/ui/stacked-text';
 import {
   Table,
   TableCell,
@@ -31,18 +30,7 @@ interface UsersTableProps {
   'aria-labelledby'?: string;
 }
 
-const CreatedCell = ({ user }: { user: User }) =>
-  user.createdAt === null ? (
-    <TableCell width={COLUMN.created} tone="secondary">
-      из конфигурации
-    </TableCell>
-  ) : (
-    <TableCell width={COLUMN.created}>
-      <StackedText primary={formatDate(user.createdAt)} secondary={user.createdBy ?? undefined} />
-    </TableCell>
-  );
-
-/** Список учёток: логин, роль, когда и кем создан, действие. Строки — через разделители. */
+/** Список учёток: логин, роль (и отключена ли), когда создан, действие. Строки — через разделители. */
 export const UsersTable = ({
   users,
   currentLogin,
@@ -65,12 +53,14 @@ export const UsersTable = ({
         const isCurrent = currentLogin !== undefined && isSameLogin(user.login, currentLogin);
 
         return (
-          <TableRow key={user.login}>
+          <TableRow key={user.id}>
             <TableCell grow>{isCurrent ? `${user.login} (вы)` : user.login}</TableCell>
             <TableCell width={COLUMN.role} tone="secondary">
-              {USER_ROLE_LABEL[user.role]}
+              {user.status === 'DISABLED'
+                ? `${USER_ROLE_LABEL[user.role]}, отключён`
+                : USER_ROLE_LABEL[user.role]}
             </TableCell>
-            <CreatedCell user={user} />
+            <TableCell width={COLUMN.created}>{formatDate(user.createdAt)}</TableCell>
             <TableCell width={COLUMN.actions} className="users-table__actions">
               {renderActions?.(user)}
             </TableCell>

@@ -127,7 +127,7 @@ describe('ClientsPage', () => {
   it('при ошибке показывает сообщение и повторяет запрос', async () => {
     let requests = 0;
     server.use(
-      http.get('*/clients', () => {
+      http.get('*/api/v1/customers', () => {
         requests += 1;
         return HttpResponse.json({ message: 'Service Unavailable' }, { status: 503 });
       }),
@@ -143,7 +143,7 @@ describe('ClientsPage', () => {
 
   it('без снимка предлагает загрузить снимок и выключает пустые фильтры', async () => {
     server.use(
-      http.get('*/clients', () =>
+      http.get('*/api/v1/customers', () =>
         HttpResponse.json({
           items: [],
           page: 1,

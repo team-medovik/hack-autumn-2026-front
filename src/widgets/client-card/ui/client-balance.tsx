@@ -10,16 +10,17 @@ interface ClientBalanceProps {
 }
 
 /**
- * Ряд «Балансы» под шапкой карточки: основной, бонусы и реферальный (справочно — в продления
- * не идут), нужно на продления, нехватка, потеря.
+ * Ряд «Балансы» под шапкой карточки: доступно на продления (основной баланс плюс бонусы и
+ * реферальный, если их учитывают настройки модели), бонусы и реферальный справочно, нужно на
+ * продления, нехватка, потеря.
  */
 export const ClientBalance = ({ card: { balance, lossBreakdown } }: ClientBalanceProps) => {
   const shortage = getShortage(balance);
 
   return (
     <StatGroup aria-label="Баланс клиента" className="client-card__balances">
-      <Stat label="Основной" value={formatMoney(balance.available)} />
-      <Stat label="Бонусы (заблок.)" value={formatMoney(balance.bonus)} muted />
+      <Stat label="Доступно" value={formatMoney(balance.available)} />
+      <Stat label="Бонусы" value={formatMoney(balance.bonus)} muted />
       <Stat label="Реф. баланс" value={formatMoney(balance.referral)} muted />
       <Stat
         label={`Нужно за ${lossBreakdown.horizonDays}\u00a0дн.`}
