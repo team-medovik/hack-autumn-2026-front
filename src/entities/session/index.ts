@@ -1,7 +1,6 @@
 export {
   useSessionStore,
   useSessionStatus,
-  useIsAuthenticated,
   useSessionUser,
   useIsAdmin,
   useSessionActions,

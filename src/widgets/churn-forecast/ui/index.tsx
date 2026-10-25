@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
-import { SERVICE_FORMS, type ChurnForecast as ChurnForecastData } from '@/entities/dashboard';
+import type { ChurnForecast as ChurnForecastData } from '@/entities/dashboard';
+import { SERVICE_FORMS } from '@/shared/config';
 import { formatCount } from '@/shared/lib/format';
 import { Card, CardHeader } from '@/shared/ui/card';
 import { ChartLegend, ColumnChart, type ChartLegendItem } from '@/shared/ui/column-chart';

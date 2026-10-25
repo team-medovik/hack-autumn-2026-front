@@ -8,11 +8,7 @@ interface AppProvidersProps {
   children: ReactNode;
 }
 
-/**
- * Корневая композиция провайдеров.
- * Добавляйте новые глобальные провайдеры здесь (auth, theme, i18n и т.д.)
- * — в нужном порядке вложенности.
- */
+/** Глобальные провайдеры: тема, TanStack Query и контейнер toast-уведомлений. */
 export const AppProviders = ({ children }: AppProvidersProps) => (
   <ThemeProvider>
     <QueryProvider>

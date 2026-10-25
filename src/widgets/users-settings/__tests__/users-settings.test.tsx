@@ -29,7 +29,7 @@ const rowOf = (login: string) =>
     .getAllByRole('row')
     .find((row) => within(row).queryByText(login, { exact: true }));
 const loginField = () => screen.getByLabelText('Логин');
-const clientIdField = () => screen.getByLabelText('ID клиента (необязательно)');
+const ssoUserIdField = () => screen.getByLabelText('ID клиента (необязательно)');
 const createButton = () => screen.getByRole('button', { name: 'Создать' });
 
 /** Список загружен — видна строка аналитика. */
@@ -119,13 +119,13 @@ describe('UsersSettings', () => {
     await waitForUsers();
 
     await user.type(loginField(), 'manager2');
-    await user.type(clientIdField(), '  client-42 ');
+    await user.type(ssoUserIdField(), '  client-42 ');
     await user.click(createButton());
 
     expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
     expect(body).toEqual({
       login: 'manager2',
-      clientId: 'client-42',
+      ssoUserId: 'client-42',
       role: 'EMPLOYEE',
       status: 'ACTIVE',
     });
@@ -133,7 +133,7 @@ describe('UsersSettings', () => {
 
     await user.click(screen.getByRole('button', { name: 'Готово' }));
 
-    expect(clientIdField()).toHaveValue('');
+    expect(ssoUserIdField()).toHaveValue('');
   });
 
   it('не даёт создать с коротким логином', async () => {

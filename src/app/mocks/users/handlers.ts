@@ -9,7 +9,6 @@ import {
 import { generatePassword } from '@/shared/lib/password';
 
 import { publishChange } from '../realtime';
-
 import { readMockScenario } from '../scenario';
 import { INITIAL_USERS } from './fixtures';
 
@@ -70,7 +69,6 @@ export const usersHandlers = [
 
     const {
       login,
-      ssoUserId,
       role = 'EMPLOYEE',
       status = 'ACTIVE',
     } = (await request.json()) as CreateUserRequest;
@@ -93,7 +91,7 @@ export const usersHandlers = [
     users = [...users, user];
     publishChange('ADMIN_USERS', user.id);
     return HttpResponse.json<CreatedUserResponse>(
-      { ...user, ...(ssoUserId && { ssoUserId }), temporaryPassword: generatePassword() },
+      { ...user, temporaryPassword: generatePassword() },
       { status: 201 },
     );
   }),

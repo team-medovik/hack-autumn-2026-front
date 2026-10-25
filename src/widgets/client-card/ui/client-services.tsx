@@ -1,7 +1,7 @@
 import { useId } from 'react';
 
 import { formatServiceNote, groupServices, type ClientService } from '@/entities/client';
-import { SERVICE_FORMS } from '@/entities/dashboard';
+import { SERVICE_FORMS } from '@/shared/config';
 import { formatCount, formatMoney, formatNumber } from '@/shared/lib/format';
 import { Accordion, AccordionItem } from '@/shared/ui/accordion';
 import { ServiceRow } from '@/shared/ui/service-row';
