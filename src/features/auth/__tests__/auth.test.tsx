@@ -49,6 +49,29 @@ describe('refreshSession', () => {
     await expect(refreshSession()).resolves.toBeNull();
     expect(useSessionStore.getState().status).toBe('anonymous');
   });
+
+  it('при сбое сервера (5xx) не разлогинивает уже вошедшего пользователя', async () => {
+    useSessionStore.getState().setSession(session('old'));
+    server.use(http.post('*/auth/refresh', () => new HttpResponse(null, { status: 502 })));
+
+    await expect(refreshSession()).resolves.toBeNull();
+    expect(useSessionStore.getState().status).toBe('authenticated');
+  });
+
+  it('на /refresh не отправляет протухший Bearer', async () => {
+    useSessionStore.getState().setSession(session('expired'));
+    let authHeader: string | null = 'not-called';
+    server.use(
+      http.post('*/auth/refresh', ({ request }) => {
+        authHeader = request.headers.get('Authorization');
+        return HttpResponse.json({ accessToken: 'fresh' });
+      }),
+    );
+
+    await refreshSession();
+
+    expect(authHeader).toBeNull();
+  });
 });
 
 describe('401-интерсептор (app/setup-api)', () => {
@@ -75,6 +98,30 @@ describe('401-интерсептор (app/setup-api)', () => {
 
     expect(data).toEqual({ ok: true });
     expect(useSessionStore.getState().accessToken).toBe('fresh');
+  });
+
+  it('если токен обновили, пока запрос летел, — повторяет без лишнего /refresh', async () => {
+    useSessionStore.getState().setSession(session('old'));
+    let refreshCalls = 0;
+    server.use(
+      http.post('*/auth/refresh', () => {
+        refreshCalls += 1;
+        return HttpResponse.json({ accessToken: 'other' });
+      }),
+      http.get('*/api/v1/customers', ({ request }) => {
+        if (request.headers.get('Authorization') === 'Bearer new') {
+          return HttpResponse.json({ ok: true });
+        }
+        // Пока запрос со старым токеном «летел», сессию обновил другой запрос
+        useSessionStore.getState().setSession(session('new'));
+        return new HttpResponse(null, { status: 401 });
+      }),
+    );
+
+    const { data } = await api.get('/api/v1/customers');
+
+    expect(data).toEqual({ ok: true });
+    expect(refreshCalls).toBe(0);
   });
 
   it('если /refresh не помог — пробрасывает 401 и сбрасывает сессию', async () => {
