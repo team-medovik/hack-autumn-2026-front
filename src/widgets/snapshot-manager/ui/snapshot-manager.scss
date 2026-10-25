@@ -19,6 +19,15 @@
     min-width: 0;
   }
 
+  // Имя файла и пояснение про AI-прогноз — в строку через 10px, на узком экране переносятся
+  &__current-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-compressed) 10px;
+    min-width: 0;
+  }
+
   &__history {
     gap: var(--space-close);
   }

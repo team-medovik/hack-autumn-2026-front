@@ -50,8 +50,10 @@ describe('ClientCardPage', () => {
     );
 
     const factors = within(card).getByRole('list', { name: 'Почему высокий риск' });
-    expect(within(factors).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(factors).getAllByRole('listitem')).toHaveLength(4);
     expect(within(factors).getByText('+13,8')).toBeInTheDocument();
+    // Причины приходят с названием услуги в начале — как в макете
+    expect(within(factors).getByText('service-0027: выключено клиентом')).toBeInTheDocument();
 
     const balance = within(card).getByLabelText('Баланс клиента');
     expect(within(balance).getByText(plainText('3,42 €'))).toBeInTheDocument();
@@ -70,6 +72,34 @@ describe('ClientCardPage', () => {
     expect(within(card).getByText('удалят 21.10, автопродление выкл.')).toBeInTheDocument();
 
     expect(await within(card).findByText('2 из 42')).toBeInTheDocument();
+  });
+
+  it('у каждой услуги — прогноз непродления от ML или «Нет прогноза» с пояснением', async () => {
+    const user = userEvent.setup();
+    renderCard('/clients/1321746');
+
+    await screen.findByRole('heading', { name: 'client17@mail.ru' });
+    const card = getCard();
+    expect(within(card).getByText('Прогноз непродления')).toBeInTheDocument();
+    // Нормализатор Testing Library схлопывает и неразрывный пробел перед «%»
+    expect(within(card).getByText('68 %')).toBeInTheDocument();
+    expect(within(card).getByText('Нет прогноза')).toBeInTheDocument();
+
+    await user.hover(within(card).getByRole('button', { name: 'Почему нет прогноза' }));
+    expect(
+      await screen.findByRole('tooltip', { name: /прогноза нет — риск посчитан по правилам/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('у услуг без оценки — «Нет оценки»', async () => {
+    const user = userEvent.setup();
+    renderCard('/clients/5101442');
+
+    await screen.findByText(/Оценки нет: у клиента не осталось живых услуг/);
+    await user.click(screen.getByRole('button', { name: /Удалены/ }));
+    const deleted = screen.getByRole('region', { name: /Удалены/ });
+    expect(within(deleted).getAllByText('Нет оценки')).toHaveLength(2);
+    expect(within(deleted).queryByText('Нет прогноза')).not.toBeInTheDocument();
   });
 
   it('листает соседей по таблице с её фильтром и сохраняет его в ссылке', async () => {

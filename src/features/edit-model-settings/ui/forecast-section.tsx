@@ -10,6 +10,8 @@ interface ForecastSectionProps {
   saved: ForecastSettings;
   defaults: ForecastSettings;
   onChange: (patch: Partial<ForecastSettings>) => void;
+  /** Только просмотр: значения видны, менять нельзя. */
+  disabled?: boolean;
 }
 
 const { min, max } = MODEL_SETTINGS_LIMITS.horizonDays;
@@ -18,7 +20,13 @@ const { min, max } = MODEL_SETTINGS_LIMITS.horizonDays;
  * Горизонт прогноза оттока. Интервал пересчёта в макете больше не редактируется — он остаётся
  * в контракте и сохраняется как был.
  */
-export const ForecastSection = ({ forecast, saved, defaults, onChange }: ForecastSectionProps) => (
+export const ForecastSection = ({
+  forecast,
+  saved,
+  defaults,
+  onChange,
+  disabled,
+}: ForecastSectionProps) => (
   <FormSection title="Прогноз">
     <Field
       label="Горизонт, дней"
@@ -33,6 +41,7 @@ export const ForecastSection = ({ forecast, saved, defaults, onChange }: Forecas
           value={forecast.horizonDays}
           changed={forecast.horizonDays !== saved.horizonDays}
           onValueChange={(horizonDays) => onChange({ horizonDays })}
+          disabled={disabled}
         />
       )}
     </Field>

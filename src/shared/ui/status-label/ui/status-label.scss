@@ -1,0 +1,26 @@
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-bonded);
+  min-width: 0;
+
+  &__marker {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-max);
+    background: var(--text-tertiary);
+  }
+
+  &--success &__marker {
+    background: var(--status-success);
+  }
+
+  &--warning &__marker {
+    background: var(--status-warning);
+  }
+
+  &--danger &__marker {
+    background: var(--status-danger);
+  }
+}

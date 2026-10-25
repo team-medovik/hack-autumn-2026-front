@@ -1,3 +1,5 @@
+import { getDataSourceKind, useDataSourceStatus } from '@/entities/data-source';
+import { useIsAdmin } from '@/entities/session';
 import { useSnapshots } from '@/entities/snapshot';
 import { ImportSnapshot } from '@/features/import-snapshot';
 import { Button } from '@/shared/ui/button';
@@ -5,6 +7,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { StatusScreen } from '@/shared/ui/status-screen';
 
 import { CurrentSnapshot } from './current-snapshot';
+import { SimulationSource } from './simulation-source';
 import { SnapshotHistory } from './snapshot-history';
 
 import './snapshot-manager.scss';
@@ -19,12 +22,16 @@ const SnapshotManagerSkeleton = () => (
 );
 
 /**
- * «Импорт/экспорт снимка» по макетам «Импорт/экспорт снимка (…)»: текущий снимок со скачиванием,
- * загрузка нового JSON и история загрузок. Файл до загрузки истории не принимаем — не знаем,
- * есть ли что заменять.
+ * «Импорт/экспорт снимка» по макетам «Импорт/экспорт снимка (…)»: текущий снимок со скачиванием
+ * или живая симуляция, загрузка нового JSON и история загрузок. Файл до загрузки истории
+ * не принимаем — не знаем, есть ли что заменять. Источник данных знает только администратор:
+ * остальным — блок снимка без пояснения про AI-прогноз.
  */
 export const SnapshotManager = () => {
   const { data: snapshots, isError, isFetching, refetch } = useSnapshots();
+  const isAdmin = useIsAdmin();
+  const { data: source } = useDataSourceStatus({ enabled: isAdmin });
+  const sourceKind = source ? getDataSourceKind(source) : null;
 
   if (!snapshots) {
     return isError ? (
@@ -47,8 +54,15 @@ export const SnapshotManager = () => {
 
   return (
     <div className="snapshot-manager">
-      <CurrentSnapshot snapshot={current} />
-      <ImportSnapshot currentFileName={current?.fileName ?? null} />
+      {sourceKind === 'simulation' ? (
+        <SimulationSource />
+      ) : (
+        <CurrentSnapshot snapshot={current} isActiveSource={sourceKind === 'snapshot'} />
+      )}
+      <ImportSnapshot
+        currentFileName={current?.fileName ?? null}
+        stopsSimulation={sourceKind === 'simulation'}
+      />
       {snapshots.length > 0 && <SnapshotHistory snapshots={snapshots} />}
     </div>
   );

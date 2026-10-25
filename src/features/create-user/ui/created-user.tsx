@@ -29,7 +29,7 @@ export const CreatedUser = ({ credentials, onDone }: CreatedUserProps) => {
     <div className="create-user-card__body">
       <Input label="Логин" value={credentials.login} readOnly />
       {credentials.ssoUserId && (
-        <Input label="ID клиента" value={credentials.ssoUserId} readOnly spellCheck={false} />
+        <Input label="ID в SSO" value={credentials.ssoUserId} readOnly spellCheck={false} />
       )}
       <Input label="Временный пароль" value={credentials.password} readOnly spellCheck={false} />
       <Button

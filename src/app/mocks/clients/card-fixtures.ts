@@ -9,8 +9,9 @@ import type {
 
 import { CLIENTS } from './fixtures';
 
-// Карточки для всех клиентов сводной таблицы. client17 — как в макете «Карточка клиента»,
-// остальные собираются из строки таблицы так, чтобы score, баланс и потеря в месяц совпадали.
+// Карточки для всех клиентов сводной таблицы. client17 — как в макете «Карточка клиента (причины
+// с услугами)», остальные собираются из строки таблицы так, чтобы score, баланс и потеря в месяц
+// совпадали. Причины — как их отдаёт бэк: готовый текст «service-0017: ожидает оплаты…».
 
 /** Доля потери, не зависящая от баланса (k в формуле потери). */
 const K = 0.5;
@@ -44,14 +45,19 @@ const CLIENT_17: ClientCard = {
   level: 'high',
   factors: [
     {
-      id: 'awaiting-payment',
-      label: 'Услуга service-0017 ожидает оплаты, будет удалена 21.10',
+      id: 'awaitingPayment',
+      label: 'service-0017: ожидает оплаты, будет удалена 21.10',
       points: 70,
     },
-    { id: 'top-up-needed', label: 'Необходимо пополнить счёт для продления', points: 13.8 },
+    { id: 'disabledByClient', label: 'service-0027: выключено клиентом', points: 15 },
     {
-      id: 'shortage',
-      label: 'Услуга service-0017 ожидает оплаты, а средств на счёте не хватает',
+      id: 'insufficientFunds',
+      label: 'service-0017: не хватает средств на продление',
+      points: 13.8,
+    },
+    {
+      id: 'awaitingPaymentWithoutFunds',
+      label: 'service-0017: ожидает оплаты, а средств на счёте не хватает',
       points: 10.4,
     },
   ],
@@ -66,6 +72,8 @@ const CLIENT_17: ClientCard = {
       monthlyPrice: 9.9,
       event: { type: 'delete', date: '2026-10-21' },
       autoRenew: false,
+      // prolong_wait модель не оценивает — только правила
+      lossProbability: null,
     },
     {
       id: 'service-0027',
@@ -76,6 +84,7 @@ const CLIENT_17: ClientCard = {
       monthlyPrice: 4.95,
       event: { type: 'renew', date: '2026-11-12' },
       autoRenew: true,
+      lossProbability: 0.68,
     },
   ],
   lossBreakdown: {
@@ -100,6 +109,22 @@ const CLIENT_17: ClientCard = {
     ],
   },
 };
+
+/** Модель оценивает услуги со сроком оплаты в ближайшие столько суток. */
+const PREDICTION_WINDOW_DAYS = 7;
+
+/**
+ * Вероятность непродления от ML — как решает бэк: ожидающую оплаты (prolong_wait) и далёкую оплату
+ * модель не оценивает, остальным — чуть ниже риска, детерминированно.
+ */
+const lossProbabilityFor = (status: ServiceStatus, daysToDue: number, risk: number) =>
+  status === 'awaiting_payment' || daysToDue > PREDICTION_WINDOW_DAYS
+    ? null
+    : round2(Math.min(0.97, risk * 0.9));
+
+/** Причина услуги так, как её пишет бэк: «service-0017: ожидает оплаты, удалят 22.10». */
+const serviceReason = (serviceId: string, reason: string) =>
+  `${serviceId}: ${reason.charAt(0).toLowerCase()}${reason.slice(1)}`;
 
 /** Как живёт главная услуга клиента — по главной причине риска из таблицы. */
 const describeService = (
@@ -135,16 +160,22 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
   const uncoveredShare = Math.max(0, (price - client.balance) / price);
   const { status, event, autoRenew } = describeService(client);
   const serviceId = `service-${client.id.slice(-4)}`;
-  const mainPoints = round1(score * 0.75);
+  const reason = client.reason ?? '';
+  // Нехватку средств добавляем второй причиной, если главная не о ней же
+  const isShort = uncoveredShare > 0 && !reason.startsWith('Не хватает средств');
+  const mainPoints = isShort ? round1(score * 0.75) : score;
 
   const factors: ClientFactor[] = [
-    { id: 'main', label: client.reason ?? '', points: mainPoints },
-    {
-      id: 'balance',
-      label:
-        uncoveredShare > 0 ? 'Необходимо пополнить счёт для продления' : 'Давно не пополнял счёт',
-      points: round1(score - mainPoints),
-    },
+    { id: 'main', label: serviceReason(serviceId, reason), points: mainPoints },
+    ...(isShort
+      ? [
+          {
+            id: 'insufficientFunds',
+            label: serviceReason(serviceId, 'Не хватает средств на продление'),
+            points: round1(score - mainPoints),
+          },
+        ]
+      : []),
   ];
 
   return {
@@ -169,6 +200,7 @@ const buildScoredCard = (client: ClientListItem, index: number): ClientCard => {
         monthlyPrice: price,
         event: { type: event, date: addDays(index % 10) },
         autoRenew,
+        lossProbability: lossProbabilityFor(status, index % 10, risk),
       },
     ],
     lossBreakdown: {
@@ -195,6 +227,7 @@ const buildUnscoredCard = (client: ClientListItem, index: number): ClientCard =>
       // Достоверного будущего события нет, а дату удаления один снимок не знает
       event: null,
       autoRenew: null,
+      lossProbability: null,
     }) satisfies ClientService;
 
   return {

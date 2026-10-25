@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react';
 
-import { useSessionUser } from '@/entities/session';
+import { useIsAdmin, useSessionUser } from '@/entities/session';
 import { LogoutButton } from '@/features/auth';
 import { ChangePasswordButton } from '@/features/change-password';
 import { CalculationDateSetting } from '@/features/set-calculation-date';
@@ -8,6 +8,8 @@ import { ThemeSwitch } from '@/features/switch-theme';
 import { AsideLayout } from '@/shared/ui/aside-layout';
 import { Card, CardHeader } from '@/shared/ui/card';
 import { Text } from '@/shared/ui/text';
+
+import { DataSourceSection } from './data-source-section';
 
 import './other-settings.scss';
 
@@ -30,14 +32,22 @@ const SettingsCard = ({ title, description, children }: SettingsCardProps) => {
 };
 
 /**
- * Вкладка «Другое» по макетам «Настройки — другое (…)»: тема, дата расчёта и аккаунт.
+ * Вкладка «Другое» по макетам «Настройки — другое (…)»: источник данных (только администратору —
+ * контракт отдаёт его только ADMIN), тема, дата расчёта и аккаунт.
  * Правая колонка в макете пустая — блоки той же ширины, что на соседних вкладках.
  */
 export const OtherSettings = () => {
   const login = useSessionUser()?.login;
+  const isAdmin = useIsAdmin();
 
   return (
     <AsideLayout>
+      {isAdmin && (
+        <SettingsCard title="Источник данных">
+          <DataSourceSection />
+        </SettingsCard>
+      )}
+
       <SettingsCard title="Тема">
         <ThemeSwitch />
         <Text variant="caption-2" color="tertiary">

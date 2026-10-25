@@ -1,6 +1,7 @@
 import { accountHandlers } from './account';
 import { clientsHandlers } from './clients';
 import { dashboardHandlers } from './dashboard';
+import { dataSourceHandlers } from './data-source';
 import { realtimeHandlers } from './realtime';
 import { calculationDateHandlers, settingsHandlers } from './settings';
 import { snapshotsHandlers } from './snapshots';
@@ -17,5 +18,6 @@ export const handlers = [
   ...accountHandlers,
   ...usersHandlers,
   ...snapshotsHandlers,
+  ...dataSourceHandlers,
   ...realtimeHandlers,
 ];

@@ -26,8 +26,9 @@ const formatUpdate = ({ updatedAt, updatedBy }: ModelSettings) =>
 /**
  * Настройки по макетам «Настройки — модель / пользователи / другое (…)»: вкладки,
  * на «Модели» — плашка последнего обновления и параметры модели риска (черновик живёт и при
- * переключении вкладок), на «Пользователях» — учётки сотрудников (только администратору),
- * на «Другом» — тема, дата расчёта и аккаунт.
+ * переключении вкладок; не администратору — только просмотр), на «Пользователях» — учётки
+ * сотрудников (только администратору), на «Другом» — источник данных, тема, дата расчёта
+ * и аккаунт.
  */
 export const SettingsPage = () => {
   const { data, isError, isFetching, refetch } = useModelSettings();
@@ -67,7 +68,12 @@ export const SettingsPage = () => {
 
       <TabPanel value="model" keepMounted>
         {data ? (
-          <ModelSettingsForm key={data.version} settings={data} onSaved={flashSaved} />
+          <ModelSettingsForm
+            key={data.version}
+            settings={data}
+            onSaved={flashSaved}
+            readOnly={!isAdmin}
+          />
         ) : (
           <ModelSettingsFormSkeleton />
         )}
