@@ -48,6 +48,8 @@ tags:
     description: Смена пароля
   - name: Пользователи
     description: Управление сотрудниками с ролью ADMIN
+  - name: Реальное время
+    description: Server-Sent Events об изменениях данных
 security: &id001
   - bearerAuth: []
 paths:
@@ -663,6 +665,35 @@ paths:
         '403': *id010
         '404': *id008
         '409': *id011
+  /api/v1/events:
+    get:
+      tags:
+        - Реальное время
+      operationId: streamEntityChanges
+      summary: Поток событий об изменениях данных (SSE)
+      description:
+        'Server-Sent Events: соединение не закрывается, сервер пишет события по мере изменений. После каждого
+        успешного (закоммиченного) изменения настроек модели, даты расчёта, снимка или пользователей сервер шлёт
+        всем подключённым клиентам событие `entity-changed` с телом EntityChangedEvent. Само событие данных не
+        несёт: клиент перезапрашивает затронутые данные обычными GET. Получает событие и автор изменения.
+
+
+        Формат кадра: `id: <номер>`, `event: entity-changed`, `data: <JSON одной строкой>`, пустая строка.
+        Раз в 15–30 секунд сервер шлёт комментарий `:ping`, чтобы прокси не закрыли простаивающее соединение.
+        Протухший access-токен — 401 до начала потока (не 200 с обрывом): клиент обновит токен и переподключится.
+        Пропущенные за время обрыва события не досылаются: после переподключения клиент сам перезапрашивает данные,
+        polling до 30 секунд остаётся запасным вариантом.'
+      security: *id001
+      responses:
+        '200':
+          description: Поток открыт. Каждое событие entity-changed содержит EntityChangedEvent в поле data.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+              x-event-data:
+                $ref: '#/components/schemas/EntityChangedEvent'
+        '401': *id002
 components:
   securitySchemes:
     bearerAuth:
@@ -2427,3 +2458,30 @@ components:
           minimum: 1
         changes:
           $ref: '#/components/schemas/ModelSettingsChanges'
+    RealtimeEntity:
+      type: string
+      description:
+        'Что изменилось. MODEL_SETTINGS — настройки модели (пересчитаны клиенты и аналитика);
+        CALCULATION_DATE — дата расчёта (пересчитано всё); SNAPSHOT — загружен новый снимок (пересчитано всё);
+        ADMIN_USERS — список сотрудников.'
+      enum:
+        - MODEL_SETTINGS
+        - CALCULATION_DATE
+        - SNAPSHOT
+        - ADMIN_USERS
+      example: MODEL_SETTINGS
+    EntityChangedEvent:
+      type: object
+      description: Тело события entity-changed в потоке GET /api/v1/events.
+      additionalProperties: false
+      required:
+        - entity
+      properties:
+        entity:
+          $ref: '#/components/schemas/RealtimeEntity'
+        id:
+          type:
+            - string
+            - 'null'
+          description: Идентификатор изменённой записи, если изменилась конкретная запись (например, UUID сотрудника).
+          example: null

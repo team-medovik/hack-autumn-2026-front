@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -8,6 +8,7 @@ import {
   isSameValues,
   isValidRiskThresholds,
   modelSettingsApi,
+  useModelSettings,
   type ModelSettings,
   type ModelSettingsValues,
 } from '@/entities/model-settings';
@@ -71,6 +72,15 @@ export const useModelSettingsEditor = (
       });
     },
   });
+
+  // Чужое сохранение пометило настройки устаревшими (markModelSettingsOutdated). Черновик чист —
+  // берём новую версию, редактор пересоздастся. Есть правки — ждём: при сохранении спросит 409.
+  const { isStale, refetch } = useModelSettings();
+  useEffect(() => {
+    if (isStale && !isDirty && !isPending) {
+      void refetch();
+    }
+  }, [isStale, isDirty, isPending, refetch]);
 
   const isThresholdsValid = isValidRiskThresholds(draft.riskThresholds);
   const isDefault = isSameValues(settings.values, settings.defaults);

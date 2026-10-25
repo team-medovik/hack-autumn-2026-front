@@ -1,5 +1,9 @@
 export { getConflictingSettings, modelSettingsApi } from './api/model-settings.api';
-export { modelSettingsKeys, useModelSettings } from './api/model-settings.queries';
+export {
+  markModelSettingsOutdated,
+  modelSettingsKeys,
+  useModelSettings,
+} from './api/model-settings.queries';
 export {
   countClientsByLevel,
   getRiskRanges,

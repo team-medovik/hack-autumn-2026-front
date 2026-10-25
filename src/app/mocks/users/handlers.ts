@@ -8,6 +8,8 @@ import {
 } from '@/entities/user';
 import { generatePassword } from '@/shared/lib/password';
 
+import { publishChange } from '../realtime';
+
 import { readMockScenario } from '../scenario';
 import { INITIAL_USERS } from './fixtures';
 
@@ -89,6 +91,7 @@ export const usersHandlers = [
       createdAt: new Date().toISOString(),
     };
     users = [...users, user];
+    publishChange('ADMIN_USERS', user.id);
     return HttpResponse.json<CreatedUserResponse>(
       { ...user, ...(ssoUserId && { ssoUserId }), temporaryPassword: generatePassword() },
       { status: 201 },
@@ -111,6 +114,7 @@ export const usersHandlers = [
     }
 
     users = users.filter((item) => item !== user);
+    publishChange('ADMIN_USERS', user.id);
     return new HttpResponse(null, { status: 204 });
   }),
 ];

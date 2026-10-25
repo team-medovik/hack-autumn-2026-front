@@ -7,7 +7,8 @@ import type {
   PatchModelSettingsRequest,
 } from '@/entities/model-settings';
 
-import { concurrentEdit, INITIAL_SETTINGS } from './fixtures';
+import { concurrentEdit, INITIAL_SETTINGS, remoteEdit } from './fixtures';
+import { publishChange } from '../realtime';
 import { readMockScenario } from '../scenario';
 
 /**
@@ -17,6 +18,8 @@ import { readMockScenario } from '../scenario';
  * settings-save-error  — сервер не принимает сохранение
  * settings-loading     — настройки грузятся бесконечно
  * settings-error       — настройки не загрузились
+ * settings-remote-edits — другой админ сохраняет настройки каждые 15 секунд: экран обновляется сам,
+ *                         а с правками на экране — ждёт и при сохранении спросит (409)
  * Ошибка ввода и диалоги сброса и ухода — состояния самой страницы, сценарий не нужен.
  */
 export const SETTINGS_SCENARIOS = [
@@ -25,7 +28,11 @@ export const SETTINGS_SCENARIOS = [
   'settings-save-error',
   'settings-loading',
   'settings-error',
+  'settings-remote-edits',
 ] as const;
+
+/** Как часто «другой админ» сохраняет настройки в сценарии settings-remote-edits. */
+const REMOTE_EDIT_INTERVAL_MS = 15_000;
 
 /** Кто сохраняет с этой панели — логин из моков авторизации. */
 const CURRENT_USER = 'admin';
@@ -33,10 +40,21 @@ const CURRENT_USER = 'admin';
 // Состояние фейкового бэка: живёт до перезагрузки страницы (в тестах — сбрасывается)
 let current: ModelSettings = INITIAL_SETTINGS;
 let conflictServed = false;
+let remoteEdits: ReturnType<typeof setInterval> | undefined;
 
 export const resetSettingsMock = () => {
   current = INITIAL_SETTINGS;
   conflictServed = false;
+  clearInterval(remoteEdits);
+  remoteEdits = undefined;
+};
+
+/** Чужие сохранения начинаются с первой загрузки настроек и идут до перезагрузки страницы. */
+const startRemoteEdits = () => {
+  remoteEdits ??= setInterval(() => {
+    current = remoteEdit(current);
+    publishChange('MODEL_SETTINGS');
+  }, REMOTE_EDIT_INTERVAL_MS);
 };
 
 const serverUnavailable = () =>
@@ -71,6 +89,9 @@ export const settingsHandlers = [
 
     if (scenario === 'settings-error') {
       return serverUnavailable();
+    }
+    if (scenario === 'settings-remote-edits') {
+      startRemoteEdits();
     }
     return HttpResponse.json(current);
   }),
@@ -111,6 +132,7 @@ export const settingsHandlers = [
       updatedBy: CURRENT_USER,
       values,
     };
+    publishChange('MODEL_SETTINGS');
     return HttpResponse.json(current);
   }),
 ];

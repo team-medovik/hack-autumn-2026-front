@@ -44,6 +44,27 @@ export const INITIAL_SETTINGS: ModelSettings = {
   scoreHistogram: toHistogram(CLIENT_SCORES),
 };
 
+/**
+ * Аналитик в другой вкладке сохраняет настройки — для сценария settings-remote-edits:
+ * вес «Ожидает оплаты» каждый раз меняется 70 ↔ 75, чтобы новая версия была видна на экране.
+ */
+export const remoteEdit = (current: ModelSettings): ModelSettings => {
+  const { awaitingPayment } = current.values.factorWeights;
+  return {
+    ...current,
+    version: current.version + 1,
+    updatedAt: new Date().toISOString(),
+    updatedBy: 'analyst',
+    values: {
+      ...current.values,
+      factorWeights: {
+        ...current.values.factorWeights,
+        awaitingPayment: awaitingPayment === 75 ? 70 : 75,
+      },
+    },
+  };
+};
+
 /** Пока админ редактировал, аналитик сохранил свою версию — «analyst сохранил версию 5 в 08:40». */
 export const concurrentEdit = (current: ModelSettings): ModelSettings => ({
   ...current,

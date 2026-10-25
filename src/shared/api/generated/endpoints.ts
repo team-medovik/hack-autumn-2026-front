@@ -2434,3 +2434,123 @@ export const useDeleteAdminUser = <TError = ErrorType<ApiErrorResponse>, TContex
 > => {
   return useMutation(getDeleteAdminUserMutationOptions(options), queryClient);
 };
+
+/**
+ * Server-Sent Events: соединение не закрывается, сервер пишет события по мере изменений. После каждого успешного (закоммиченного) изменения настроек модели, даты расчёта, снимка или пользователей сервер шлёт всем подключённым клиентам событие `entity-changed` с телом EntityChangedEvent. Само событие данных не несёт: клиент перезапрашивает затронутые данные обычными GET. Получает событие и автор изменения.
+ *
+ * Формат кадра: `id: <номер>`, `event: entity-changed`, `data: <JSON одной строкой>`, пустая строка. Раз в 15–30 секунд сервер шлёт комментарий `:ping`, чтобы прокси не закрыли простаивающее соединение. Протухший access-токен — 401 до начала потока (не 200 с обрывом): клиент обновит токен и переподключится. Пропущенные за время обрыва события не досылаются: после переподключения клиент сам перезапрашивает данные, polling до 30 секунд остаётся запасным вариантом.
+ * @summary Поток событий об изменениях данных (SSE)
+ */
+export const streamEntityChanges = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<string>({ url: `/api/v1/events`, method: 'GET', signal }, options);
+};
+
+export const getStreamEntityChangesQueryKey = () => {
+  return [`/api/v1/events`] as const;
+};
+
+export const getStreamEntityChangesQueryOptions = <
+  TData = Awaited<ReturnType<typeof streamEntityChanges>>,
+  TError = ErrorType<ApiErrorResponse>,
+>(options?: {
+  query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof streamEntityChanges>>, TError, TData>>;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getStreamEntityChangesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof streamEntityChanges>>> = ({ signal }) =>
+    streamEntityChanges(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof streamEntityChanges>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type StreamEntityChangesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof streamEntityChanges>>
+>;
+export type StreamEntityChangesQueryError = ErrorType<ApiErrorResponse>;
+
+export function useStreamEntityChanges<
+  TData = Awaited<ReturnType<typeof streamEntityChanges>>,
+  TError = ErrorType<ApiErrorResponse>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof streamEntityChanges>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamEntityChanges>>,
+          TError,
+          Awaited<ReturnType<typeof streamEntityChanges>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStreamEntityChanges<
+  TData = Awaited<ReturnType<typeof streamEntityChanges>>,
+  TError = ErrorType<ApiErrorResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof streamEntityChanges>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof streamEntityChanges>>,
+          TError,
+          Awaited<ReturnType<typeof streamEntityChanges>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useStreamEntityChanges<
+  TData = Awaited<ReturnType<typeof streamEntityChanges>>,
+  TError = ErrorType<ApiErrorResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof streamEntityChanges>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Поток событий об изменениях данных (SSE)
+ */
+
+export function useStreamEntityChanges<
+  TData = Awaited<ReturnType<typeof streamEntityChanges>>,
+  TError = ErrorType<ApiErrorResponse>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof streamEntityChanges>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getStreamEntityChangesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
