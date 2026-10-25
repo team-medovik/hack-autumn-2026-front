@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import { useLoginAction } from '@/features/auth';
+import { useLoginAction, useSsoLogin } from '@/features/auth';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { FormWidget } from '@/widgets/form-widget';
@@ -25,6 +25,7 @@ export const AuthPage = () => {
   });
 
   const { mutate: login, isPending } = useLoginAction();
+  const { startSsoLogin, isRedirecting } = useSsoLogin();
 
   // Макет: пустая форма — кнопка недоступна; после ошибки (логин заполнен, пароль очищен) — доступна
   const [loginValue, password] = watch(['login', 'password']);
@@ -57,10 +58,23 @@ export const AuthPage = () => {
       onSubmit={handleSubmit(onSubmit)}
       actions={
         <>
-          <Button type="submit" variant="primary" fullWidth disabled={isEmpty} loading={isPending}>
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            disabled={isEmpty || isRedirecting}
+            loading={isPending}
+          >
             Продолжить
           </Button>
-          <Button variant="secondary" fullWidth>
+          <Button
+            type="button"
+            variant="secondary"
+            fullWidth
+            disabled={isPending}
+            loading={isRedirecting}
+            onClick={startSsoLogin}
+          >
             Вход через SSO
           </Button>
         </>
