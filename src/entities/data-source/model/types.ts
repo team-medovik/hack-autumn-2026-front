@@ -7,7 +7,8 @@ import type { GeneratorConsumerStatus200 } from '@/shared/api';
  *
  * `usedForDashboard` — риски считаются по живой симуляции, иначе — по загруженному JSON-снимку.
  * `progress` — как события генератора доходят до панели (ошибки и повторы). Состояние самого
- * генератора и его скорость — в сущности simulation. Переключать источник контракт пока не умеет.
+ * генератора и его скорость — в сущности simulation. Переключение — PUT /admin/source/mode
+ * (в API режим живой симуляции называется «generator»).
  */
 export type DataSourceStatus = GeneratorConsumerStatus200;
 

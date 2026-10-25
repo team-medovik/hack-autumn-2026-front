@@ -183,6 +183,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorResponse'
         '503': *speed_id003
+  /api/v1/admin/source/mode:
+    get:
+      tags:
+        - Источник данных
+      operationId: getDashboardSourceMode
+      summary: Получить источник данных дашборда (ADMIN)
+      description:
+        'Добавлено фронтом по коду GeneratorConsumerController бэка — в присланном openapi эндпоинта
+        ещё нет; заменится контрактом бэка.'
+      responses:
+        '200':
+          description: Текущий источник.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSourceMode'
+        '401':
+          description: Нет пользовательской авторизации.
+        '403':
+          description: Требуется роль ADMIN.
+    put:
+      tags:
+        - Источник данных
+      operationId: setDashboardSourceMode
+      summary: Выбрать снимок или генератор для дашборда (ADMIN)
+      description:
+        'Переключает источник без удаления данных. При рестарте восстанавливается режим из
+        APP_GENERATOR_USE_FOR_DASHBOARD. Если режим сменился, бэк публикует SSE SNAPSHOT. Добавлено
+        фронтом по коду GeneratorConsumerController бэка — в присланном openapi эндпоинта ещё нет.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardSourceMode'
+      responses:
+        '200':
+          description: Режим после переключения.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSourceMode'
+        '400':
+          description: mode — не snapshot и не generator.
+        '401':
+          description: Нет пользовательской авторизации.
+        '403':
+          description: Требуется роль ADMIN.
+        '409':
+          description: Потребитель генератора выключен — на генератор не переключить.
   /api/v1/admin/generator/consumer:
     get:
       tags: [Источник данных]
@@ -907,6 +957,18 @@ components:
       bearerFormat: JWT
       description: JWT access token из POST /api/v1/auth/login
   schemas:
+    DashboardSourceMode:
+      type: object
+      description: Источник данных для дашборда и карточек.
+      required:
+        - mode
+      properties:
+        mode:
+          type: string
+          enum:
+            - snapshot
+            - generator
+          description: snapshot — последний загруженный JSON-снимок, generator — живая симуляция.
     SimulationSpeedRequest:
       type: object
       additionalProperties: false

@@ -97,6 +97,7 @@ import type {
   CreatedUserResponse,
   CurrentUserResponse,
   DashboardResponse,
+  DashboardSourceMode,
   GeneratorConsumerStatus200,
   GetCustomerPositionParams,
   GetOpenApiDocument200,
@@ -334,6 +335,218 @@ export const useSetSimulationSpeed = <TError = ErrorType<ApiErrorResponse>, TCon
   TContext
 > => {
   return useMutation(getSetSimulationSpeedMutationOptions(options), queryClient);
+};
+
+/**
+ * Добавлено фронтом по коду GeneratorConsumerController бэка — в присланном openapi эндпоинта ещё нет; заменится контрактом бэка.
+ * @summary Получить источник данных дашборда (ADMIN)
+ */
+export const getDashboardSourceMode = (
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DashboardSourceMode>(
+    { url: `/api/v1/admin/source/mode`, method: 'GET', signal },
+    options,
+  );
+};
+
+export const getGetDashboardSourceModeQueryKey = () => {
+  return [`/api/v1/admin/source/mode`] as const;
+};
+
+export const getGetDashboardSourceModeQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDashboardSourceMode>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getDashboardSourceMode>>, TError, TData>
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDashboardSourceModeQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboardSourceMode>>> = ({ signal }) =>
+    getDashboardSourceMode(requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardSourceMode>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetDashboardSourceModeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDashboardSourceMode>>
+>;
+export type GetDashboardSourceModeQueryError = ErrorType<void>;
+
+export function useGetDashboardSourceMode<
+  TData = Awaited<ReturnType<typeof getDashboardSourceMode>>,
+  TError = ErrorType<void>,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getDashboardSourceMode>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDashboardSourceMode>>,
+          TError,
+          Awaited<ReturnType<typeof getDashboardSourceMode>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetDashboardSourceMode<
+  TData = Awaited<ReturnType<typeof getDashboardSourceMode>>,
+  TError = ErrorType<void>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getDashboardSourceMode>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDashboardSourceMode>>,
+          TError,
+          Awaited<ReturnType<typeof getDashboardSourceMode>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetDashboardSourceMode<
+  TData = Awaited<ReturnType<typeof getDashboardSourceMode>>,
+  TError = ErrorType<void>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getDashboardSourceMode>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+/**
+ * @summary Получить источник данных дашборда (ADMIN)
+ */
+
+export function useGetDashboardSourceMode<
+  TData = Awaited<ReturnType<typeof getDashboardSourceMode>>,
+  TError = ErrorType<void>,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getDashboardSourceMode>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetDashboardSourceModeQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+/**
+ * Переключает источник без удаления данных. При рестарте восстанавливается режим из APP_GENERATOR_USE_FOR_DASHBOARD. Если режим сменился, бэк публикует SSE SNAPSHOT. Добавлено фронтом по коду GeneratorConsumerController бэка — в присланном openapi эндпоинта ещё нет.
+ * @summary Выбрать снимок или генератор для дашборда (ADMIN)
+ */
+export const setDashboardSourceMode = (
+  dashboardSourceMode: BodyType<DashboardSourceMode>,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DashboardSourceMode>(
+    {
+      url: `/api/v1/admin/source/mode`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: dashboardSourceMode,
+      signal,
+    },
+    options,
+  );
+};
+
+export const getSetDashboardSourceModeMutationKey = () => ['setDashboardSourceMode'] as const;
+
+export const getSetDashboardSourceModeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setDashboardSourceMode>>,
+    TError,
+    SetDashboardSourceModeMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setDashboardSourceMode>>,
+  TError,
+  SetDashboardSourceModeMutationVariables,
+  TContext
+> => {
+  const mutationKey = getSetDashboardSourceModeMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setDashboardSourceMode>>,
+    SetDashboardSourceModeMutationVariables
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return setDashboardSourceMode(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetDashboardSourceModeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setDashboardSourceMode>>
+>;
+export type SetDashboardSourceModeMutationBody = BodyType<DashboardSourceMode>;
+export type SetDashboardSourceModeMutationError = ErrorType<void>;
+export type SetDashboardSourceModeMutationVariables = { data: BodyType<DashboardSourceMode> };
+
+/**
+ * @summary Выбрать снимок или генератор для дашборда (ADMIN)
+ */
+export const useSetDashboardSourceMode = <TError = ErrorType<void>, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof setDashboardSourceMode>>,
+      TError,
+      SetDashboardSourceModeMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof setDashboardSourceMode>>,
+  TError,
+  SetDashboardSourceModeMutationVariables,
+  TContext
+> => {
+  return useMutation(getSetDashboardSourceModeMutationOptions(options), queryClient);
 };
 
 /**
