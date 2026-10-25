@@ -27,7 +27,7 @@ export interface CreateUserRequest {
    * ID клиента, к которому привязан сотрудник. Необязательный
    * @maxLength 255
    */
-  clientId?: string;
+  ssoUserId?: string;
   /** Роль сотрудника */
   role?: CreateUserRequestRole;
   /** Статус учётной записи */
