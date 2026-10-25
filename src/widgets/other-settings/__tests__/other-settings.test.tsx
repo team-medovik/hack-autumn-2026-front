@@ -60,22 +60,65 @@ describe('OtherSettings', () => {
       within(screen.getByRole('group', { name: 'Скорость симуляции' })).getByRole('button', {
         name,
       });
+    const sourceButton = (name: string) =>
+      within(screen.getByRole('group', { name: 'Источник данных панели' })).getByRole('button', {
+        name,
+      });
     const setScenario = (scenario: string) =>
       window.history.replaceState(null, '', `/settings?mock=${scenario}`);
 
-    it('панель на JSON-снимке — генератор всё равно виден и управляется', async () => {
+    it('панель на JSON-снимке — переключатель на снимке, генератор всё равно виден', async () => {
       setScenario('json-source');
       renderWidget();
 
       const card = sourceCard();
+      expect(await within(card).findByText('Симуляция · работает')).toBeInTheDocument();
+      expect(sourceButton('JSON-снимок')).toHaveAttribute('aria-pressed', 'true');
+      expect(speedButton('×60')).toHaveAttribute('aria-pressed', 'true');
       expect(
-        await within(card).findByText(
-          'Панель сейчас считается по JSON-снимку — симуляция идёт в фоне',
+        within(card).getByText('Генератор работает в фоне, данные симуляции синтетические'),
+      ).toBeInTheDocument();
+    });
+
+    it('переключает панель на живую симуляцию', async () => {
+      const user = userEvent.setup();
+      setScenario('json-source');
+      const requests: unknown[] = [];
+      server.events.on('request:start', async ({ request }) => {
+        if (request.method === 'PUT' && request.url.endsWith('/admin/source/mode')) {
+          requests.push(await request.clone().json());
+        }
+      });
+      renderWidget();
+      await within(sourceCard()).findByText('Симуляция · работает');
+
+      await user.click(sourceButton('Живая симуляция'));
+
+      expect(sourceButton('Живая симуляция')).toHaveAttribute('aria-pressed', 'true');
+      expect(
+        await within(sourceCard()).findByText(
+          'Данные генерируются синтетически. Загрузка снимка остановит симуляцию',
         ),
       ).toBeInTheDocument();
-      expect(within(card).getByText('Симуляция · работает')).toBeInTheDocument();
-      expect(speedButton('×60')).toHaveAttribute('aria-pressed', 'true');
-      expect(within(card).getByText('Данные симуляции синтетические')).toBeInTheDocument();
+      expect(requests).toEqual([{ mode: 'generator' }]);
+    });
+
+    it('не переключилось — возвращает прежний выбор', async () => {
+      const user = userEvent.setup();
+      server.use(
+        http.put('*/api/v1/admin/source/mode', () =>
+          HttpResponse.json({ message: 'Generator consumer is disabled' }, { status: 409 }),
+        ),
+      );
+      renderWidget();
+      await within(sourceCard()).findByText('Симуляция · работает');
+
+      await user.click(sourceButton('JSON-снимок'));
+
+      await waitFor(() =>
+        expect(sourceButton('Живая симуляция')).toHaveAttribute('aria-pressed', 'true'),
+      );
+      await waitFor(() => expect(sourceButton('JSON-снимок')).toBeEnabled());
     });
 
     it('живая симуляция — состояние, виртуальное время со скоростью и сноска', async () => {

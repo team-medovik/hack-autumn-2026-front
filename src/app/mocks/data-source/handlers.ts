@@ -2,7 +2,9 @@ import { delay, http, HttpResponse } from 'msw';
 
 import type { DataSourceStatus } from '@/entities/data-source';
 import type { Simulation, SpeedRequest, WorkerState } from '@/entities/simulation';
+import type { DashboardSourceMode } from '@/shared/api';
 
+import { publishChange } from '../realtime';
 import { readMockScenario } from '../scenario';
 
 /**
@@ -16,7 +18,8 @@ import { readMockScenario } from '../scenario';
  * simulation-error        — генератор упал, события не доходят до панели
  * simulation-unavailable  — панель на симуляции, но генератор не отвечает (503)
  * Генератор от источника панели не зависит: GET /admin/simulation отвечает и при JSON-снимке.
- * Загрузка снимка переводит панель на снимок до перезагрузки страницы.
+ * Переключатель источника (PUT /admin/source/mode) и загрузка снимка меняют источник до перезагрузки
+ * страницы. На генератор не переключить, если он не отвечает (simulation-unavailable) — 409.
  */
 export const DATA_SOURCE_SCENARIOS = [
   'main',
@@ -54,18 +57,19 @@ const RETRY_MS = 60_000;
 let timeScale = 60;
 let virtualAtChange = VIRTUAL_START;
 let realAtChange = Date.now();
-let stoppedBySnapshot = false;
+/** Источник, выбранный переключателем или загрузкой снимка; `null` — как задаёт сценарий. */
+let liveOverride: boolean | null = null;
 
 export const resetDataSourceMock = () => {
   timeScale = 60;
   virtualAtChange = VIRTUAL_START;
   realAtChange = Date.now();
-  stoppedBySnapshot = false;
+  liveOverride = null;
 };
 
 /** Загрузили JSON-снимок — панель дальше считается по нему. */
 export const stopSimulation = () => {
-  stoppedBySnapshot = true;
+  liveOverride = false;
 };
 
 const scenario = () => readMockScenario(DATA_SOURCE_SCENARIOS, 'main');
@@ -75,7 +79,7 @@ const isTicking = (state: WorkerState) => state === 'running' || state === 'erro
 const virtualNow = (state: WorkerState) =>
   isTicking(state) ? virtualAtChange + (Date.now() - realAtChange) * timeScale : virtualAtChange;
 
-const isLive = (current: Scenario) => current !== 'json-source' && !stoppedBySnapshot;
+const isLive = (current: Scenario) => liveOverride ?? current !== 'json-source';
 
 const buildConsumerStatus = (current: Scenario): DataSourceStatus => {
   if (!isLive(current)) {
@@ -117,6 +121,12 @@ const generatorUnavailable = () =>
 /** Состояние генератора в сценарии; `null` — генератор не отвечает (503). */
 const currentWorkerState = () => WORKER_STATES[scenario()] ?? null;
 
+const isModeRequest = (body: unknown): body is DashboardSourceMode =>
+  typeof body === 'object' &&
+  body !== null &&
+  'mode' in body &&
+  (body.mode === 'snapshot' || body.mode === 'generator');
+
 const isSpeedRequest = (body: unknown): body is SpeedRequest =>
   typeof body === 'object' &&
   body !== null &&
@@ -126,6 +136,29 @@ const isSpeedRequest = (body: unknown): body is SpeedRequest =>
   TIME_SCALES.includes(body.timeScale as never);
 
 export const dataSourceHandlers = [
+  http.get('*/api/v1/admin/source/mode', async () => {
+    await delay();
+    return HttpResponse.json({ mode: isLive(scenario()) ? 'generator' : 'snapshot' });
+  }),
+
+  http.put('*/api/v1/admin/source/mode', async ({ request }) => {
+    await delay();
+    const body: unknown = await request.json();
+    if (!isModeRequest(body)) {
+      return HttpResponse.json({ message: 'mode must be snapshot or generator' }, { status: 400 });
+    }
+    const useGenerator = body.mode === 'generator';
+    // Как бэк: на генератор нельзя, если его потребитель выключен
+    if (useGenerator && !currentWorkerState()) {
+      return HttpResponse.json({ message: 'Generator consumer is disabled' }, { status: 409 });
+    }
+    if (isLive(scenario()) !== useGenerator) {
+      liveOverride = useGenerator;
+      publishChange('SNAPSHOT', null);
+    }
+    return HttpResponse.json({ mode: body.mode });
+  }),
+
   http.get('*/api/v1/admin/generator/consumer', async () => {
     await delay();
     return HttpResponse.json(buildConsumerStatus(scenario()));

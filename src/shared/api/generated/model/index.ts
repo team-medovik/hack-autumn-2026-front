@@ -103,6 +103,8 @@ export * from './createUserRequestStatus';
 export * from './currentUserResponse';
 export * from './currentUserResponseRole';
 export * from './dashboardResponse';
+export * from './dashboardSourceMode';
+export * from './dashboardSourceModeMode';
 export * from './entityChangedEvent';
 export * from './factorWeights';
 export * from './featureDefinition';
