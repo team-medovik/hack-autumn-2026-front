@@ -12,7 +12,7 @@ interface NewUserFormProps {
   autoFocus?: boolean;
 }
 
-/** Логин и «Создать». Пароль задаёт сервер — его покажут после создания. */
+/** Логин, необязательный ID клиента и «Создать». Пароль задаёт сервер — его покажут после создания. */
 export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -34,6 +34,14 @@ export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
         error={form.loginError}
         onChange={(event) => form.setLogin(event.target.value)}
         onBlur={form.touch}
+      />
+      <Input
+        label="ID клиента (необязательно)"
+        name="clientId"
+        autoComplete="off"
+        spellCheck={false}
+        value={form.clientId}
+        onChange={(event) => form.setClientId(event.target.value)}
       />
       <Text variant="caption" color="secondary">
         Временный пароль сгенерирует сервер и покажет один раз после создания

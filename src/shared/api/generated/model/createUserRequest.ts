@@ -23,6 +23,11 @@ export interface CreateUserRequest {
    * @maxLength 255
    */
   login: string;
+  /**
+   * ID клиента, к которому привязан сотрудник. Необязательный
+   * @maxLength 255
+   */
+  clientId?: string;
   /** Роль сотрудника */
   role?: CreateUserRequestRole;
   /** Статус учётной записи */
