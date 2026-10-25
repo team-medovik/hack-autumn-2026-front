@@ -10,7 +10,7 @@
  *
  * OpenAPI spec version: 1.0.0-contract
  */
-import type { ModelSettingsFeatureDefinitionsItem } from './modelSettingsFeatureDefinitionsItem';
+import type { FeatureDefinition } from './featureDefinition';
 import type { ModelSettingsValues } from './modelSettingsValues';
 
 /**
@@ -36,6 +36,22 @@ export interface ModelSettings {
    * @maxItems 101
    */
   scoreHistogram: number[];
-  /** Опциональный расширяемый каталог признаков для динамического отображения на фронте. */
-  featureDefinitions?: ModelSettingsFeatureDefinitionsItem[];
+  /**
+   * Реестр признаков риска; по нему фронт строит секцию весов. Порядок в массиве —
+   * порядок показа на экране.
+   *
+   * Инвариант: множество featureDefinitions[].key совпадает с ключами
+   * values.factorWeights и defaults.factorWeights.
+   *
+   * Как добавить новый признак (только бэкенд, фронт и контракт не меняются):
+   * 1. Реализовать вычисление признака: вклад 0–1 для услуги, итоговые баллы —
+   *    вклад × вес.
+   * 2. Зарегистрировать признак в реестре: key (camelCase), label, description,
+   *    вес по умолчанию 0–100.
+   * 3. Признак сам попадает в featureDefinitions, defaults.factorWeights и
+   *    values.factorWeights. Сохранённые настройки, где ключа ещё нет, при чтении
+   *    дополняются весом по умолчанию — иначе фронт не покажет слайдер.
+   * 4. В объяснениях клиента (ClientFactor, ScoreFactor) id фактора равен key.
+   */
+  featureDefinitions: FeatureDefinition[];
 }

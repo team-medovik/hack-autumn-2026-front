@@ -13,10 +13,10 @@ export {
 } from './lib/risk-ranges';
 export { isSameValues } from './lib/same-values';
 export { getSettingsChanges } from './lib/settings-changes';
-export { SCORE_FACTORS, type ScoreFactorInfo } from './lib/score-factors';
 export { MODEL_SETTINGS_LIMITS } from './model/limits';
 export type {
   FactorWeights,
+  FeatureDefinition,
   FinanceSettings,
   ForecastSettings,
   ModelSettings,
@@ -25,5 +25,4 @@ export type {
   ModelSettingsValues,
   PatchModelSettingsRequest,
   RiskThresholds,
-  ScoreFactorId,
 } from './model/types';

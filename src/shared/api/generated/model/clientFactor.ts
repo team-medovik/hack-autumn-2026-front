@@ -15,7 +15,7 @@
  * Фактор, повлиявший на оценку клиента
  */
 export interface ClientFactor {
-  /** Стабильный код фактора */
+  /** Стабильный код фактора. Для признака с весом совпадает с ModelSettings.featureDefinitions[].key. */
   id: string;
   /** Пояснение для пользователя */
   label: string;

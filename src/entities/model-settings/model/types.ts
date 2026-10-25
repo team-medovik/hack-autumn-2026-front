@@ -1,7 +1,4 @@
-import type {
-  ModelSettings as ModelSettingsDto,
-  ModelSettingsValues as ModelSettingsValuesDto,
-} from '@/shared/api';
+import type { ModelSettings } from '@/shared/api';
 
 /**
  * Параметры модели риска: GET и PATCH /model/settings (страница «Настройки → Модель»).
@@ -9,43 +6,24 @@ import type {
  * (src/app/mocks/settings). Даты — ISO 8601.
  */
 export type {
+  FactorWeights,
+  FeatureDefinition,
   FinanceSettings,
   ForecastSettings,
   ModelSettingsChanges,
+  ModelSettingsValues,
   PatchModelSettingsRequest,
   RiskThresholds,
 } from '@/shared/api';
 
-/** Признаки, из которых складывается score услуги, — те, что редактируются на экране. */
-export type ScoreFactorId =
-  | 'awaitingPayment'
-  | 'expiringWithoutAutoRenewal'
-  | 'insufficientFunds'
-  | 'awaitingPaymentWithoutFunds'
-  | 'disabledByClient'
-  | 'bonusesExceedMoney';
-
-/**
- * Сколько баллов score даёт признак в полную силу, 0–100. Контракт допускает веса новых
- * признаков сверх этих — экран их не правит, а PATCH отправляет только изменённые.
- */
-export type FactorWeights = Record<ScoreFactorId, number>;
-
-/** Все редактируемые параметры. */
-export interface ModelSettingsValues extends Omit<ModelSettingsValuesDto, 'factorWeights'> {
-  factorWeights: FactorWeights;
-}
-
 /**
  * Версия растёт с каждым сохранением — по ней сервер ловит одновременную правку.
  * `scoreHistogram` — 101 счётчик клиентов по целым баллам score; по нему считаются клиенты на
- * шкале уровней.
+ * шкале уровней. Признаки score приходят с сервера: `featureDefinitions` — каталог (порядок
+ * экрана, название, подсказка), `factorWeights` — карта «ключ признака → вес 0–100». Новый
+ * признак на бэке появляется на экране без правок фронта.
  */
-export interface ModelSettings extends Omit<ModelSettingsDto, 'values' | 'defaults'> {
-  values: ModelSettingsValues;
-  /** Значения по умолчанию — для подсказок и «Сбросить по умолчанию». */
-  defaults: ModelSettingsValues;
-}
+export type { ModelSettings } from '@/shared/api';
 
 /** Тело 409: настройки уже сохранил кто-то другой. */
 export interface ModelSettingsConflict {

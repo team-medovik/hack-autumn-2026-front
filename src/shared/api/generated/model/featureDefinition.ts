@@ -11,8 +11,17 @@
  * OpenAPI spec version: 1.0.0-contract
  */
 
-export type ModelSettingsFeatureDefinitionsItem = {
+/**
+ * Признак риска из реестра сервера. Порядок в массиве — порядок показа на экране.
+ */
+export interface FeatureDefinition {
+  /**
+   * Стабильный код признака. Ключ в FactorWeights и id в ClientFactor/ScoreFactor.
+   * @pattern ^[a-z][a-zA-Z0-9]*$
+   */
   key: string;
+  /** Название для экрана настроек и причин риска */
   label: string;
+  /** Что означает признак — текст подсказки «?» */
   description: string;
-};
+}

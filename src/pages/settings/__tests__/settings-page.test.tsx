@@ -182,6 +182,52 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('button', { name: 'Сбросить по умолчанию' })).toBeDisabled();
   });
 
+  it('показывает и сохраняет вес нового признака, который знает только сервер', async () => {
+    const withNewFeature: ModelSettings = {
+      ...INITIAL_SETTINGS,
+      values: {
+        ...INITIAL_SETTINGS.values,
+        factorWeights: { ...INITIAL_SETTINGS.values.factorWeights, noTopUpsLately: 20 },
+      },
+      defaults: {
+        ...INITIAL_SETTINGS.defaults,
+        factorWeights: { ...INITIAL_SETTINGS.defaults.factorWeights, noTopUpsLately: 20 },
+      },
+      featureDefinitions: [
+        ...INITIAL_SETTINGS.featureDefinitions,
+        {
+          key: 'noTopUpsLately',
+          label: 'Давно не пополнял счёт',
+          description: 'Клиент не пополнял баланс больше 60 дней.',
+        },
+      ],
+    };
+    const patches: unknown[] = [];
+    server.use(
+      http.get('*/api/v1/model/settings', () => HttpResponse.json(withNewFeature)),
+      http.patch('*/api/v1/model/settings', async ({ request }) => {
+        patches.push(await request.json());
+        return HttpResponse.json({ ...withNewFeature, version: 5 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage();
+    await waitForSettings();
+
+    const field = screen.getByRole('textbox', { name: 'Давно не пополнял счёт' });
+    expect(field).toHaveValue('20');
+    expect(field).toHaveAccessibleDescription(
+      'Клиент не пополнял баланс больше 60 дней. По умолчанию 20',
+    );
+
+    await typeValue(user, field, '35');
+    await user.click(saveButton());
+
+    await waitFor(() =>
+      expect(patches).toEqual([{ version: 4, changes: { factorWeights: { noTopUpsLately: 35 } } }]),
+    );
+  });
+
   it('если сохранены значения по умолчанию, сброс только откатывает правки', async () => {
     const user = userEvent.setup();
     renderPage();

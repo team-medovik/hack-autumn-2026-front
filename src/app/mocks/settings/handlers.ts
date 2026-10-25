@@ -116,6 +116,16 @@ export const settingsHandlers = [
     if (version !== current.version) {
       return conflict();
     }
+    const knownFeatures = new Set(current.featureDefinitions.map(({ key }) => key));
+    const unknownFeature = Object.keys(changes.factorWeights ?? {}).find(
+      (key) => !knownFeatures.has(key),
+    );
+    if (unknownFeature) {
+      return HttpResponse.json(
+        { message: `Неизвестный признак: ${unknownFeature}` },
+        { status: 422 },
+      );
+    }
     // Проверяется вся модель после наложения, а не только присланные поля
     const values = mergeChanges(current.values, changes);
     if (values.riskThresholds.high <= values.riskThresholds.medium) {
