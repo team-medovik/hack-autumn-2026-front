@@ -11,7 +11,7 @@ export const withDefault = (description: string, byDefault: number) =>
 export const wasNote = (value: number, saved: number) =>
   value === saved ? undefined : `было ${formatNumber(saved, DIGITS)}`;
 
-/** Подсказки параметров, кроме весов признаков (те — в SCORE_FACTORS). Из гайдлайна «?». */
+/** Подсказки параметров, кроме весов признаков (те приходят с сервера в featureDefinitions). Из гайдлайна «?». */
 export const SETTING_HELP = {
   medium: 'Риск от этого значения и выше считается средним.',
   high: 'Риск от этого значения и выше считается высоким. Должен быть больше порога среднего.',

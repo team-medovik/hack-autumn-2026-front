@@ -45,6 +45,7 @@ export const ModelSettingsForm = ({ settings, onSaved }: ModelSettingsFormProps)
         }
       >
         <FactorWeightsSection
+          features={settings.featureDefinitions}
           weights={draft.factorWeights}
           saved={saved.factorWeights}
           defaults={defaults.factorWeights}
