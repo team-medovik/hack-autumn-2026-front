@@ -2,6 +2,7 @@ import { delay, http, HttpResponse } from 'msw';
 
 import type { CalculationDate } from '@/entities/calculation-date';
 
+import { publishChange } from '../realtime';
 import { readMockScenario } from '../scenario';
 
 /**
@@ -52,6 +53,7 @@ export const calculationDateHandlers = [
       return HttpResponse.json({ message: 'Укажите дату расчёта' }, { status: 422 });
     }
     current = next;
+    publishChange('CALCULATION_DATE');
     return HttpResponse.json(current);
   }),
 ];

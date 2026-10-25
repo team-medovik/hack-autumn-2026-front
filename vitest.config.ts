@@ -10,7 +10,7 @@ export default defineConfig(async (configEnv) =>
       environment: 'jsdom',
 
       // Setup-файл запускается перед каждым тест-файлом (jest-dom матчеры + MSW-сервер)
-      setupFiles: ['./src/tests/setup.ts'],
+      setupFiles: ['./src/tests/polyfills.ts', './src/tests/setup.ts'],
 
       // Глобалы Vitest (describe, it, expect и т.д.) доступны без импортов
       globals: true,

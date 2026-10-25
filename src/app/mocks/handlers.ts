@@ -5,6 +5,7 @@ import type { Post } from '@/entities/post';
 import { accountHandlers } from './account';
 import { clientsHandlers } from './clients';
 import { dashboardHandlers } from './dashboard';
+import { realtimeHandlers } from './realtime';
 import { calculationDateHandlers, settingsHandlers } from './settings';
 import { snapshotsHandlers } from './snapshots';
 import { usersHandlers } from './users';
@@ -26,6 +27,7 @@ export const handlers = [
   ...accountHandlers,
   ...usersHandlers,
   ...snapshotsHandlers,
+  ...realtimeHandlers,
 
   // GET /posts
   http.get('*/posts', () => HttpResponse.json(MOCK_POSTS)),
