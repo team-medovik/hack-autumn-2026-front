@@ -1,7 +1,6 @@
 import { clsx } from 'clsx';
 import type { ComponentPropsWithoutRef, ElementType, ReactNode } from 'react';
 
-import { Highlight } from '../../highlight';
 import { RiskScore, type RiskLevel } from '../../risk-score';
 import { Text } from '../../text';
 
@@ -19,8 +18,6 @@ type ClientRowOwnProps<T extends ElementType> = {
   reason: ReactNode;
   /** Потеря в месяц, например «9,05 €». */
   loss: ReactNode;
-  /** Подсветить сумму потери (слой «Подсветка» в Figma). */
-  highlightLoss?: boolean;
   /** Выбранная строка (Выбрана=Да). */
   selected?: boolean;
 };
@@ -51,7 +48,6 @@ export const ClientRow = <T extends ElementType = 'button'>({
   clientId,
   reason,
   loss,
-  highlightLoss = false,
   selected = false,
   className,
   ...props
@@ -83,11 +79,9 @@ export const ClientRow = <T extends ElementType = 'button'>({
       </Text>
 
       <span className="client-row__loss">
-        <Highlight active={highlightLoss}>
-          <Text as="span" variant="caption" color="main">
-            {loss}
-          </Text>
-        </Highlight>
+        <Text as="span" variant="caption" color="main">
+          {loss}
+        </Text>
         <Text as="span" variant="caption-2" color="tertiary">
           в месяц
         </Text>

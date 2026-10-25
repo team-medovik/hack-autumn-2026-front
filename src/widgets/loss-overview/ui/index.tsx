@@ -2,7 +2,6 @@ import type { DashboardResponse } from '@/entities/dashboard';
 import { formatMoney } from '@/shared/lib/format';
 import { Card, CardHeader } from '@/shared/ui/card';
 import { CountUp } from '@/shared/ui/count-up';
-import { Highlight } from '@/shared/ui/highlight';
 import { RiskDistribution } from '@/shared/ui/risk-distribution';
 import { RISK_LEVEL_LABELS, RISK_LEVELS, RiskLevel } from '@/shared/ui/risk-level';
 import { Skeleton } from '@/shared/ui/skeleton';
@@ -80,11 +79,9 @@ export const LossOverview = ({ data }: LossOverviewProps) => {
               </dt>
               <dd className="loss-overview__bucket-loss">
                 {bucket ? (
-                  <Highlight active={bucket.changed}>
-                    <Text as="span" variant="heading-3" color="main">
-                      {bucket.monthlyLoss === null ? '—' : formatMoney(bucket.monthlyLoss)}
-                    </Text>
-                  </Highlight>
+                  <Text as="span" variant="heading-3" color="main">
+                    {bucket.monthlyLoss === null ? '—' : formatMoney(bucket.monthlyLoss)}
+                  </Text>
                 ) : (
                   <Skeleton width={level === 'none' ? 24 : 74} height={24} />
                 )}

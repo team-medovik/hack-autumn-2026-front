@@ -49,7 +49,6 @@ export const RiskQueue = ({ data, selectedId, className }: RiskQueueProps) => {
               clientId={`ID ${client.id}`}
               reason={client.reason}
               loss={formatMoney(client.monthlyLoss)}
-              highlightLoss={client.lossChanged}
               selected={client.id === selectedId}
             />
           </li>
