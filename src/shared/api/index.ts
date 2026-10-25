@@ -1,4 +1,4 @@
-export { api, setAccessTokenGetter } from './axios';
+export { api, isPublicAuthUrl, setAccessTokenGetter } from './axios';
 export { getErrorData, isClientError, isConflictError, isNotFoundError } from './errors';
 
 // Сгенерировано orval из openapi/openapi.yaml (src/shared/api/generated) — реэкспорт здесь,
