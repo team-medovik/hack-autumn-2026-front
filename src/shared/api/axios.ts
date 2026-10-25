@@ -20,11 +20,17 @@ export const setAccessTokenGetter = (getter: () => string | null) => {
   getAccessToken = getter;
 };
 
+// Публичные эндпоинты (security: [] в контракте): протухший Bearer на них не шлём,
+// иначе JWT-фильтр бэка может ответить 401 на /refresh — и сессия слетит.
+const PUBLIC_AUTH_URLS = ['/auth/login', '/auth/refresh', '/auth/logout'];
+
+export const isPublicAuthUrl = (url = '') => PUBLIC_AUTH_URLS.some((path) => url.includes(path));
+
 // ─── Request-интерсептор ──────────────────────────────────────────────────────
 api.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
-    if (token) {
+    if (token && !isPublicAuthUrl(config.url)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

@@ -2,7 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from 'axios';
 
 import { getAccessToken } from '@/entities/session';
 import { refreshSession } from '@/features/auth';
-import { api, setAccessTokenGetter } from '@/shared/api';
+import { api, isPublicAuthUrl, setAccessTokenGetter } from '@/shared/api';
 
 // Связываем axios (shared) с сессией (entities/features). Слой app может импортировать всё,
 // поэтому связка живёт здесь.
@@ -14,21 +14,22 @@ setAccessTokenGetter(getAccessToken);
 //    Не получилось — refreshSession сбросит сессию, RequireAuth уведёт на /login.
 type RetriableConfig = InternalAxiosRequestConfig & { _authRetried?: boolean };
 
-// Свой 401 у этих эндпоинтов означает «неверные данные» / «сессии нет», а не «токен протух»
-const NO_REFRESH_URLS = ['/auth/login', '/auth/refresh', '/auth/logout'];
-
 api.interceptors.response.use(undefined, async (error: unknown) => {
   if (!axios.isAxiosError(error) || error.response?.status !== 401 || !error.config) {
     throw error;
   }
 
+  // Свой 401 у публичных auth-эндпоинтов означает «неверные данные» / «сессии нет», а не «токен протух»
   const config = error.config as RetriableConfig;
-  const url = config.url ?? '';
-  if (config._authRetried || NO_REFRESH_URLS.some((path) => url.includes(path))) {
+  if (config._authRetried || isPublicAuthUrl(config.url)) {
     throw error;
   }
 
-  const token = await refreshSession();
+  // Запрос ушёл со старым токеном, а пока летел, сессию уже обновили — просто повторяем.
+  // Лишний /refresh здесь ротировал бы cookie впустую.
+  const sentToken = String(config.headers.Authorization ?? '').replace(/^Bearer /, '');
+  const currentToken = getAccessToken();
+  const token = currentToken && currentToken !== sentToken ? currentToken : await refreshSession();
   if (!token) {
     throw error;
   }

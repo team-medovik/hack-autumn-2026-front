@@ -1,15 +1,8 @@
 .navbar {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: var(--space-distant);
   padding: var(--space-lil-distant) var(--space-grouped);
-
-  &__top {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-distant);
-  }
 
   &__heading {
     display: flex;
@@ -26,37 +19,83 @@
     }
   }
 
-  &__nav,
-  &__bottom {
+  // Основные разделы сверху, служебные прижаты к низу навбара
+  &__sections {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-distant);
+  }
+
+  &__nav {
     display: flex;
     flex-direction: column;
     gap: var(--space-related);
   }
 
-  // Ряд логотипа (в Figma — space-between): справа кнопка выхода
+  // Ряд логотипа (в Figma — space-between): справа кнопка выхода.
+  // От служебных разделов — тот же шаг, что между пунктами
   &__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-related);
+    margin-top: calc(var(--space-related) - var(--space-distant));
     padding: var(--space-bonded) 0 var(--space-bonded) var(--space-related);
   }
 
-  // На узких экранах навигация уходит наверх и раскладывается в ряд
+  // На узких экранах навбар — шапка: название и «Выйти» в первом ряду,
+  // все разделы — одной лентой под ними (если не влезают — листаются вбок)
   @include down(desktop-s) {
-    gap: var(--space-grouped);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'heading footer'
+      'sections sections';
+    gap: var(--space-grouped) var(--space-related);
     padding: var(--space-grouped) var(--space-close);
 
-    &__top {
-      gap: var(--space-grouped);
+    &__heading {
+      grid-area: heading;
+      max-width: none;
     }
 
-    &__nav {
-      flex-flow: row wrap;
+    &__footer {
+      grid-area: footer;
+      margin-top: 0;
+      padding: 0;
     }
 
     &__logo {
       display: none;
+    }
+
+    &__sections {
+      grid-area: sections;
+      flex-direction: row;
+      justify-content: flex-start;
+      gap: var(--space-bonded);
+      // Лента до краёв экрана: выходим за паддинг навбара и возвращаем его внутрь
+      margin-inline: calc(-1 * var(--space-close));
+      padding-inline: var(--space-close);
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    &__nav {
+      flex-direction: row;
+      flex-shrink: 0;
+      gap: var(--space-bonded);
+    }
+
+    .nav-item {
+      flex-shrink: 0;
     }
   }
 }
