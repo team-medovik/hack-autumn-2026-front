@@ -15,7 +15,7 @@
  * Фактор, сформировавший оценку риска клиента.
  */
 export interface ScoreFactor {
-  /** Стабильный код фактора. */
+  /** Стабильный код фактора. Для признака с весом совпадает с ModelSettings.featureDefinitions[].key. */
   id: string;
   /** Готовое к показу название фактора. */
   label: string;

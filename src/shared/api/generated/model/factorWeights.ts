@@ -12,44 +12,8 @@
  */
 
 /**
- * Веса факторов риска: каждое значение от 0 до 100
+ * Веса признаков риска: ключ признака → вес 0–100 баллов. Набор ключей совпадает с ModelSettings.featureDefinitions[].key. Новый признак, зарегистрированный на сервере, появляется здесь без изменения контракта.
  */
 export interface FactorWeights {
-  /**
-   * Ожидание оплаты Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  awaitingPayment: number;
-  /**
-   * Истечение без автопродления Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  expiringWithoutAutoRenewal: number;
-  /**
-   * Недостаточно средств Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  insufficientFunds: number;
-  /**
-   * Ожидание оплаты без средств Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  awaitingPaymentWithoutFunds: number;
-  /**
-   * Отключение клиентом Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  disabledByClient: number;
-  /**
-   * Бонусов больше денег Вес экспертного фактора, 0–100 баллов.
-   * @minimum 0
-   * @maximum 100
-   */
-  bonusesExceedMoney: number;
-  [key: string]: unknown;
+  [key: string]: number;
 }

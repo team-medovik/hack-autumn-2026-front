@@ -1,6 +1,47 @@
-import type { ModelSettings, ModelSettingsValues } from '@/entities/model-settings';
+import type {
+  FeatureDefinition,
+  ModelSettings,
+  ModelSettingsValues,
+} from '@/entities/model-settings';
 
 // Данные повторяют макеты Figma «Настройки — модель (…)».
+
+/** Каталог признаков score. Тексты — из гайдлайна «Тексты подсказок „?“». */
+export const FEATURE_DEFINITIONS: FeatureDefinition[] = [
+  {
+    key: 'awaitingPayment',
+    label: 'Ожидает оплаты',
+    description: 'Срок услуги истёк, платформа ждёт оплату 5 дней и потом удаляет услугу.',
+  },
+  {
+    key: 'expiringWithoutAutoRenewal',
+    label: 'Скоро истекает без автопродления',
+    description:
+      'Услуга скоро закончится, а автопродление выключено. Чем ближе окончание, тем сильнее признак.',
+  },
+  {
+    key: 'insufficientFunds',
+    label: 'Не хватает средств на продление',
+    description:
+      'Денег на счёте меньше, чем нужно на продления в горизонте прогноза. Чем больше нехватка, тем сильнее.',
+  },
+  {
+    key: 'awaitingPaymentWithoutFunds',
+    label: 'Ожидает оплаты без средств',
+    description: 'Услуга ждёт оплату, а денег на счёте не хватает. Добавляется к «Ожидает оплаты».',
+  },
+  {
+    key: 'disabledByClient',
+    label: 'Выключена клиентом',
+    description: 'Клиент выключил сервер, но продолжает платить: возможно, услуга ему не нужна.',
+  },
+  {
+    key: 'bonusesExceedMoney',
+    label: 'Бонусов больше, чем реальных денег',
+    description:
+      'Клиент держится на бонусах, а не на своих деньгах. Чем больше перевес, тем сильнее.',
+  },
+];
 
 /** Значения по умолчанию — подсказки «по умолчанию 70» в макете. */
 export const DEFAULT_VALUES: ModelSettingsValues = {
@@ -42,6 +83,7 @@ export const INITIAL_SETTINGS: ModelSettings = {
   values: DEFAULT_VALUES,
   defaults: DEFAULT_VALUES,
   scoreHistogram: toHistogram(CLIENT_SCORES),
+  featureDefinitions: FEATURE_DEFINITIONS,
 };
 
 /**
