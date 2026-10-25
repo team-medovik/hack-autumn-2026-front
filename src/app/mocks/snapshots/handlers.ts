@@ -3,6 +3,7 @@ import { delay, http, HttpResponse } from 'msw';
 import { readSnapshotVolume, WRONG_FORMAT_MESSAGE, type SnapshotRecord } from '@/entities/snapshot';
 
 import { buildSnapshotFile, INITIAL_SNAPSHOTS } from './fixtures';
+import { publishChange } from '../realtime';
 import { readMockScenario } from '../scenario';
 
 /**
@@ -106,6 +107,7 @@ export const snapshotsHandlers = [
       ...volume,
     };
     snapshots = [snapshot, ...snapshots];
+    publishChange('SNAPSHOT', snapshot.id);
     return HttpResponse.json(snapshot);
   }),
 ];

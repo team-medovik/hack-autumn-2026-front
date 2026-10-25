@@ -12,6 +12,8 @@ import { SnapshotPage } from '@/pages/snapshot';
 import { CLIENT_ROUTE_PATTERN, ROUTES } from '@/shared/config';
 import { Layout } from '@/widgets/layout';
 
+import { RealtimeUpdates } from './realtime';
+
 export const router = createBrowserRouter([
   // Только для гостей: вход — отдельный экран без навбара, после входа редирект обратно
   {
@@ -24,7 +26,13 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ROUTES.home,
-        element: <Layout />,
+        // Изменения от других администраторов приходят, пока открыта панель
+        element: (
+          <>
+            <RealtimeUpdates />
+            <Layout />
+          </>
+        ),
         children: [
           { index: true, element: <HomePage /> },
           {

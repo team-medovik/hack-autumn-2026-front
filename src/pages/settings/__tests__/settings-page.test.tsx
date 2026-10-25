@@ -6,8 +6,9 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { server } from '@/app/mocks/server';
-import { resetSettingsMock } from '@/app/mocks/settings';
+import { INITIAL_SETTINGS, resetSettingsMock } from '@/app/mocks/settings';
 import { resetUsersMock } from '@/app/mocks/users';
+import { markModelSettingsOutdated, type ModelSettings } from '@/entities/model-settings';
 import { useSessionStore } from '@/entities/session';
 
 import { SettingsPage } from '../ui';
@@ -30,7 +31,7 @@ const renderPage = () => {
       <RouterProvider router={router} />
     </QueryClientProvider>,
   );
-  return router;
+  return { router, queryClient };
 };
 
 /** Сценарий моков из ?mock= — как в браузере. */
@@ -229,9 +230,54 @@ describe('SettingsPage', () => {
     expect(weightField()).toHaveValue('80');
   });
 
+  describe('чужое сохранение из потока событий', () => {
+    /** Аналитик сохранил версию 5 с весом 75 — так отвечает сервер после события. */
+    const REMOTE_VERSION: ModelSettings = {
+      ...INITIAL_SETTINGS,
+      version: 5,
+      updatedAt: new Date(2026, 9, 24, 8, 40).toISOString(),
+      values: {
+        ...INITIAL_SETTINGS.values,
+        factorWeights: { ...INITIAL_SETTINGS.values.factorWeights, awaitingPayment: 75 },
+      },
+    };
+
+    const saveRemotely = () =>
+      server.use(http.get('*/api/v1/model/settings', () => HttpResponse.json(REMOTE_VERSION)));
+
+    it('без правок на экране сразу показывает новую версию', async () => {
+      const { queryClient } = renderPage();
+      await waitForSettings();
+
+      saveRemotely();
+      await markModelSettingsOutdated(queryClient);
+
+      expect(await screen.findByText('24.10.2026, 08:40, analyst')).toBeInTheDocument();
+      expect(weightField()).toHaveValue('75');
+    });
+
+    it('с правками на экране не трогает черновик, а после отмены — показывает новую версию', async () => {
+      const user = userEvent.setup();
+      const { queryClient } = renderPage();
+      await waitForSettings();
+      await typeValue(user, weightField(), '80');
+
+      saveRemotely();
+      await markModelSettingsOutdated(queryClient);
+
+      expect(weightField()).toHaveValue('80');
+      expect(screen.getByText('23.10.2026, 18:00, analyst')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Отменить' }));
+
+      expect(await screen.findByText('24.10.2026, 08:40, analyst')).toBeInTheDocument();
+      expect(weightField()).toHaveValue('75');
+    });
+  });
+
   it('спрашивает перед уходом с несохранёнными правками', async () => {
     const user = userEvent.setup();
-    const router = renderPage();
+    const { router } = renderPage();
     await waitForSettings();
 
     await typeValue(user, weightField(), '80');
