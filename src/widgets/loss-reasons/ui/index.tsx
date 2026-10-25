@@ -1,6 +1,7 @@
 import { useId } from 'react';
 
-import { CLIENT_FORMS, LOSS_REASON_TONE, type LossReason } from '@/entities/dashboard';
+import { LOSS_REASON_TONE, type LossReason } from '@/entities/dashboard';
+import { CLIENT_FORMS } from '@/shared/config';
 import { formatCount, formatMoney } from '@/shared/lib/format';
 import { Card, CardHeader } from '@/shared/ui/card';
 import { EmptyState } from '@/shared/ui/empty-state';

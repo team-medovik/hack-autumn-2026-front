@@ -4,9 +4,8 @@ import { GuestOnly, RequireAuth } from '@/features/auth';
 import { AuthPage } from '@/pages/auth';
 import { ClientCardPage } from '@/pages/client-card';
 import { ClientsPage } from '@/pages/clients';
-import { DemoPage } from '@/pages/demo';
 import { HomePage } from '@/pages/home';
-import { PlaceholderPage } from '@/pages/placeholder';
+import { NotFoundPage } from '@/pages/not-found';
 import { SettingsPage } from '@/pages/settings';
 import { SnapshotPage } from '@/pages/snapshot';
 import { CLIENT_ROUTE_PATTERN, ROUTES } from '@/shared/config';
@@ -43,16 +42,7 @@ export const router = createBrowserRouter([
           },
           { path: ROUTES.settings, element: <SettingsPage /> },
           { path: ROUTES.snapshot, element: <SnapshotPage /> },
-          { path: 'demo', element: <DemoPage /> },
-          {
-            path: '*',
-            element: (
-              <PlaceholderPage
-                title="Страница не найдена"
-                description="Такой страницы в панели нет."
-              />
-            ),
-          },
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
     ],

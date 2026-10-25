@@ -10,12 +10,9 @@
  * | Desktop L 1600  | 1600–1919    | `desktop-l`  |
  * | Desktop XL 1920 | 1920+        | `desktop-xl` |
  *
- * Используется в двух местах:
- * - JS: `breakpoints` / `breakpointsDown` в `@/shared/lib/media-query`
- * - SCSS: vite.config.ts передаёт эти значения в `src/shared/styles/_breakpoints.scss`,
- *   поэтому миксины `up` / `down` / `between` доступны в любом .scss без импорта.
+ * vite.config.ts передаёт эти значения в `src/shared/styles/_breakpoints.scss`,
+ * поэтому миксины `up` / `down` / `between` доступны в любом .scss без импорта.
  *
- * Меняйте значения только здесь — CSS и JS переключаются на одних и тех же границах.
  * Файл не должен ничего импортировать: его читает vite.config.ts в Node-контексте.
  */
 export const BREAKPOINTS = {

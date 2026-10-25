@@ -1,4 +1,4 @@
-import { configDefaults, defineConfig, mergeConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config';
 
@@ -17,9 +17,6 @@ export default defineConfig(async (configEnv) =>
 
       // Обрабатываем CSS-модули и SCSS (предотвращает ошибки импорта)
       css: true,
-
-      // E2E-тесты в tests/e2e запускает Playwright (npm run test:e2e), не Vitest
-      exclude: [...configDefaults.exclude, 'tests/e2e/**'],
 
       // Переменные для src/shared/config/env.ts. Реальный API не вызывается — запросы ловит MSW
       env: {

@@ -190,7 +190,7 @@ export default [
   // ─── Конфигурационные файлы (Node.js-контекст) ──────────────────────────────
   // Отдельный блок с tsconfig.node.json — у них нет DOM, зато есть Node-глобалы.
   {
-    files: ['vite.config.ts', 'vitest.config.ts', 'playwright.config.ts', 'orval.config.ts'],
+    files: ['vite.config.ts', 'vitest.config.ts', 'orval.config.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -204,7 +204,7 @@ export default [
 
   // ─── Переопределения для тестовых файлов ──────────────────────────────────
   {
-    files: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}', 'tests/**/*.{ts,tsx}'],
+    files: ['src/**/*.test.{ts,tsx}'],
     rules: {
       // В тестах часто импортируют что-то только чтобы убедиться, что не падает
       '@typescript-eslint/no-unused-vars': 'off',
@@ -223,8 +223,6 @@ export default [
       'dist',
       'build',
       'coverage',
-      'playwright-report',
-      'test-results',
       'node_modules',
       'public/mockServiceWorker.js',
       'src/shared/api/generated',

@@ -1,12 +1,6 @@
 export { usersApi } from './api/users.api';
 export { removeUserFromList, usersKeys, useUsers } from './api/users.queries';
-export {
-  canDeleteUser,
-  isSameLogin,
-  getLoginError,
-  isValidLogin,
-  USER_ROLE_LABEL,
-} from './lib/user-rules';
+export { canDeleteUser, isSameLogin, getLoginError } from './lib/user-rules';
 export type {
   CreatedUserResponse,
   CreateUserRequest,

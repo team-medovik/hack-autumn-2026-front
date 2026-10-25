@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { canDeleteUser, getLoginError, isSameLogin, isValidLogin } from './user-rules';
+import { canDeleteUser, getLoginError, isSameLogin } from './user-rules';
 import type { User } from '../model/types';
 
 const analyst: User = {
@@ -28,18 +28,10 @@ describe('canDeleteUser', () => {
   });
 });
 
-describe('isValidLogin', () => {
-  it('принимает от 3 до 255 символов без пробелов по краям', () => {
-    expect(isValidLogin('ann')).toBe(true);
-    expect(isValidLogin('  an  ')).toBe(false);
-    expect(isValidLogin('a'.repeat(255))).toBe(true);
-    expect(isValidLogin('a'.repeat(256))).toBe(false);
-  });
-});
-
 describe('getLoginError', () => {
   it('называет только нарушенную границу', () => {
     expect(getLoginError('ab')).toBe('Логин — от 3 символов');
+    expect(getLoginError('  an  ')).toBe('Логин — от 3 символов');
     expect(getLoginError('a'.repeat(256))).toBe('Логин — до 255 символов');
     expect(getLoginError('ann')).toBeNull();
   });

@@ -16,9 +16,6 @@ build
 
 # ─── Test output ─────────────────────────────────────────────────────────────
 coverage
-playwright-report
-test-results
-blob-report
 
 # ─── TypeScript build cache ──────────────────────────────────────────────────
 *.tsbuildinfo
