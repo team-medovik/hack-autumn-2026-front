@@ -9,7 +9,7 @@ import { isConflictError } from '@/shared/api';
 export interface CreatedCredentials {
   login: string;
   password: string;
-  clientId?: string;
+  ssoUserId?: string;
 }
 
 /**
@@ -28,10 +28,10 @@ export const useCreateUserForm = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: usersApi.create,
-    onSuccess: ({ login: createdLogin, temporaryPassword, clientId }) => {
+    onSuccess: ({ login: createdLogin, temporaryPassword }) => {
       // В ответе на создание роль и статус — без перечня значений, список берём с сервера
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      setCreated({ login: createdLogin, password: temporaryPassword, clientId });
+      setCreated({ login: createdLogin, password: temporaryPassword });
       setLogin('');
       setClientId('');
       setTakenLogin(null);

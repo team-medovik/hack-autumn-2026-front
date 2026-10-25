@@ -816,10 +816,6 @@ components:
           type: string
           description: Логин сотрудника
           example: analyst
-        clientId:
-          type: string
-          description: ID клиента сотрудника. Нет, если не передавали при создании
-          example: client-42
         role:
           type: string
           description: Роль сотрудника

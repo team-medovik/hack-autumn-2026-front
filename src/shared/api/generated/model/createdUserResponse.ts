@@ -19,8 +19,6 @@ export interface CreatedUserResponse {
   id: string;
   /** Логин сотрудника */
   login: string;
-  /** ID клиента сотрудника. Нет, если не передавали при создании */
-  clientId?: string;
   /** Роль сотрудника */
   role: string;
   /** Статус учётной записи */
