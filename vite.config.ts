@@ -4,6 +4,18 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 import { toScssMap } from './src/shared/config/breakpoints';
 
+// Пакет → vendor-чанк. Devtools не включаем: в dev они грузятся лениво, в prod — пустая заглушка.
+const VENDOR_CHUNKS: Record<string, string> = {
+  react: 'react-vendor',
+  'react-dom': 'react-vendor',
+  scheduler: 'react-vendor',
+  'react-router': 'router-vendor',
+  'react-router-dom': 'router-vendor',
+  '@tanstack/query-core': 'query-vendor',
+  '@tanstack/react-query': 'query-vendor',
+  zustand: 'zustand-vendor',
+};
+
 export default defineConfig(async ({ mode }) => {
   // Загружаем .env.{mode} чтобы переменные были доступны на этапе конфигурации
   const env = loadEnv(mode, process.cwd(), '');
@@ -64,11 +76,11 @@ export default defineConfig(async ({ mode }) => {
         output: {
           // Разделение vendor-чанков для долгосрочного кэширования.
           // Хэш меняется только при обновлении конкретной библиотеки.
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom'],
-            'router-vendor': ['react-router-dom'],
-            'query-vendor': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
-            'zustand-vendor': ['zustand'],
+          // Функция, а не объект: объект ловит только точку входа пакета, и react-dom/client
+          // уезжал в основной чанк. Здесь — любой модуль пакета по пути в node_modules.
+          manualChunks: (id: string) => {
+            const pkg = /node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(id)?.[1];
+            return pkg ? VENDOR_CHUNKS[pkg] : undefined;
           },
         },
       },
