@@ -8,8 +8,8 @@ import {
 } from '@/entities/user';
 import { generatePassword } from '@/shared/lib/password';
 
-import { INITIAL_USERS } from './fixtures';
 import { readMockScenario } from '../scenario';
+import { INITIAL_USERS } from './fixtures';
 
 /**
  * Сценарии /admin/users — по макетам «Настройки — пользователи (…)»: /settings?mock=users-error
@@ -68,7 +68,7 @@ export const usersHandlers = [
 
     const {
       login,
-      clientId,
+      ssoUserId,
       role = 'EMPLOYEE',
       status = 'ACTIVE',
     } = (await request.json()) as CreateUserRequest;
@@ -90,7 +90,7 @@ export const usersHandlers = [
     };
     users = [...users, user];
     return HttpResponse.json<CreatedUserResponse>(
-      { ...user, ...(clientId && { clientId }), temporaryPassword: generatePassword() },
+      { ...user, ...(ssoUserId && { ssoUserId }), temporaryPassword: generatePassword() },
       { status: 201 },
     );
   }),
