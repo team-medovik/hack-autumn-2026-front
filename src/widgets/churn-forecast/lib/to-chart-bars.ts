@@ -1,4 +1,5 @@
-import { SERVICE_FORMS, type ChurnWeek } from '@/entities/dashboard';
+import type { ChurnWeek } from '@/entities/dashboard';
+import { SERVICE_FORMS } from '@/shared/config';
 import { formatCount, formatDayMonth } from '@/shared/lib/format';
 import type { ColumnChartBar, ColumnVariant } from '@/shared/ui/column-chart';
 

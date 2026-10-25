@@ -70,8 +70,6 @@ export const useSessionStore = createStore<SessionStore>('Session', (set) => ({
 
 export const useSessionStatus = () => useSessionStore((s) => s.status);
 
-export const useIsAuthenticated = () => useSessionStore((s) => s.status === 'authenticated');
-
 export const useSessionUser = () => useSessionStore((s) => s.user);
 
 /** Вошёл администратор — ему доступно управление сотрудниками. */

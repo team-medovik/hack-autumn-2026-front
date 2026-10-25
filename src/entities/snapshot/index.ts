@@ -1,5 +1,5 @@
 export { getSnapshotErrorMessage, snapshotsApi } from './api/snapshots.api';
-export { addSnapshotToHistory, snapshotsKeys, useSnapshots } from './api/snapshots.queries';
+export { addSnapshotToHistory, useSnapshots } from './api/snapshots.queries';
 export { formatSnapshotVolume } from './lib/format-volume';
 export {
   inspectSnapshotFile,

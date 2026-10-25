@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Валидация переменных окружения в рантайме.
  * При запуске приложения выбрасывает ошибку, если обязательные переменные
  * отсутствуют или имеют неверный формат.
- * Добавляйте новые переменные сюда по мере роста проекта.
+ * Новую переменную добавляйте сюда, в src/vite-env.d.ts и в .env.example.
  */
 const envSchema = z.object({
   VITE_API_URL: z.string().min(1, 'VITE_API_URL обязателен'),
@@ -12,12 +12,10 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v ? Number(v) : 15_000)),
-  VITE_APP_TITLE: z.string().optional().default('Frontend Template'),
-  VITE_APP_ENV: z.enum(['development', 'production', 'test']).optional().default('development'),
   VITE_ENABLE_DEVTOOLS: z
-    .string()
+    .enum(['true', 'false'])
     .optional()
-    .transform((v) => v === 'true'),
+    .transform((v) => (v === undefined ? undefined : v === 'true')),
   VITE_ENABLE_MOCKS: z
     .enum(['true', 'false'])
     .optional()
@@ -34,12 +32,8 @@ if (!parsed.success) {
 export const env = {
   apiUrl: parsed.data.VITE_API_URL,
   apiTimeout: parsed.data.VITE_API_TIMEOUT,
-  appTitle: parsed.data.VITE_APP_TITLE,
-  appEnv: parsed.data.VITE_APP_ENV,
-  isDev: import.meta.env.DEV,
-  isProd: import.meta.env.PROD,
-  /** DevTools включены только если VITE_ENABLE_DEVTOOLS=true (или в dev-режиме по умолчанию) */
+  /** DevTools TanStack Query и Zustand. По умолчанию включены в dev. */
   enableDevtools: parsed.data.VITE_ENABLE_DEVTOOLS ?? import.meta.env.DEV,
-  /** MSW-моки в браузере. По умолчанию включены в dev: часть API (дашборд) пока есть только в моках. */
+  /** MSW-моки в браузере. По умолчанию включены в dev. */
   enableMocks: parsed.data.VITE_ENABLE_MOCKS ?? import.meta.env.DEV,
 } as const;

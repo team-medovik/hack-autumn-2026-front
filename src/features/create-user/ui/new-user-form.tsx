@@ -37,11 +37,11 @@ export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
       />
       <Input
         label="ID клиента (необязательно)"
-        name="clientId"
+        name="ssoUserId"
         autoComplete="off"
         spellCheck={false}
-        value={form.clientId}
-        onChange={(event) => form.setClientId(event.target.value)}
+        value={form.ssoUserId}
+        onChange={(event) => form.setSsoUserId(event.target.value)}
       />
       <Text variant="caption" color="secondary">
         Временный пароль сгенерирует сервер и покажет один раз после создания

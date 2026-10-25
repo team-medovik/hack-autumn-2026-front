@@ -26,5 +26,3 @@ export const getLoginError = (login: string): string | null => {
   }
   return length > LOGIN_MAX ? `Логин — до ${LOGIN_MAX} символов` : null;
 };
-
-export const isValidLogin = (login: string) => getLoginError(login) === null;

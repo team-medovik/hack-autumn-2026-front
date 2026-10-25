@@ -19,7 +19,7 @@ export interface CreatedCredentials {
 export const useCreateUserForm = () => {
   const queryClient = useQueryClient();
   const [login, setLogin] = useState('');
-  const [clientId, setClientId] = useState('');
+  const [ssoUserId, setSsoUserId] = useState('');
   /** Логин, на котором сервер ответил «занят». Ошибка висит, пока его не поменяют. */
   const [takenLogin, setTakenLogin] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedCredentials | null>(null);
@@ -28,12 +28,17 @@ export const useCreateUserForm = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: usersApi.create,
-    onSuccess: ({ login: createdLogin, temporaryPassword }) => {
+    onSuccess: ({ login: createdLogin, temporaryPassword }, request) => {
       // В ответе на создание роль и статус — без перечня значений, список берём с сервера
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      setCreated({ login: createdLogin, password: temporaryPassword });
+      // ID клиента сервер в ответе не возвращает — показываем тот, что отправили
+      setCreated({
+        login: createdLogin,
+        password: temporaryPassword,
+        ssoUserId: request.ssoUserId,
+      });
       setLogin('');
-      setClientId('');
+      setSsoUserId('');
       setTakenLogin(null);
       setIsTouched(false);
     },
@@ -49,7 +54,7 @@ export const useCreateUserForm = () => {
   });
 
   const trimmed = login.trim();
-  const trimmedClientId = clientId.trim();
+  const trimmedSsoUserId = ssoUserId.trim();
   const ruleError = getLoginError(trimmed);
   const isLoginTaken = takenLogin !== null && isSameLogin(trimmed, takenLogin);
 
@@ -65,15 +70,15 @@ export const useCreateUserForm = () => {
     setLogin,
     touch: () => setIsTouched(true),
     loginError: resolveLoginError(),
-    clientId,
-    setClientId,
+    ssoUserId,
+    setSsoUserId,
     isCreating: isPending,
     canCreate: !ruleError && !isLoginTaken && !isPending,
     create: () =>
       mutate({
         login: trimmed,
         // Пустой ID клиента не шлём — поле необязательное
-        ...(trimmedClientId && { clientId: trimmedClientId }),
+        ssoUserId: trimmedSsoUserId || undefined,
         role: 'EMPLOYEE',
         status: 'ACTIVE',
       }),
