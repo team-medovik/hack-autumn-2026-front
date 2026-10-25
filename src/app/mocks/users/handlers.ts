@@ -68,6 +68,7 @@ export const usersHandlers = [
 
     const {
       login,
+      clientId,
       role = 'EMPLOYEE',
       status = 'ACTIVE',
     } = (await request.json()) as CreateUserRequest;
@@ -89,7 +90,7 @@ export const usersHandlers = [
     };
     users = [...users, user];
     return HttpResponse.json<CreatedUserResponse>(
-      { ...user, temporaryPassword: generatePassword() },
+      { ...user, ...(clientId && { clientId }), temporaryPassword: generatePassword() },
       { status: 201 },
     );
   }),

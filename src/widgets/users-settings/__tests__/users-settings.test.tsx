@@ -29,6 +29,7 @@ const rowOf = (login: string) =>
     .getAllByRole('row')
     .find((row) => within(row).queryByText(login, { exact: true }));
 const loginField = () => screen.getByLabelText('Логин');
+const clientIdField = () => screen.getByLabelText('ID клиента (необязательно)');
 const createButton = () => screen.getByRole('button', { name: 'Создать' });
 
 /** Список загружен — видна строка аналитика. */
@@ -68,7 +69,7 @@ describe('UsersSettings', () => {
     expect(createButton()).toBeDisabled();
   });
 
-  it('создаёт пользователя, показывает выданный сервером пароль и даёт скопировать данные', async () => {
+  it('создаёт пользователя, показывает выданный сервером пароль и даёт его скопировать', async () => {
     let body: unknown;
     server.events.on('request:start', async ({ request }) => {
       if (request.method === 'POST') {
@@ -85,16 +86,17 @@ describe('UsersSettings', () => {
     expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
     expect(body).toEqual({ login: 'manager2', role: 'EMPLOYEE', status: 'ACTIVE' });
     expect(loginField()).toHaveValue('manager2');
+    expect(screen.queryByLabelText('ID клиента')).not.toBeInTheDocument();
     const passwordField = screen.getByLabelText('Временный пароль');
     const password = (passwordField as HTMLInputElement).value;
     expect(password).toMatch(GENERATED_PASSWORD);
     expect(passwordField).toHaveAttribute('readonly');
     await waitFor(() => expect(rowOf('manager2')).toBeDefined());
 
-    const copyButton = screen.getByRole('button', { name: 'Скопировать логин и пароль' });
+    const copyButton = screen.getByRole('button', { name: 'Скопировать пароль' });
     expect(copyButton).toHaveFocus();
     await user.click(copyButton);
-    expect(await navigator.clipboard.readText()).toBe(`Логин: manager2\nПароль: ${password}`);
+    expect(await navigator.clipboard.readText()).toBe(password);
     expect(await screen.findByRole('button', { name: 'Скопировано' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Готово' }));
@@ -103,6 +105,35 @@ describe('UsersSettings', () => {
     expect(loginField()).toHaveValue('');
     expect(loginField()).toHaveFocus();
     expect(screen.queryByLabelText('Временный пароль')).not.toBeInTheDocument();
+  });
+
+  it('передаёт необязательный ID клиента и показывает его после создания', async () => {
+    let body: unknown;
+    server.events.on('request:start', async ({ request }) => {
+      if (request.method === 'POST') {
+        body = await request.clone().json();
+      }
+    });
+    const user = userEvent.setup();
+    renderWidget();
+    await waitForUsers();
+
+    await user.type(loginField(), 'manager2');
+    await user.type(clientIdField(), '  client-42 ');
+    await user.click(createButton());
+
+    expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
+    expect(body).toEqual({
+      login: 'manager2',
+      clientId: 'client-42',
+      role: 'EMPLOYEE',
+      status: 'ACTIVE',
+    });
+    expect(screen.getByLabelText('ID клиента')).toHaveValue('client-42');
+
+    await user.click(screen.getByRole('button', { name: 'Готово' }));
+
+    expect(clientIdField()).toHaveValue('');
   });
 
   it('не даёт создать с коротким логином', async () => {
