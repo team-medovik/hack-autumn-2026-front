@@ -15,6 +15,8 @@ interface SliderFieldProps {
   savedValue?: number;
   /** Ошибка проверки снаружи (например, порог меньше соседнего) — поле красное. */
   error?: boolean;
+  /** Только просмотр: оба контрола недоступны. */
+  disabled?: boolean;
   /** Подпись обоих контролов для скринридера: id заголовка и пояснения. */
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
@@ -35,6 +37,7 @@ export const SliderField = ({
   step = 1,
   savedValue,
   error,
+  disabled,
   'aria-labelledby': ariaLabelledBy,
   'aria-describedby': ariaDescribedBy,
   className,
@@ -47,6 +50,7 @@ export const SliderField = ({
       min={min}
       max={max}
       step={step}
+      disabled={disabled}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
     />
@@ -57,6 +61,7 @@ export const SliderField = ({
       max={max}
       step={step}
       error={error}
+      disabled={disabled}
       changed={savedValue !== undefined && value !== savedValue}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}

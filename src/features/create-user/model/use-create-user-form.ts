@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { getLoginError, isSameLogin, usersApi, usersKeys } from '@/entities/user';
 import { isConflictError } from '@/shared/api';
 
-/** Что показать после создания: логин, ID клиента (если задавали) и временный пароль от сервера. */
+/** Что показать после создания: логин, ID в SSO (если задавали) и временный пароль от сервера. */
 export interface CreatedCredentials {
   login: string;
   password: string;
@@ -13,7 +13,7 @@ export interface CreatedCredentials {
 }
 
 /**
- * Форма «Новый пользователь»: ввод логина и необязательного ID клиента, создание и показ выданных данных. Пароль генерирует
+ * Форма «Новый пользователь»: ввод логина и необязательного ID в SSO (OIDC sub), создание и показ выданных данных. Пароль генерирует
  * сервер и отдаёт один раз — он виден только до «Готово», нигде не сохраняется.
  */
 export const useCreateUserForm = () => {
@@ -31,7 +31,7 @@ export const useCreateUserForm = () => {
     onSuccess: ({ login: createdLogin, temporaryPassword }, request) => {
       // В ответе на создание роль и статус — без перечня значений, список берём с сервера
       void queryClient.invalidateQueries({ queryKey: usersKeys.all });
-      // ID клиента сервер в ответе не возвращает — показываем тот, что отправили
+      // ID в SSO сервер в ответе не возвращает — показываем тот, что отправили
       setCreated({
         login: createdLogin,
         password: temporaryPassword,
@@ -77,7 +77,7 @@ export const useCreateUserForm = () => {
     create: () =>
       mutate({
         login: trimmed,
-        // Пустой ID клиента не шлём — поле необязательное
+        // Пустой ID в SSO не шлём — поле необязательное
         ssoUserId: trimmedSsoUserId || undefined,
         role: 'EMPLOYEE',
         status: 'ACTIVE',

@@ -1,0 +1,6 @@
+// Подпись «Скорость» и кнопки через 12px
+.simulation-speed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-related);
+}

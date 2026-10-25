@@ -16,6 +16,8 @@ interface FactorWeightsSectionProps {
   saved: FactorWeights;
   defaults: FactorWeights;
   onChange: (patch: FactorWeights) => void;
+  /** Только просмотр: значения видны, менять нельзя. */
+  disabled?: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ export const FactorWeightsSection = ({
   saved,
   defaults,
   onChange,
+  disabled,
 }: FactorWeightsSectionProps) => (
   <FormSection
     title="Веса признаков"
@@ -51,6 +54,7 @@ export const FactorWeightsSection = ({
                 value={weights[key]}
                 savedValue={saved[key] ?? weights[key]}
                 onValueChange={(weight) => onChange({ [key]: weight })}
+                disabled={disabled}
                 aria-labelledby={titleId}
                 aria-describedby={describedBy}
               />

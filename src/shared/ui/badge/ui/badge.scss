@@ -1,0 +1,21 @@
+// Поля 4 × 12, части через 6px, скругление max, текст Caption 2 одной строкой
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--space-bonded);
+  max-width: 100%;
+  padding: var(--space-compressed) var(--space-related);
+  border-radius: var(--radius-max);
+  background: var(--control-default);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: var(--caption-2-font-size);
+  font-weight: var(--caption-2-font-weight);
+  line-height: var(--caption-2-line-height);
+  white-space: nowrap;
+
+  &--muted {
+    color: var(--text-tertiary);
+  }
+}

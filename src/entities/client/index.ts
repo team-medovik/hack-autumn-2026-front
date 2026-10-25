@@ -5,6 +5,7 @@ export { formatServiceNote, groupServices, type ServiceGroup } from './lib/servi
 export { getShortage } from './lib/shortage';
 export { parseClientsQuery, writeClientsQuery } from './model/clients-search-params';
 export { CLIENT_SORT_FIELDS } from './model/types';
+export { RenewalForecastBadge } from './ui/renewal-forecast-badge';
 export type {
   ClientCard,
   ClientCardBalance,

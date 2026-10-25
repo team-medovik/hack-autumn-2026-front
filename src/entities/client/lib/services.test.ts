@@ -12,6 +12,7 @@ const service = (patch: Partial<ClientService>): ClientService => ({
   monthlyPrice: 5,
   event: null,
   autoRenew: true,
+  lossProbability: null,
   ...patch,
 });
 

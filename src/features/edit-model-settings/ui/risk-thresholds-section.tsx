@@ -26,6 +26,8 @@ interface RiskThresholdsSectionProps {
   /** Высокий порог не больше среднего — ошибка под полями, шкала — по сохранённым порогам. */
   isValid: boolean;
   onChange: (patch: Partial<RiskThresholds>) => void;
+  /** Только просмотр: значения видны, менять нельзя. */
+  disabled?: boolean;
 }
 
 /** Пороги уровней риска и шкала: сколько клиентов попадёт в каждый уровень. */
@@ -36,6 +38,7 @@ export const RiskThresholdsSection = ({
   scoreHistogram,
   isValid,
   onChange,
+  disabled,
 }: RiskThresholdsSectionProps) => {
   const errorId = useId();
   const scaleThresholds = isValid ? thresholds : saved;
@@ -56,6 +59,7 @@ export const RiskThresholdsSection = ({
               value={thresholds.medium}
               changed={thresholds.medium !== saved.medium}
               onValueChange={(medium) => onChange({ medium })}
+              disabled={disabled}
             />
           )}
         </Field>
@@ -69,6 +73,7 @@ export const RiskThresholdsSection = ({
               changed={thresholds.high !== saved.high}
               error={!isValid}
               onValueChange={(high) => onChange({ high })}
+              disabled={disabled}
             />
           )}
         </Field>

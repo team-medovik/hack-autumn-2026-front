@@ -12,7 +12,7 @@ interface NewUserFormProps {
   autoFocus?: boolean;
 }
 
-/** Логин, необязательный ID клиента и «Создать». Пароль задаёт сервер — его покажут после создания. */
+/** Логин, необязательный ID в SSO и «Создать». Пароль задаёт сервер — его покажут после создания. */
 export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -36,7 +36,7 @@ export const NewUserForm = ({ form, autoFocus }: NewUserFormProps) => {
         onBlur={form.touch}
       />
       <Input
-        label="ID клиента (необязательно)"
+        label="ID в SSO (необязательно)"
         name="ssoUserId"
         autoComplete="off"
         spellCheck={false}

@@ -29,7 +29,7 @@ const rowOf = (login: string) =>
     .getAllByRole('row')
     .find((row) => within(row).queryByText(login, { exact: true }));
 const loginField = () => screen.getByLabelText('Логин');
-const ssoUserIdField = () => screen.getByLabelText('ID клиента (необязательно)');
+const ssoUserIdField = () => screen.getByLabelText('ID в SSO (необязательно)');
 const createButton = () => screen.getByRole('button', { name: 'Создать' });
 
 /** Список загружен — видна строка аналитика. */
@@ -86,7 +86,7 @@ describe('UsersSettings', () => {
     expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
     expect(body).toEqual({ login: 'manager2', role: 'EMPLOYEE', status: 'ACTIVE' });
     expect(loginField()).toHaveValue('manager2');
-    expect(screen.queryByLabelText('ID клиента')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('ID в SSO')).not.toBeInTheDocument();
     const passwordField = screen.getByLabelText('Временный пароль');
     const password = (passwordField as HTMLInputElement).value;
     expect(password).toMatch(GENERATED_PASSWORD);
@@ -107,7 +107,7 @@ describe('UsersSettings', () => {
     expect(screen.queryByLabelText('Временный пароль')).not.toBeInTheDocument();
   });
 
-  it('передаёт необязательный ID клиента и показывает его после создания', async () => {
+  it('передаёт необязательный ID в SSO и показывает его после создания', async () => {
     let body: unknown;
     server.events.on('request:start', async ({ request }) => {
       if (request.method === 'POST') {
@@ -119,17 +119,17 @@ describe('UsersSettings', () => {
     await waitForUsers();
 
     await user.type(loginField(), 'manager2');
-    await user.type(ssoUserIdField(), '  client-42 ');
+    await user.type(ssoUserIdField(), '  0ba7a3fd-6fd8-48cd-a60b-2e8fd82d56e2 ');
     await user.click(createButton());
 
     expect(await screen.findByText('Пользователь создан')).toBeInTheDocument();
     expect(body).toEqual({
       login: 'manager2',
-      ssoUserId: 'client-42',
+      ssoUserId: '0ba7a3fd-6fd8-48cd-a60b-2e8fd82d56e2',
       role: 'EMPLOYEE',
       status: 'ACTIVE',
     });
-    expect(screen.getByLabelText('ID клиента')).toHaveValue('client-42');
+    expect(screen.getByLabelText('ID в SSO')).toHaveValue('0ba7a3fd-6fd8-48cd-a60b-2e8fd82d56e2');
 
     await user.click(screen.getByRole('button', { name: 'Готово' }));
 

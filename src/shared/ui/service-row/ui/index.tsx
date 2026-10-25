@@ -14,6 +14,8 @@ interface ServiceRowProps {
   note?: ReactNode;
   /** Цена в месяц, например «9,90 €». */
   price?: ReactNode;
+  /** Строка под подписью, например плашка прогноза. Риск и цена остаются по центру строки. */
+  extra?: ReactNode;
   className?: string;
 }
 
@@ -22,8 +24,17 @@ interface ServiceRowProps {
  *
  * @example
  * <ServiceRow score={94.2} level="high" name="service-0017" note="удалят 21.10" price="9,90 €" />
+ * <ServiceRow … extra={<RenewalForecastBadge service={service} />} />
  */
-export const ServiceRow = ({ score, level, name, note, price, className }: ServiceRowProps) => (
+export const ServiceRow = ({
+  score,
+  level,
+  name,
+  note,
+  price,
+  extra,
+  className,
+}: ServiceRowProps) => (
   <div className={clsx('service-row', className)}>
     <RiskScore score={score} level={level} />
 
@@ -36,6 +47,7 @@ export const ServiceRow = ({ score, level, name, note, price, className }: Servi
           {note}
         </Text>
       )}
+      {extra && <span className="service-row__extra">{extra}</span>}
     </span>
 
     {price && (

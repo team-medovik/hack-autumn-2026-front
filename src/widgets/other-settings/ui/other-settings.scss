@@ -4,6 +4,14 @@
     gap: var(--space-close);
   }
 
+  // Состояние симуляции: статус и виртуальное время через 4px
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-compressed);
+  }
+
   &__actions {
     display: flex;
     flex-wrap: wrap;
