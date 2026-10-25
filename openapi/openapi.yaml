@@ -781,7 +781,7 @@ components:
           example: analyst
           minLength: 3
           maxLength: 255
-        clientId:
+        ssoUserId:
           type: string
           description: ID клиента, к которому привязан сотрудник. Необязательный
           example: client-42
