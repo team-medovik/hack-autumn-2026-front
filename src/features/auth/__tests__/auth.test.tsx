@@ -11,6 +11,7 @@ import { AuthPage } from '@/pages/auth';
 import { api } from '@/shared/api';
 
 import { GuestOnly, refreshSession, RequireAuth } from '..';
+import { getSsoLoginUrl } from '../model/use-sso-login';
 
 const resetSession = () => useSessionStore.setState(useSessionStore.getInitialState(), true);
 
@@ -133,6 +134,15 @@ describe('401-интерсептор (app/setup-api)', () => {
 
     await expect(api.get('/api/v1/customers')).rejects.toMatchObject({ response: { status: 401 } });
     expect(useSessionStore.getState().status).toBe('anonymous');
+  });
+});
+
+describe('вход через SSO', () => {
+  it('ведёт браузер на OIDC-логин бэкенда того же API, без токенов в адресе', () => {
+    const url = new URL(getSsoLoginUrl(), window.location.origin);
+
+    expect(url.pathname).toMatch(/\/api\/v1\/auth\/oidc\/keycloak\/login$/);
+    expect(url.search).toBe('');
   });
 });
 
