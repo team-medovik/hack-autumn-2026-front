@@ -12,6 +12,12 @@
     min-width: 0;
   }
 
+  // Слой «Прогноз непродления»: 6px от подписи
+  &__extra {
+    display: flex;
+    padding-top: var(--space-bonded);
+  }
+
   &__price {
     flex-shrink: 0;
     white-space: nowrap;

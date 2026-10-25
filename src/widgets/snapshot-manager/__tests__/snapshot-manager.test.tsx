@@ -4,8 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { resetDataSourceMock } from '@/app/mocks/data-source';
 import { server } from '@/app/mocks/server';
 import { buildSnapshotFile, resetSnapshotsMock } from '@/app/mocks/snapshots';
+import { useSessionStore } from '@/entities/session';
 
 import { SnapshotManager } from '../ui';
 
@@ -42,11 +44,72 @@ const waitForHistory = () => screen.findByText('23.10.2026, 22:10');
 describe('SnapshotManager', () => {
   beforeEach(() => {
     resetSnapshotsMock();
+    resetDataSourceMock();
   });
 
   afterEach(() => {
     window.history.replaceState(null, '', '/');
+    useSessionStore.getState().clearSession();
     vi.restoreAllMocks();
+  });
+
+  describe('источник данных — администратору', () => {
+    beforeEach(() => {
+      useSessionStore.getState().setUser({
+        id: '1',
+        login: 'admin',
+        role: 'ADMIN',
+        createdAt: '2026-10-01T00:00:00Z',
+      });
+    });
+
+    it('JSON-снимок — пояснение, что AI-прогноз без истории событий недоступен', async () => {
+      setMockScenario('json-source');
+      renderWidget();
+      await waitForHistory();
+
+      expect(
+        await within(currentSnapshot()).findByText(/В снимке нет истории событий/),
+      ).toBeInTheDocument();
+    });
+
+    it('живая симуляция — вместо снимка, загрузка предупреждает об остановке', async () => {
+      renderWidget();
+
+      const source = await screen.findByRole('region', { name: 'Источник данных' });
+      expect(within(source).getByText('Живая симуляция')).toBeInTheDocument();
+      // «Скачать текущие данные» контракт пока не умеет
+      expect(within(source).queryByRole('button')).not.toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'Текущий снимок' })).not.toBeInTheDocument();
+      expect(
+        screen.getByText(/^Симуляция остановится, данные заменятся снимком/),
+      ).toBeInTheDocument();
+    });
+
+    it('загрузка снимка в живой симуляции спрашивает подтверждение и останавливает её', async () => {
+      const user = userEvent.setup();
+      const container = renderWidget();
+      await screen.findByText('Живая симуляция');
+
+      await user.upload(fileInput(container), snapshotFile(44, 121));
+      const dialog = await screen.findByRole('alertdialog', { name: 'Заменить данные?' });
+      expect(dialog).toHaveTextContent('Живая симуляция остановится');
+      await user.click(within(dialog).getByRole('button', { name: 'Заменить' }));
+      await user.click(await screen.findByRole('button', { name: 'Понятно' }));
+
+      expect(
+        await within(await screen.findByRole('region', { name: 'Текущий снимок' })).findByText(
+          'data-v2.json',
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('не администратору источник неизвестен — блок снимка без пояснения', async () => {
+    renderWidget();
+    await waitForHistory();
+
+    expect(within(currentSnapshot()).queryByText(/истории событий/)).not.toBeInTheDocument();
   });
 
   it('показывает текущий снимок и историю загрузок', async () => {

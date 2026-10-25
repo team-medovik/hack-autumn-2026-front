@@ -9,14 +9,22 @@ interface ReplaceSnapshotDialogProps {
   /** Что в новом файле. `null` — диалог закрыт. */
   summary: SnapshotFileSummary | null;
   currentFileName: string;
+  /** Заменяется живая симуляция, а не снимок. */
+  stopsSimulation: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+const describeReplacement = (currentFileName: string, stopsSimulation: boolean) =>
+  stopsSimulation
+    ? 'Живая симуляция остановится, данные заменятся снимком, риски и потери пересчитаются.'
+    : `Текущий снимок ${currentFileName} заменится полностью, риски и потери пересчитаются.`;
 
 /** Макет «… (подтверждение)»: что в новом файле и что он заменит. */
 export const ReplaceSnapshotDialog = ({
   summary,
   currentFileName,
+  stopsSimulation,
   onConfirm,
   onCancel,
 }: ReplaceSnapshotDialogProps) => (
@@ -26,7 +34,7 @@ export const ReplaceSnapshotDialog = ({
     title="Заменить данные?"
     description={
       summary &&
-      `Файл ${summary.fileName}: ${formatSnapshotVolume(summary)}. Текущий снимок ${currentFileName} заменится полностью, риски и потери пересчитаются.`
+      `Файл ${summary.fileName}: ${formatSnapshotVolume(summary)}. ${describeReplacement(currentFileName, stopsSimulation)}`
     }
     confirmLabel="Заменить"
     onConfirm={onConfirm}

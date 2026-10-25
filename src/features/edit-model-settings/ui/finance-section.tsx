@@ -11,10 +11,18 @@ interface FinanceSectionProps {
   saved: FinanceSettings;
   defaults: FinanceSettings;
   onChange: (patch: Partial<FinanceSettings>) => void;
+  /** Только просмотр: значения видны, менять нельзя. */
+  disabled?: boolean;
 }
 
 /** Какие деньги клиента доступны для продления и как баланс влияет на потерю. */
-export const FinanceSection = ({ finance, saved, defaults, onChange }: FinanceSectionProps) => (
+export const FinanceSection = ({
+  finance,
+  saved,
+  defaults,
+  onChange,
+  disabled,
+}: FinanceSectionProps) => (
   <FormSection
     title="Финансы"
     hint="Какие деньги на счёте клиента считаются доступными для продления и насколько баланс уменьшает потерю"
@@ -25,6 +33,7 @@ export const FinanceSection = ({ finance, saved, defaults, onChange }: FinanceSe
           <Switch
             checked={finance.bonusesAsMoney}
             onCheckedChange={(bonusesAsMoney) => onChange({ bonusesAsMoney })}
+            disabled={disabled}
             aria-labelledby={titleId}
             aria-describedby={describedBy}
           />
@@ -39,6 +48,7 @@ export const FinanceSection = ({ finance, saved, defaults, onChange }: FinanceSe
           <Switch
             checked={finance.referralBalanceAsMoney}
             onCheckedChange={(referralBalanceAsMoney) => onChange({ referralBalanceAsMoney })}
+            disabled={disabled}
             aria-labelledby={titleId}
             aria-describedby={describedBy}
           />
@@ -56,6 +66,7 @@ export const FinanceSection = ({ finance, saved, defaults, onChange }: FinanceSe
             value={finance.balanceLossFactor}
             savedValue={saved.balanceLossFactor}
             onValueChange={(balanceLossFactor) => onChange({ balanceLossFactor })}
+            disabled={disabled}
             aria-labelledby={titleId}
             aria-describedby={describedBy}
           />

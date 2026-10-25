@@ -11,6 +11,8 @@ const ACCEPT = '.json,application/json';
 interface SnapshotDropzoneProps {
   state: ImportStep;
   onPick: (file: File) => void;
+  /** Сейчас идёт живая симуляция — загрузка её остановит. */
+  stopsSimulation: boolean;
 }
 
 /**
@@ -18,7 +20,7 @@ interface SnapshotDropzoneProps {
  * Кнопки внутри без своих обработчиков — клик по ним, как и по любому месту зоны, открывает
  * выбор файла.
  */
-export const SnapshotDropzone = ({ state, onPick }: SnapshotDropzoneProps) => {
+export const SnapshotDropzone = ({ state, onPick, stopsSimulation }: SnapshotDropzoneProps) => {
   const renderContent = () => {
     switch (state.step) {
       case 'uploading':
@@ -59,7 +61,11 @@ export const SnapshotDropzone = ({ state, onPick }: SnapshotDropzoneProps) => {
         variant="roomy"
         icon={<Icon name="upload-32" size={32} />}
         title="Перетащите JSON-файл сюда или выберите на компьютере"
-        description="Текущие данные полностью заменятся, риски и потери пересчитаются сами"
+        description={
+          stopsSimulation
+            ? 'Симуляция остановится, данные заменятся снимком — риски и потери пересчитаются сами'
+            : 'Текущие данные полностью заменятся, риски и потери пересчитаются сами'
+        }
         action={<Button variant="primary">Выбрать файл</Button>}
       />
     </Dropzone>

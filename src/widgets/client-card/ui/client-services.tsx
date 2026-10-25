@@ -1,6 +1,11 @@
 import { useId } from 'react';
 
-import { formatServiceNote, groupServices, type ClientService } from '@/entities/client';
+import {
+  formatServiceNote,
+  groupServices,
+  RenewalForecastBadge,
+  type ClientService,
+} from '@/entities/client';
 import { SERVICE_FORMS } from '@/shared/config';
 import { formatCount, formatMoney, formatNumber } from '@/shared/lib/format';
 import { Accordion, AccordionItem } from '@/shared/ui/accordion';
@@ -12,8 +17,8 @@ interface ClientServicesProps {
 }
 
 /**
- * Услуги клиента по статусам. Раскрыты группы, где есть что продлевать;
- * удалённые и заблокированные свёрнуты.
+ * Услуги клиента по статусам, у каждой — прогноз непродления от ML-модели. Раскрыты группы,
+ * где есть что продлевать; удалённые и заблокированные свёрнуты.
  */
 export const ClientServices = ({ services }: ClientServicesProps) => {
   const titleId = useId();
@@ -56,6 +61,7 @@ export const ClientServices = ({ services }: ClientServicesProps) => {
                           ? undefined
                           : formatMoney(service.monthlyPrice)
                       }
+                      extra={<RenewalForecastBadge service={service} />}
                     />
                   </li>
                 ))}

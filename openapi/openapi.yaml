@@ -1,25 +1,72 @@
 openapi: 3.1.0
 info:
   title: Team Medovik — Churn Risk Analyzer API
-  version: 1.0.0-contract
-  description:
-    'Единый целевой контракт для frontend и backend хакатона «Анализатор рисков оттока». Канонические
-    endpoint-ы на 100% соответствуют маршрутам ТЗ, дополнительные endpoint-ы описаны отдельно. Важно: это СОГЛАСОВАННЫЙ
-    ЦЕЛЕВОЙ контракт, не автоматическая Swagger-выгрузка текущего сервера: часть маршрутов/полей необходимо реализовать.
-    Текущие Swagger и фронтовые фрагменты расходятся.
+  version: 1.3.0-loss-probability-contract
+  description: |
+    Единый целевой контракт frontend и backend. Swagger UI `/api/v1/docs` загружает
+    этот документ через `/api/v1/openapi`; `/api/v1/internal-openapi` — отдельная
+    автогенерируемая схема фактически установленных контроллеров.
 
+    ## Статус интеграции
+    Контракт включает интеграцию из API PR #42. Документация в develop может опережать
+    установленный сервер: наличие endpoint или day здесь не означает его deployment.
+    Внутренний FastAPI ML не публикуется под `/api/v1` и не вызывается браузером.
 
-    Соглашения: входящие денежные суммы source snapshot целые евроценты (100 = €1); в ответах UI и агрегатах — числовые
-    евро. Score ∈ [0,100] — объяснимый экспертный индекс, НЕ откалиброванная вероятность оттока. level = none и
-    score = null при отсутствии оцениваемых услуг. Изменение коэффициентов /source/snapshot должно отражаться в
-    клиентах, аналитике и метриках. Рекомендуемое автообновление UI: polling с интервалом до 30 секунд + немедленная
-    инвалидация запросов после успешного PATCH/PUT, без полной перезагрузки страницы.
+    ## Алгоритм и ML
+    Сначала правила вычисляют балл A. Для подходящей услуги CatBoost возвращает p
+    от 0 до 1; API применяет delta = clamp(0.30 * (100*p - A), -20, +20),
+    итоговый score = clamp(A + delta, 0, 100). Например A=80, p=0.10 даёт delta=-20
+    и score=60. Score — продуктовый индекс приоритизации, НЕ вероятность потери.
+    Балл клиента — максимум итоговых баллов его живых услуг; null/level=none — нет оценки.
+    Карточки, список, дашборд, ранжирование и гистограмма настроек используют общую оценку.
 
+    ML применяется при включённой интеграции и полной опубликованной истории:
+    hour/day/month, статус active/suspended, срок оплаты строго в будущем и не позже
+    7 суток от момента оценки, без предупреждений о качестве данных. Подтверждённые
+    нефинансовые ограничения и другие неподходящие случаи не получают поправку.
+    Цель p — отсутствие продления или подтверждённой оплаченной замены VPS к dueAt+5 суток;
+    переход на другую мощность сам по себе не считается потерей. Суточная цена синтетическая.
+    prolong_wait оценивается только правилами F3+F4; неудачная оплата деньги не резервирует.
+    При явной аномалии алгоритм продолжает оценку и формирует предупреждение.
 
-    Комментарий для сдачи: расширение новыми признаками предполагает отдельную реализацию вычисления, добавление
-    редактируемого веса/метаданных и обратную совместимость DTO; подтверждается тестом.
+    ## Недоступность модели
+    Ошибка HTTP, timeout, неверные версия/ревизия/владелец/срок, неполная история либо
+    неподходящая услуга оставляют алгоритмический балл. Отсутствующий прогноз не равен 0%.
+    JSON-снимок без событий также оценивается правилами. Fallback ML сам по себе не
+    меняет форму ответа и не превращает успешный ответ API в ошибку 503.
+    По умолчанию HTTP timeout 2 s; кеш до 30 s действует только для той же ревизии,
+    времени, списка услуг и версии модели. При отказе сервиса ещё годный кеш может
+    использоваться до истечения TTL. Ошибки не кешируются; после восстановления ML
+    следующий успешный запрос снова получает поправку без перезапуска API.
 
-    '
+    ## Данные для интерфейса
+    Вероятность ML передаётся отдельно в services[].lossProbability карточки клиента:
+    число от 0 до 1 либо null, если валидного прогноза нет. Поле присутствует всегда;
+    0 — настоящий нулевой прогноз, null — отсутствие прогноза. На UI можно показать
+    lossProbability * 100 процентов, сохраняя отметку синтетических данных.
+    algorithmScore, delta, modelVersion и mode отдельными полями не возвращаются. Итог уже в score. Существующие reason/label могут содержать
+    исходный балл, поправку и итог либо причину неприменения ML; это текст, его нельзя
+    разбирать как машинный контракт. points остаются неотрицательными вкладами правил,
+    их сумма не обязана равняться итоговому score после поправки. При положительной
+    оценке только за счёт ML карточка может показать фактор ml-adjustment.
+    lossBreakdown.items[].risk = итоговый score/100, а не сырая вероятность CatBoost.
+    Денежные суммы входного snapshot — целые евроценты; UI возвращает евро и
+    потенциальную месячную потерю. Уровни и денежные показатели согласованы с итоговым баллом.
+
+    ## Живые события
+    Генератор, модель и Kotlin — отдельные сервисы. Kotlin читает сохранённые события
+    по курсору и публикует снимок только после полного применения хвоста; повторная
+    доставка не списывает деньги повторно. Расчёт выполняется на виртуальное время
+    публикации. После commit отправляется SSE entity-changed с entity=SNAPSHOT;
+    frontend перечитывает данные. При переподключении также нужен обычный GET: SSE
+    не заменяет долговечный журнал. Новая ревизия/время снимка исключают старый кеш ML.
+
+    Полный префикс для ML ограничен 100000 событий, 32 MiB и 1000 запрашиваемыми
+    услугами; превышение даёт fallback. MinIO dataset registry ещё не подключён.
+    Недельный график не является отдельным прогнозом CatBoost; live-история снимков
+    по неделям автоматически не архивируется. Синтетические данные не доказывают
+    точность модели на настоящих клиентах.
+
 servers:
   - url: https://hack.kinoko.su
     description: Публичный HTTPS reverse proxy (обязательна корректная маршрутизация /api/v1)
@@ -35,7 +82,7 @@ tags:
   - name: Модель
     description: Версионируемые коэффициенты и пересчёт
   - name: Источник данных
-    description: Полная замена снимка из биллинга
+    description: Импорт снимков и состояние потребителя живых событий
   - name: Мониторинг
     description: Метрики для Prometheus
   - name: Документация
@@ -48,11 +95,173 @@ tags:
     description: Смена пароля
   - name: Пользователи
     description: Управление сотрудниками с ролью ADMIN
-  - name: Реальное время
-    description: Server-Sent Events об изменениях данных
+  - name: События
+    description: Уведомления об изменении данных в реальном времени
 security: &id001
   - bearerAuth: []
 paths:
+  /api/v1/admin/simulation:
+    get:
+      tags:
+        - Настройки приложения
+      operationId: getSimulationState
+      summary: Состояние живой симуляции для администратора
+      description:
+        'Только ADMIN. Читает состояние генератора напрямую, а не отстающую проекцию inbox. GET не двигает
+        часы. Используйте для вкладки Другое: статус, виртуальное время и выбранная скорость. При 503 не показывайте
+        устаревшие данные как подтверждение работающей симуляции.'
+      responses:
+        '200':
+          description: Текущее сохранённое состояние.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationState'
+        '401': &speed_id001
+          description: Нет пользовательской авторизации.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '403': &speed_id002
+          description: Требуется роль ADMIN.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '503': &speed_id003
+          description:
+            Генератор выключен, недоступен или не поддерживает изменение скорости в PostgreSQL; успешное
+            сохранение не подтверждено.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+  /api/v1/admin/simulation/speed:
+    patch:
+      tags:
+        - Настройки приложения
+      operationId: setSimulationSpeed
+      summary: Изменить скорость живой симуляции
+      description:
+        Только ADMIN. Абсолютная установка ×1/×10/×60 идемпотентна; параллельные записи сериализуются,
+        последняя успешная запись задаёт скорость. PostgreSQL сохраняет её под блокировкой запуска. Новый шаг worker
+        читает сохранённое значение; текущий завершает транзакцию до изменения. Запрос не меняет виртуальное время,
+        очередь, события или курсор; рестарт worker не сбрасывает скорость. После ответа UI использует возвращённое
+        timeScale. При потере ответа перечитайте GET и при необходимости повторите запрос. Пауза, reset, переключение
+        JSON/live и перемотка этим endpoint не реализованы.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SimulationSpeedRequest'
+            example:
+              runId: 6f5fb823-01c2-4c8a-a8d9-a20871bf09c3
+              timeScale: 60
+      responses:
+        '200':
+          description: Скорость сохранена; новый коэффициент применяется со следующего шага.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimulationState'
+        '400':
+          description:
+            'Некорректный runId или скорость: разрешены только целые 1, 10, 60; строки, дроби, boolean
+            и лишние поля отклоняются.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '401': *speed_id001
+        '403': *speed_id002
+        '409':
+          description: runId больше не совпадает с запуском генератора; перечитайте GET состояния.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '503': *speed_id003
+  /api/v1/admin/generator/consumer:
+    get:
+      tags: [Источник данных]
+      operationId: generatorConsumerStatus
+      summary: Курсоры и состояние PostgreSQL-потребителя событий
+      description: >-
+        Реализация поставляется PR #42. Только ADMIN. receivedSequence — записано во входящий журнал;
+        appliedSequence — применено к проекции. Токен генератора и payload событий не возвращаются.
+      responses:
+        '200':
+          description: Состояние потребителя; progress равен null до первой привязки к runId.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [enabled, usedForDashboard, progress]
+                properties:
+                  enabled: { type: boolean, description: Включён ли автоматический polling }
+                  usedForDashboard:
+                    {
+                      type: boolean,
+                      description: Используется ли опубликованная live-проекция в dashboard,
+                    }
+                  progress:
+                    type: [object, 'null']
+                    required:
+                      [
+                        sourceId,
+                        runId,
+                        receivedSequence,
+                        appliedSequence,
+                        publishedAt,
+                        publishedRevision,
+                        failureCount,
+                        retryAfter,
+                        lastError,
+                      ]
+                    properties:
+                      sourceId: { type: string, description: Постоянный идентификатор потребителя }
+                      runId: { type: string, description: Закреплённый запуск генератора }
+                      receivedSequence:
+                        {
+                          type: integer,
+                          format: int64,
+                          description: Последовательность последнего сохранённого события,
+                        }
+                      appliedSequence:
+                        {
+                          type: integer,
+                          format: int64,
+                          description: Последовательность последнего применённого события,
+                        }
+                      publishedAt:
+                        {
+                          type: [string, 'null'],
+                          format: date-time,
+                          description: Виртуальный момент опубликованной проекции,
+                        }
+                      publishedRevision:
+                        {
+                          type: [integer, 'null'],
+                          format: int64,
+                          description: Опубликованная ревизия источника,
+                        }
+                      failureCount:
+                        { type: integer, description: Число ошибок с последнего успешного этапа }
+                      retryAfter:
+                        {
+                          type: string,
+                          format: date-time,
+                          description: Реальное время следующей попытки,
+                        }
+                      lastError:
+                        {
+                          type: [string, 'null'],
+                          description: FETCH_FAILED или APPLY_FAILED; ошибка не пропускает события,
+                        }
+        '401': { description: Требуется авторизация }
+        '403': { description: Требуется роль ADMIN }
   /api/v1/auth/login:
     post:
       tags:
@@ -423,11 +632,11 @@ paths:
       tags:
         - Мониторинг
       operationId: getRiskMetrics
-      summary: Prometheus-метрики по клиентам и ожидаемым потерям
-      description:
-        ОБЯЗАТЕЛЬНО ПО ТЗ. Доступно Prometheus в защищённой внутренней сети/через allowlist; анонимный
-        публичный доступ снаружи закрывается reverse proxy. Обязательны churn_customers{level=...} и churn_expected_monthly_loss_eur.
-        Суммы должны совпадать с analytics/summary при одинаковой дате/версии данных.
+      summary: Только бизнес-метрики дашборда в формате Prometheus
+      description: Содержит метрики churn_* из общего реестра Micrometer без системных метрик.
+        Эти же ряды доступны вместе с системными метриками на /actuator/prometheus.
+        Обязательны churn_customers{level=...} и churn_expected_monthly_loss_eur.
+        Значения обновляются при расчёте дашборда и по расписанию.
       security: []
       responses:
         '200':
@@ -619,6 +828,7 @@ paths:
         - Пользователи
       operationId: createAdminUser
       summary: Создать сотрудника с временным паролем
+      description: Необязательный ssoUserId привязывает OIDC sub из выбранного в конфигурации провайдера. Временный пароль создаётся и возвращается как раньше.
       security: *id001
       requestBody:
         required: true
@@ -668,31 +878,26 @@ paths:
   /api/v1/events:
     get:
       tags:
-        - Реальное время
-      operationId: streamEntityChanges
-      summary: Поток событий об изменениях данных (SSE)
-      description:
-        'Server-Sent Events: соединение не закрывается, сервер пишет события по мере изменений. После каждого
-        успешного (закоммиченного) изменения настроек модели, даты расчёта, снимка или пользователей сервер шлёт
-        всем подключённым клиентам событие `entity-changed` с телом EntityChangedEvent. Само событие данных не
-        несёт: клиент перезапрашивает затронутые данные обычными GET. Получает событие и автор изменения.
-
-
-        Формат кадра: `id: <номер>`, `event: entity-changed`, `data: <JSON одной строкой>`, пустая строка.
-        Раз в 15–30 секунд сервер шлёт комментарий `:ping`, чтобы прокси не закрыли простаивающее соединение.
-        Протухший access-токен — 401 до начала потока (не 200 с обрывом): клиент обновит токен и переподключится.
-        Пропущенные за время обрыва события не досылаются: после переподключения клиент сам перезапрашивает данные,
-        polling до 30 секунд остаётся запасным вариантом.'
+        - События
+      operationId: getEvents
+      summary: Получать уведомления об изменениях
+      description: 'SSE-поток для авторизованного пользователя. Событие entity-changed содержит
+        JSON по схеме EntityChangedEvent; после события клиент повторно запрашивает нужные данные
+        обычным GET. Сервер отправляет комментарий :ping каждые 20 секунд и закрывает поток
+        через 15 минут для повторного подключения с новым access-токеном. История событий
+        по Last-Event-ID не воспроизводится. При live-интеграции (PR #42) новая полностью
+        применённая проекция вызывает SNAPSHOT после commit; id имеет вид generator:runId:revision.
+        После подключения нужно перечитать актуальные данные, даже если SSE было пропущено.'
       security: *id001
       responses:
         '200':
-          description: Поток открыт. Каждое событие entity-changed содержит EntityChangedEvent в поле data.
+          description: Поток событий с Content-Type text/event-stream
           content:
             text/event-stream:
               schema:
                 type: string
-              x-event-data:
-                $ref: '#/components/schemas/EntityChangedEvent'
+                description: 'Кадры с полями id, event: entity-changed и data: EntityChangedEvent'
+              example: "id:1\nevent:entity-changed\ndata:{\"entity\":\"MODEL_SETTINGS\",\"id\":null}\n\n"
         '401': *id002
 components:
   securitySchemes:
@@ -702,6 +907,105 @@ components:
       bearerFormat: JWT
       description: JWT access token из POST /api/v1/auth/login
   schemas:
+    SimulationSpeedRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - runId
+        - timeScale
+      properties:
+        runId:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ".*\\S.*"
+          description: Запуск из последнего GET состояния. Защищает от изменения другого run после переключения источника.
+        timeScale:
+          type: integer
+          enum:
+            - 1
+            - 10
+            - 60
+          description:
+            'Пресет скорости: виртуальных секунд за реальную секунду. ×60 означает целевую 1 минуту симуляции
+            за 1 секунду; под нагрузкой темп может быть ниже.'
+          example: 60
+    SimulationState:
+      type: object
+      additionalProperties: false
+      required:
+        - runId
+        - virtualTime
+        - timeScale
+        - workerState
+        - finished
+        - syntheticOnly
+        - supportedTimeScales
+      properties:
+        runId:
+          type: string
+          description: Текущий запуск генератора. Не меняется при смене скорости.
+        virtualTime:
+          type: string
+          format: date-time
+          description: Текущий сохранённый момент симуляции; для строки виртуального времени в UI.
+        timeScale:
+          type: number
+          exclusiveMinimum: 0
+          description:
+            Сохранённая скорость; применяется со следующего шага. У старого run может отличаться от новых
+            пресетов.
+          example: 60
+        workerState:
+          type: string
+          enum:
+            - starting
+            - running
+            - paused
+            - finished
+            - error
+          description: Состояние worker с учётом свежести heartbeat. Не считать stopped/error работающей симуляцией.
+        finished:
+          type: boolean
+          description: Конечный горизонт завершён. Смена скорости не запускает историю заново.
+        syntheticOnly:
+          type: boolean
+          const: true
+          description: Обязательная отметка синтетических данных в интерфейсе.
+        supportedTimeScales:
+          type: array
+          items:
+            type: integer
+            enum:
+              - 1
+              - 10
+              - 60
+          const:
+            - 1
+            - 10
+            - 60
+          description: Кнопки ×1, ×10, ×60 из макета.
+    RealtimeEntity:
+      type: string
+      enum:
+        - MODEL_SETTINGS
+        - CALCULATION_DATE
+        - SNAPSHOT
+        - ADMIN_USERS
+    EntityChangedEvent:
+      type: object
+      additionalProperties: false
+      required:
+        - entity
+        - id
+      properties:
+        entity:
+          $ref: '#/components/schemas/RealtimeEntity'
+        id:
+          type:
+            - string
+            - 'null'
+          description: Идентификатор снимка или UUID сотрудника; для настроек null
     ApiErrorResponse:
       type: object
       description: Стандартный формат ошибки API.
@@ -812,11 +1116,6 @@ components:
           example: analyst
           minLength: 3
           maxLength: 255
-        ssoUserId:
-          type: string
-          description: ID клиента, к которому привязан сотрудник. Необязательный
-          example: client-42
-          maxLength: 255
         role:
           type: string
           description: Роль сотрудника
@@ -833,6 +1132,12 @@ components:
             - DISABLED
           example: ACTIVE
           default: ACTIVE
+        ssoUserId:
+          type: string
+          description: Необязательный User ID пользователя в выбранном SSO-провайдере (OIDC sub), не Client ID приложения.
+          example: 0ba7a3fd-6fd8-48cd-a60b-2e8fd82d56e2
+          minLength: 1
+          maxLength: 2048
       required:
         - login
     CreatedUserResponse:
@@ -1043,6 +1348,7 @@ components:
           description: Платёжный период
           enum:
             - hour
+            - day
             - week
             - month
             - quarter_year
@@ -1489,7 +1795,7 @@ components:
           type: string
           description:
             fact — НАБЛЮДАЕМАЯ динамика между сохранёнными снимками; нельзя утверждать точную дату удаления
-            без истории статусов. forecast — модельный прогноз.
+            без истории статусов. forecast — расчётная оценка по услугам, не отдельный недельный прогноз CatBoost.
           enum:
             - fact
             - forecast
@@ -1601,8 +1907,8 @@ components:
             - 'null'
           format: double
           description:
-            Экспертный индекс риска 0–100, НЕ вероятность. null = недостаточно оснований для оценки (например,
-            нет живых услуг).
+            Итоговый индекс риска 0–100 после применимой поправки ML; при fallback — балл алгоритма.
+            НЕ вероятность потери. Для клиента — максимум по живым услугам. null означает отсутствие оценки.
           example: 94.2
           maximum: 100
           minimum: 0
@@ -1656,10 +1962,8 @@ components:
       properties:
         id:
           type: string
-          description: >-
-            Стабильный код фактора. Для признака с весом совпадает с
-            ModelSettings.featureDefinitions[].key.
-          example: awaitingPayment
+          description: Стабильный код фактора.
+          example: awaiting-payment
         label:
           type: string
           description: Готовое к показу название фактора.
@@ -1668,8 +1972,8 @@ components:
           type: number
           format: double
           description:
-            Вклад фактора в score конкретной услуги, может суммарно превысить 100 до отсечения. Отдельные
-            вклады всех услуг не обязаны суммироваться в score клиента.
+            Неотрицательный вклад правил. Вклады могут суммарно превысить 100 до отсечения,
+            не включают отрицательную поправку ML и не обязаны суммироваться в итоговый score.
           example: 70
           maximum: 100
           minimum: 0
@@ -1679,7 +1983,7 @@ components:
         - points
     SnapshotInfo:
       type: object
-      description: Снимок биллинга, по которому рассчитан ответ.
+      description: Опубликованный снимок, по которому рассчитан ответ; для live — полный применённый префикс событий.
       properties:
         id:
           type: string
@@ -1688,7 +1992,7 @@ components:
         takenAt:
           type: string
           format: date-time
-          description: Время формирования снимка в ISO 8601 с часовым поясом.
+          description: Время снимка в ISO 8601; для live это виртуальное время генератора и момент оценки.
           example: '2026-10-23T22:10:00+03:00'
       required:
         - id
@@ -1711,8 +2015,8 @@ components:
             - 'null'
           format: double
           description:
-            Экспертный индекс риска 0–100, НЕ вероятность. null = недостаточно оснований для оценки (например,
-            нет живых услуг).
+            Итоговый индекс риска 0–100 после применимой поправки ML; при fallback — балл алгоритма.
+            НЕ вероятность потери. Для клиента — максимум по живым услугам. null означает отсутствие оценки.
           example: 94.2
           maximum: 100
           minimum: 0
@@ -1770,8 +2074,8 @@ components:
             - 'null'
           format: double
           description:
-            Экспертный индекс риска 0–100, НЕ вероятность. null = недостаточно оснований для оценки (например,
-            нет живых услуг).
+            Итоговый индекс риска 0–100 после применимой поправки ML; при fallback — балл алгоритма.
+            НЕ вероятность потери. Для клиента — максимум по живым услугам. null означает отсутствие оценки.
           example: 94.2
           maximum: 100
           minimum: 0
@@ -1898,8 +2202,8 @@ components:
             - 'null'
           format: double
           description:
-            Экспертный индекс риска 0–100, НЕ вероятность. null = недостаточно оснований для оценки (например,
-            нет живых услуг).
+            Итоговый индекс риска 0–100 после применимой поправки ML; при fallback — балл алгоритма.
+            НЕ вероятность потери. Для клиента — максимум по живым услугам. null означает отсутствие оценки.
           minimum: 0
           maximum: 100
         level:
@@ -1974,17 +2278,15 @@ components:
       properties:
         id:
           type: string
-          description: >-
-            Стабильный код фактора. Для признака с весом совпадает с
-            ModelSettings.featureDefinitions[].key.
-          example: insufficientFunds
+          description: Стабильный код фактора
+          example: insufficient_funds
         label:
           type: string
           description: Пояснение для пользователя
         points:
           type: number
           format: double
-          description: Вклад фактора в score
+          description: Неотрицательный вклад правил; после поправки ML сумма points может не совпадать со score.
           example: 40
           minimum: 0
       required:
@@ -2008,10 +2310,22 @@ components:
             - 'null'
           format: double
           description:
-            Экспертный индекс риска 0–100, НЕ вероятность. null = недостаточно оснований для оценки (например,
-            нет живых услуг).
+            Итоговый индекс риска 0–100 после применимой поправки ML; при fallback — балл алгоритма.
+            НЕ вероятность потери. Для клиента — максимум по живым услугам. null означает отсутствие оценки.
           minimum: 0
           maximum: 100
+        lossProbability:
+          type: [number, 'null']
+          format: double
+          minimum: 0
+          maximum: 1
+          description: >-
+            Вероятность ML отсутствия продления или подтверждённой оплаченной замены VPS к dueAt+5 суток.
+            Значение от 0 до 1, не score/100 и не вероятность ухода всего клиента. Поле всегда присутствует.
+            null при отключённом/недоступном ML, отсутствии полной истории, неприменимости или отклонённом
+            ответе модели. Валидная вероятность 0 возвращается числом 0. Допускается действующий кеш
+            для той же ревизии/момента; невалидный прогноз из другой ревизии не используется.
+          example: 0.75
         level:
           type: string
           description: none — нет оценки (нет живых услуг), а не score=0.
@@ -2045,6 +2359,7 @@ components:
         - id
         - name
         - score
+        - lossProbability
         - level
         - status
         - monthlyPrice
@@ -2092,9 +2407,7 @@ components:
           type: integer
           minimum: 1
           maximum: 30
-          description:
-            Горизонт расчёта потребности по настройкам модели (сейчас отсутствует в DTO бэка; требуется
-            добавить).
+          description: Горизонт расчёта потребности в продлениях по настройкам правил; не окно целевой метки ML.
       required:
         - k
         - uncoveredShare
@@ -2116,7 +2429,7 @@ components:
         risk:
           type: number
           format: double
-          description: Нормализованная оценка риска от 0 до 1
+          description: Итоговый балл услуги / 100 после применимой поправки ML; НЕ вероятность CatBoost.
         loss:
           type: number
           description: Ожидаемая потеря в месяц в евро
@@ -2181,6 +2494,7 @@ components:
           description: Платёжный период
           enum:
             - hour
+            - day
             - week
             - month
             - quarter_year
@@ -2411,30 +2725,3 @@ components:
           minimum: 1
         changes:
           $ref: '#/components/schemas/ModelSettingsChanges'
-    RealtimeEntity:
-      type: string
-      description:
-        'Что изменилось. MODEL_SETTINGS — настройки модели (пересчитаны клиенты и аналитика);
-        CALCULATION_DATE — дата расчёта (пересчитано всё); SNAPSHOT — загружен новый снимок (пересчитано всё);
-        ADMIN_USERS — список сотрудников.'
-      enum:
-        - MODEL_SETTINGS
-        - CALCULATION_DATE
-        - SNAPSHOT
-        - ADMIN_USERS
-      example: MODEL_SETTINGS
-    EntityChangedEvent:
-      type: object
-      description: Тело события entity-changed в потоке GET /api/v1/events.
-      additionalProperties: false
-      required:
-        - entity
-      properties:
-        entity:
-          $ref: '#/components/schemas/RealtimeEntity'
-        id:
-          type:
-            - string
-            - 'null'
-          description: Идентификатор изменённой записи, если изменилась конкретная запись (например, UUID сотрудника).
-          example: null

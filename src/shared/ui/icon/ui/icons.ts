@@ -8,6 +8,7 @@ import chevronRight from '../assets/chevron-right.svg';
 import close from '../assets/close.svg';
 import help16 from '../assets/help-16.svg';
 import home from '../assets/home.svg';
+import info16 from '../assets/info-16.svg';
 import info32 from '../assets/info-32.svg';
 import info from '../assets/info.svg';
 import lightning from '../assets/lightning.svg';
@@ -25,7 +26,7 @@ import upload from '../assets/upload.svg';
 
 /**
  * Иконки дизайн-системы. Ключ — имя слоя в Figma.
- * Нативный размер — 24×24; `sort*` и `*-16` — 16×16 (Icon / сортировка, группы услуг),
+ * Нативный размер — 24×24; `sort*` и `*-16` — 16×16 (Icon / сортировка, группы услуг, пояснения),
  * `*-20` — 20×20 (Плашка обновления), `*-32` — 32×32 (сообщения в таблице, зона загрузки файла).
  */
 export const ICONS = {
@@ -40,6 +41,7 @@ export const ICONS = {
   'help-16': help16,
   home,
   info,
+  'info-16': info16,
   'info-32': info32,
   lightning,
   loading,

@@ -5,3 +5,15 @@
   gap: var(--space-close);
   padding: var(--space-grouped);
 }
+
+// «Только просмотр» на месте кнопок: те же поля, что у колонки действий.
+.model-settings-form__notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-compressed);
+  padding: var(--space-grouped);
+
+  @include down(desktop-s) {
+    padding-inline: 0;
+  }
+}

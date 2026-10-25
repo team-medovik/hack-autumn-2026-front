@@ -352,6 +352,24 @@ describe('SettingsPage', () => {
     expect(screen.queryByRole('tab', { name: 'Пользователи' })).not.toBeInTheDocument();
   });
 
+  it('сотруднику без роли ADMIN показывает расчёт только для просмотра', async () => {
+    useSessionStore.getState().setUser({
+      id: '9d1f0c3e-2b4a-4c55-8e6f-2a7b9c0d1e2f',
+      login: 'analyst',
+      role: 'EMPLOYEE',
+      createdAt: '2026-10-20T09:00:00Z',
+    });
+    renderPage();
+    await waitForSettings();
+
+    expect(screen.getByText('Только просмотр')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Сохранить' })).not.toBeInTheDocument();
+    expect(weightField()).toBeDisabled();
+    expect(
+      screen.getByRole('switch', { name: 'Считать бонусы доступными деньгами' }),
+    ).toBeDisabled();
+  });
+
   it('на вкладке «Пользователи» показывает учётки без плашки обновления модели', async () => {
     const user = userEvent.setup();
     renderPage();
