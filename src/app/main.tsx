@@ -17,7 +17,22 @@ if (!root) {
   throw new Error('Элемент #root не найден. Проверьте index.html.');
 }
 
-// Удалить статичный прелоадер после монтирования React
+/** Первая страница — lazy-чанк: роутер готов, когда он загрузился. */
+const whenRouterReady = () =>
+  new Promise<void>((resolve) => {
+    if (router.state.initialized) {
+      resolve();
+      return;
+    }
+    const unsubscribe = router.subscribe((state) => {
+      if (state.initialized) {
+        unsubscribe();
+        resolve();
+      }
+    });
+  });
+
+// Убрать статичный прелоадер, когда React смонтирован и чанк первой страницы загружен
 const removePreloader = () => {
   const preloader = document.getElementById('app-preloader');
   if (preloader) {
@@ -53,5 +68,5 @@ void enableMocks()
       </StrictMode>,
     );
 
-    removePreloader();
+    void whenRouterReady().then(removePreloader);
   });
